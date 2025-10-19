@@ -1,0 +1,1 @@
+Add your exported images (house1.jpg, house2.jpg, house3.jpg) into public/assets/. Replace these placeholders with real images from your Figma export.
