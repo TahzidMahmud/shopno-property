@@ -37,4 +37,12 @@ class Property extends Model
         'gallery_images' => 'array',
         'key_transports' => 'array',
     ];
+
+    /**
+     * The facilities that belong to the property.
+     */
+    public function facilities()
+    {
+        return $this->belongsToMany(Facility::class, 'property_facility');
+    }
 }

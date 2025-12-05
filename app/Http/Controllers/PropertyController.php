@@ -20,7 +20,7 @@ class PropertyController extends Controller
     // 🟢 List all properties
     public function index()
     {
-        return response()->json(Property::all(), 200);
+        return response()->json(Property::with('facilities')->get(), 200);
     }
 
     // 🟢 Create a new property
@@ -48,6 +48,8 @@ class PropertyController extends Controller
             'bedrooms' => 'nullable|integer',
             'bathrooms' => 'nullable|integer',
             'company_name' => 'nullable|string|max:255',
+            'facilities' => 'nullable|array',
+            'facilities.*' => 'exists:facilities,id',
         ]);
 
         // 2. 🚨 Use the Service for single image upload (WebP conversion happens inside the service)
@@ -83,7 +85,19 @@ class PropertyController extends Controller
             );
         }
 
+        // Extract facilities from validated data
+        $facilities = $validated['facilities'] ?? [];
+        unset($validated['facilities']);
+
         $property = Property::create($validated);
+
+        // Attach facilities to property
+        if (!empty($facilities)) {
+            $property->facilities()->attach($facilities);
+        }
+
+        // Load facilities relationship for response
+        $property->load('facilities');
 
         return response()->json(['message' => 'Property created successfully', 'data' => $property], 201);
     }
@@ -91,7 +105,7 @@ class PropertyController extends Controller
     // 🟢 Show single property
     public function show($id)
     {
-        $property = Property::find($id);
+        $property = Property::with('facilities')->find($id);
         if (!$property) {
             return response()->json(['message' => 'Property not found'], 404);
         }
@@ -127,6 +141,8 @@ class PropertyController extends Controller
             'bedrooms' => 'nullable|integer',
             'bathrooms' => 'nullable|integer',
             'company_name' => 'nullable|string|max:255',
+            'facilities' => 'nullable|array',
+            'facilities.*' => 'exists:facilities,id',
         ]);
 
         // 5. 🚨 Update: Handle single file uploads (delete old, upload new)
@@ -181,7 +197,19 @@ class PropertyController extends Controller
         }
 
 
+        // Extract facilities from validated data
+        $facilities = $validated['facilities'] ?? null;
+        unset($validated['facilities']);
+
         $property->update($validated);
+
+        // Sync facilities to property (replace existing with new ones)
+        if ($facilities !== null) {
+            $property->facilities()->sync($facilities);
+        }
+
+        // Load facilities relationship for response
+        $property->load('facilities');
 
         return response()->json(['message' => 'Property updated successfully', 'data' => $property], 200);
     }

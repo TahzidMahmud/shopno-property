@@ -12,4 +12,12 @@ class Facility extends Model
         'title',
         'image'
     ];
+
+    /**
+     * The properties that belong to the facility.
+     */
+    public function properties()
+    {
+        return $this->belongsToMany(Property::class, 'property_facility');
+    }
 }

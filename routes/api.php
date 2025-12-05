@@ -27,3 +27,11 @@ Route::prefix('properties')->group(function () {
     Route::put('/{id}', [PropertyController::class, 'update']);
     Route::delete('/{id}', [PropertyController::class, 'destroy']);
 });
+
+Route::prefix('facilities')->group(function () {
+    Route::get('/', [App\Http\Controllers\FacilityController::class, 'index']);
+    Route::post('/', [App\Http\Controllers\FacilityController::class, 'store']);
+    Route::get('/{id}', [App\Http\Controllers\FacilityController::class, 'show']);
+    Route::put('/{id}', [App\Http\Controllers\FacilityController::class, 'update']);
+    Route::delete('/{id}', [App\Http\Controllers\FacilityController::class, 'destroy']);
+});
