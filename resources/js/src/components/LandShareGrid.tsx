@@ -1,17 +1,40 @@
-import React, { useContext, useState, useRef } from 'react';
-import { Box, Typography, Button, IconButton, Stack } from '@mui/material';
+import React, { useState, useEffect, useRef } from 'react';
+import { Box, Typography, Button, IconButton, Stack, CircularProgress } from '@mui/material';
 import Slider from 'react-slick';
+import { useNavigate } from 'react-router-dom';
 import PropertyCard from './PropertyCard';
-import { PropertyContext } from '../context/PropertyContext';
-import PropertyDetailDialog from './PropertyDetailDialog';
+import { Property } from '../types/Property';
+import { propertyService } from '../services/propertyService';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 export default function LandShareGrid() {
-  const { properties } = useContext(PropertyContext);
-  const [openId, setOpenId] = useState<number | null>(null);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const sliderRef = useRef<Slider>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadProperties();
+  }, []);
+
+  const loadProperties = async () => {
+    try {
+      const data = await propertyService.getAll();
+      // Filter for land share properties or show all if no specific type
+      const landShareProperties = data.filter(p => 
+        p.type?.toLowerCase().includes('land') || 
+        p.type?.toLowerCase().includes('share')
+      );
+      // If no land share properties, show all properties
+      setProperties(landShareProperties.length > 0 ? landShareProperties : data);
+    } catch (error) {
+      console.error('Error loading properties:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleNext = () => {
     sliderRef.current?.slickNext();
@@ -22,13 +45,13 @@ export default function LandShareGrid() {
   };
 
   const settings = {
-    dots: false, // Disable default dots
+    dots: false,
     infinite: false,
     speed: 500,
     slidesToShow: 3,
     slidesToScroll: 1,
-    nextArrow: <></>, // Hide default arrows
-    prevArrow: <></>, // Hide default arrows
+    nextArrow: <></>,
+    prevArrow: <></>,
     beforeChange: (oldIndex: number, newIndex: number) => setCurrentSlide(newIndex),
     responsive: [
       {
@@ -51,6 +74,18 @@ export default function LandShareGrid() {
     ]
   };
 
+  if (loading) {
+    return (
+      <Box sx={{ py: '4rem', display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (properties.length === 0) {
+    return null;
+  }
+
   return (
     <Box sx={{ py: '4rem', px: { xs: 2, md: 5 }, maxWidth: 'lg', mx: 'auto' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
@@ -67,7 +102,12 @@ export default function LandShareGrid() {
             Land Share
           </Typography>
         </Box>
-        <Button variant="outlined" color="primary" sx={{ textTransform: 'none', borderColor: '#00bcd4', color: '#00bcd4' }}>
+        <Button 
+          variant="outlined" 
+          color="primary" 
+          sx={{ textTransform: 'none', borderColor: '#00bcd4', color: '#00bcd4' }}
+          onClick={() => navigate('/projects')}
+        >
           View All <ArrowForwardIosIcon sx={{ fontSize: 16, ml: 0.5 }} />
         </Button>
       </Box>
@@ -76,7 +116,7 @@ export default function LandShareGrid() {
         <Slider ref={sliderRef} {...settings}>
           {properties.map(p => (
             <Box key={p.id} sx={{ px: 1 }}>
-              <PropertyCard property={p} onOpen={(id) => setOpenId(id)} />
+              <PropertyCard property={p} onOpen={(id) => navigate(`/property-details/${id}`)} />
             </Box>
           ))}
         </Slider>
@@ -99,17 +139,15 @@ export default function LandShareGrid() {
               onClick={() => sliderRef.current?.slickGoTo(index)}
             />
           ))}
-          <IconButton onClick={handleNext} disabled={currentSlide === properties.length - settings.slidesToShow} sx={{ color: '#00bcd4' }}>
+          <IconButton 
+            onClick={handleNext} 
+            disabled={currentSlide >= properties.length - settings.slidesToShow} 
+            sx={{ color: '#00bcd4' }}
+          >
             <ArrowForwardIosIcon />
           </IconButton>
         </Stack>
       </Box>
-
-      <PropertyDetailDialog
-        open={openId !== null}
-        id={openId}
-        onClose={() => setOpenId(null)}
-      />
     </Box>
   );
 }

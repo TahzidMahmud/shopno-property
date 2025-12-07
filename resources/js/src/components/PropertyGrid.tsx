@@ -1,14 +1,48 @@
-import React, { useContext, useState } from 'react';
-import { Box, Typography, Grid, Button } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Grid, Button, CircularProgress } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import HomeIcon from '@mui/icons-material/Home';
+import { useNavigate } from 'react-router-dom';
 import PropertyCard from './PropertyCard';
-import { PropertyContext } from '../context/PropertyContext';
-import PropertyDetailDialog from './PropertyDetailDialog'; // Import PropertyDetailDialog
+import { Property } from '../types/Property';
+import { propertyService } from '../services/propertyService';
 
 export default function PropertyGrid() {
-  const { properties } = useContext(PropertyContext);
-  const [openId, setOpenId] = useState<number | null>(null); // Add state for dialog
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadProperties();
+  }, []);
+
+  const loadProperties = async () => {
+    try {
+      const data = await propertyService.getAll();
+      // Show only first 6 properties
+      setProperties(data.slice(0, 6));
+    } catch (error) {
+      console.error('Error loading properties:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewAll = () => {
+    navigate('/projects');
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ py: '4rem', display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (properties.length === 0) {
+    return null;
+  }
 
   return (
     <Box sx={{ py: '4rem', px: { xs: 2, md: 8 }, maxWidth: 'lg', mx: 'auto' }}>
@@ -22,22 +56,26 @@ export default function PropertyGrid() {
             Perfect Size,<br />Perfect <Box component="span" sx={{ bgcolor: 'info.main', color: 'white', px: 1.5, py: 0.5, borderRadius: 1, transform: 'rotate(-5deg)', display: 'inline-block', ml: 1 }}>Comfort</Box>
           </Typography>
         </Box>
-        <Button variant="outlined" sx={{ color: 'info.main', borderColor: 'info.main' }} endIcon={<ArrowForwardIcon sx={{ color: 'info.main' }} />}>View All</Button>
+        <Button 
+          variant="outlined" 
+          sx={{ color: 'info.main', borderColor: 'info.main' }} 
+          endIcon={<ArrowForwardIcon sx={{ color: 'info.main' }} />}
+          onClick={handleViewAll}
+        >
+          View All
+        </Button>
       </Box>
 
       <Grid container spacing={2}>
         {properties.map(p => (
           <Grid item xs={12} sm={6} md={4} key={p.id}>
-            <PropertyCard property={p} onOpen={(id) => setOpenId(id)} /> {/* Pass onOpen prop */}
+            <PropertyCard 
+              property={p} 
+              onOpen={(id) => navigate(`/property-details/${id}`)} 
+            />
           </Grid>
         ))}
       </Grid>
-
-      <PropertyDetailDialog // Add PropertyDetailDialog
-        open={openId !== null}
-        id={openId}
-        onClose={() => setOpenId(null)}
-      />
     </Box>
   );
 }

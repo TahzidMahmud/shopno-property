@@ -1,27 +1,46 @@
-import React from 'react';
-import { Box, Typography } from '@mui/material';
-import Slider from 'react-slick'; // Import Slider component
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, CircularProgress } from '@mui/material';
+import Slider from 'react-slick';
+import { partnerService } from '../services/homePageService';
+import { Partner } from '../types/HomePage';
 
 export default function PartnersSection() {
-  const partnerLogos = [
-    { id: 1, name: 'BLHL', image: '/assets/partner-logo-1.png' },
-    { id: 2, name: 'Matribhumi Developer', image: '/assets/partner-logo-2.png' },
-    { id: 3, name: 'M/S Mine & Brother\'s', image: '/assets/partner-logo-3.png' },
-    { id: 4, name: 'Matribhumi Resort', image: '/assets/partner-logo-4.png' },
-    { id: 5, name: 'Matribhumi Holdings', image: '/assets/partner-logo-5.png' },
-    { id: 6, name: 'Matribhumi Heart Care', image: '/assets/partner-logo-6.png' },
-    { id: 7, name: 'Matribhumi Tours & Travels', image: '/assets/partner-logo-7.png' },
-  ];
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadPartners();
+  }, []);
+
+  const loadPartners = async () => {
+    try {
+      const data = await partnerService.getAll();
+      const activePartners = data
+        .filter(partner => partner.is_active)
+        .sort((a, b) => a.order - b.order);
+      setPartners(activePartners);
+    } catch (error) {
+      console.error('Error loading partners:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getImageUrl = (path: string) => {
+    if (!path) return '/assets/partner-logo-1.png';
+    if (path.startsWith('http')) return path;
+    return `/storage/${path}`;
+  };
 
   const sliderSettings = {
     dots: false,
     infinite: true,
     speed: 500,
-    slidesToShow: 6, // Show 6 logos at a time
+    slidesToShow: 6,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 2000, // Auto-slide every 2 seconds
-    arrows: false, // Hide navigation arrows
+    autoplaySpeed: 2000,
+    arrows: false,
     responsive: [
       {
         breakpoint: 1024,
@@ -47,6 +66,18 @@ export default function PartnersSection() {
     ],
   };
 
+  if (loading) {
+    return (
+      <Box sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (partners.length === 0) {
+    return null;
+  }
+
   return (
     <Box sx={{ py: 8, px: { xs: 2, md: 4, lg: 8 }, backgroundColor: 'white' }}>
       <Box sx={{ maxWidth: '1280px', mx: 'auto', textAlign: 'center' }}>
@@ -60,18 +91,18 @@ export default function PartnersSection() {
 
         {/* Partner Logos Carousel */}
         <Slider {...sliderSettings}>
-          {partnerLogos.map(partner => (
+          {partners.map(partner => (
             <Box key={partner.id} sx={{
               p: 2,
-              display: 'flex !important', // Important to override slick's display: block
+              display: 'flex !important',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              height: 100, // Fixed height for logo container
+              height: 100,
             }}>
               <Box
                 component="img"
-                src={partner.image}
+                src={getImageUrl(partner.logo)}
                 alt={partner.name}
                 sx={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
               />

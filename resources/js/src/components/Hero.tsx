@@ -1,55 +1,70 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button } from '@mui/material';
-import SearchForm from './SearchForm';
+import { Box, Typography, Button, CircularProgress } from '@mui/material';
+import { heroSlideService } from '../services/homePageService';
+import { HeroSlide } from '../types/HomePage';
 
-const heroSlides = [
-  {
-    id: 1,
-    backgroundImage: '/assets/house1.jpg', // Use an existing image path
-    title: 'Innovating Concepts of Living',
-    subtitle: 'Designing for the Future',
-    description: 'We help you find safe homes, secure investments, and the perfect property solutions with trust, transparency, and care.',
-    buttonText: 'About Us',
-  },
-  {
-    id: 2,
-    backgroundImage: 'https://via.placeholder.com/1500x700?text=Hero+Image+2',
-    title: 'Your Dream Home Awaits',
-    subtitle: 'Explore Our Exclusive Properties',
-        description: 'Discover a wide range of properties tailored to your needs, from luxurious villas to modern apartments.',
-    buttonText: 'View Properties',
-  },
-  {
-    id: 3,
-    backgroundImage: 'https://via.placeholder.com/1500x700?text=Hero+Image+3',
-    title: 'Invest in Your Future',
-    subtitle: 'Secure Your Tomorrow Today',
-    description: 'Find lucrative investment opportunities in real estate with expert guidance and comprehensive support.',
-    buttonText: 'Why Invest?',
-  },
-];
-
-export default function Hero() {
+const Hero: React.FC = () => {
+  const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prevSlide) => (prevSlide + 1) % heroSlides.length);
-    }, 5000); // Change slide every 5 seconds
-    return () => clearInterval(interval);
+    loadSlides();
   }, []);
+
+  const loadSlides = async () => {
+    try {
+      const data = await heroSlideService.getAll();
+      const activeSlides = data.filter(slide => slide.is_active).sort((a, b) => a.order - b.order);
+      setSlides(activeSlides);
+      if (activeSlides.length > 0) {
+        setCurrentSlide(0);
+      }
+    } catch (error) {
+      console.error('Error loading hero slides:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (slides.length > 0) {
+      const interval = setInterval(() => {
+        setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [slides.length]);
 
   const handleDotClick = (index: number) => {
     setCurrentSlide(index);
   };
 
-  const activeSlide = heroSlides[currentSlide];
+  const getImageUrl = (path: string) => {
+    if (!path) return '/assets/house1.jpg';
+    if (path.startsWith('http')) return path;
+    return `/storage/${path}`;
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ height: '700px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (slides.length === 0) {
+    return null;
+  }
+
+  const activeSlide = slides[currentSlide];
 
   return (
     <Box sx={{
       position: 'relative',
       height: '700px',
-      backgroundImage: `url(${activeSlide.backgroundImage})`,
+      backgroundImage: `url(${getImageUrl(activeSlide.background_image)})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       color: 'white',
@@ -60,7 +75,6 @@ export default function Hero() {
       textAlign: 'left',
       paddingLeft: '10%',
       transition: 'background-image 1s ease-in-out',
-
       overflow: 'hidden',
       '&::before': {
         content: '""',
@@ -86,36 +100,45 @@ export default function Hero() {
         <Typography variant="body1" sx={{ color: '#ffffff', maxWidth: '500px', mb: 4 }}>
           {activeSlide.description}
         </Typography>
-        <Button variant="contained" color="primary" sx={{ padding: '12px 30px', fontSize: '1rem' }}>
-          {activeSlide.buttonText} <Box component="span" sx={{ ml: 1 }}>&#8599;</Box>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          sx={{ padding: '12px 30px', fontSize: '1rem' }}
+          href={activeSlide.button_link || '#'}
+        >
+          {activeSlide.button_text} <Box component="span" sx={{ ml: 1 }}>&#8599;</Box>
         </Button>
       </Box>
 
       {/* Carousel Indicators */}
-      <Box sx={{
-        position: 'absolute',
-        bottom: '2rem',
-        right: '4rem',
-        zIndex: 1,
-        display: 'flex',
-        gap: '10px',
-      }}>
-        {heroSlides.map((_, index) => (
-          <Box
-            key={index}
-            sx={{
-              width: currentSlide === index ? 40 : 20,
-              height: 8,
-              borderRadius: '4px',
-              backgroundColor: 'white',
-              opacity: currentSlide === index ? 1 : 0.5,
-              cursor: 'pointer',
-              transition: 'width 0.3s ease-in-out, opacity 0.3s ease-in-out',
-            }}
-            onClick={() => handleDotClick(index)}
-          />
-        ))}
-      </Box>
+      {slides.length > 1 && (
+        <Box sx={{
+          position: 'absolute',
+          bottom: '2rem',
+          right: '4rem',
+          zIndex: 1,
+          display: 'flex',
+          gap: '10px',
+        }}>
+          {slides.map((_, index) => (
+            <Box
+              key={index}
+              sx={{
+                width: currentSlide === index ? 40 : 20,
+                height: 8,
+                borderRadius: '4px',
+                backgroundColor: 'white',
+                opacity: currentSlide === index ? 1 : 0.5,
+                cursor: 'pointer',
+                transition: 'width 0.3s ease-in-out, opacity 0.3s ease-in-out',
+              }}
+              onClick={() => handleDotClick(index)}
+            />
+          ))}
+        </Box>
+      )}
     </Box>
   );
-}
+};
+
+export default Hero;

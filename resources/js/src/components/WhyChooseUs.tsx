@@ -1,50 +1,76 @@
-import React from 'react';
-import { Box, Typography, Grid, Paper, Button } from '@mui/material';
-import HomeIcon from '@mui/icons-material/Home';
-import BusinessIcon from '@mui/icons-material/Business';
-import LocationCityIcon from '@mui/icons-material/LocationCity';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import CameraAltIcon from '@mui/icons-material/CameraAlt'; // For "Trusted by Thousands"
-import ChairIcon from '@mui/icons-material/Chair'; // For "Wide Range of Properties"
-import DescriptionIcon from '@mui/icons-material/Description'; // For "Buy Homes"
-import AccessAlarmIcon from '@mui/icons-material/AccessAlarm'; // For "100% Secure"
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'; // For video play button
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'; // For navigation
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'; // For navigation
-import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward'; // For "Learn More" button
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Grid, Paper, Button, CircularProgress } from '@mui/material';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import ChairIcon from '@mui/icons-material/Chair';
+import DescriptionIcon from '@mui/icons-material/Description';
+import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
+import { whyChooseUsFeatureService, homePageSettingService } from '../services/homePageService';
+import { WhyChooseUsFeature } from '../types/HomePage';
 
-const features = [
-  {
-    id: 1,
-    icon: <CameraAltIcon sx={{ fontSize: 30 }} />,
-    title: 'Trusted by Thousands',
-    description: 'Lorem Ipsum has been unknown printer took a galley of type and',
-    active: true,
-  },
-  {
-    id: 2,
-    icon: <ChairIcon sx={{ fontSize: 30 }} />,
-    title: 'Wide Range of Properties',
-    description: 'Lorem Ipsum has been unknown printer took a galley of type and',
-    active: false,
-  },
-  {
-    id: 3,
-    icon: <DescriptionIcon sx={{ fontSize: 30 }} />,
-    title: 'Buy Homes',
-    description: 'Lorem Ipsum has been unknown printer took a galley of type and',
-    active: false,
-  },
-  {
-    id: 4,
-    icon: <AccessAlarmIcon sx={{ fontSize: 30 }} />,
-    title: '100% Secure',
-    description: 'Lorem Ipsum has been unknown printer took a galley of type and',
-    active: false,
-  },
-];
+// Icon mapping
+const iconMap: Record<string, React.ReactElement> = {
+  CameraAlt: <CameraAltIcon sx={{ fontSize: 30 }} />,
+  Chair: <ChairIcon sx={{ fontSize: 30 }} />,
+  Description: <DescriptionIcon sx={{ fontSize: 30 }} />,
+  AccessAlarm: <AccessAlarmIcon sx={{ fontSize: 30 }} />,
+};
+
+const getIcon = (iconName: string) => {
+  return iconMap[iconName] || <CameraAltIcon sx={{ fontSize: 30 }} />;
+};
 
 export default function WhyChooseUs() {
+  const [features, setFeatures] = useState<WhyChooseUsFeature[]>([]);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeFeature, setActiveFeature] = useState<number | null>(null);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [featuresData, settings] = await Promise.all([
+        whyChooseUsFeatureService.getAll(),
+        homePageSettingService.getAll(),
+      ]);
+      
+      const sortedFeatures = featuresData.sort((a, b) => a.order - b.order);
+      setFeatures(sortedFeatures);
+      
+      // Set first active feature or first feature if none are active
+      const firstActive = sortedFeatures.find(f => f.is_active);
+      if (firstActive) {
+        setActiveFeature(firstActive.id!);
+      } else if (sortedFeatures.length > 0) {
+        setActiveFeature(sortedFeatures[0].id!);
+      }
+      
+      setVideoUrl(settings['why_choose_us_video'] || null);
+    } catch (error) {
+      console.error('Error loading Why Choose Us data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getImageUrl = (path: string) => {
+    if (!path) return 'https://via.placeholder.com/600x400?text=Why+Choose+Us+Image';
+    if (path.startsWith('http')) return path;
+    return `/storage/${path}`;
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ py: '4rem', display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ py: '4rem', px: { xs: 2, md: 8 }, maxWidth: 'lg', mx: 'auto' }}>
       <Grid container spacing={4}>
@@ -68,60 +94,66 @@ export default function WhyChooseUs() {
             </Typography>
           </Box>
 
-
           <Box>
-            {features.map((feature) => (
-              <Box
-                key={feature.id}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  p: 2,
-                  mb: 2,
-                  borderRadius: '8px',
-                  backgroundColor: feature.active ? 'primary.main' : 'white',
-                  color: feature.active ? 'white' : 'text.primary',
-                  boxShadow: feature.active ? 3 : 1,
-                  transition: 'background-color 0.3s ease-in-out, color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                  '&:hover': {
-                    boxShadow: 6,
-                  },
-                }}
-              >
-                <Box sx={{
-                  mr: 2,
-                  p: 1.5,
-                  borderRadius: '8px', // Rounded square background for icons
-                  backgroundColor: feature.active ? 'white' : 'grey.100', // White for active, light grey for inactive
-                  color: feature.active ? 'primary.main' : 'text.secondary', // Icon color
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  {React.cloneElement(feature.icon, { sx: { fontSize: 30, color: feature.active ? 'primary.main' : 'text.secondary' } })}
+            {features.map((feature) => {
+              const isActive = activeFeature === feature.id;
+              return (
+                <Box
+                  key={feature.id}
+                  onClick={() => setActiveFeature(feature.id!)}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    p: 2,
+                    mb: 2,
+                    borderRadius: '8px',
+                    backgroundColor: isActive ? 'primary.main' : 'white',
+                    color: isActive ? 'white' : 'text.primary',
+                    boxShadow: isActive ? 3 : 1,
+                    transition: 'background-color 0.3s ease-in-out, color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      boxShadow: 6,
+                    },
+                  }}
+                >
+                  <Box sx={{
+                    mr: 2,
+                    p: 1.5,
+                    borderRadius: '8px',
+                    backgroundColor: isActive ? 'white' : 'grey.100',
+                    color: isActive ? 'primary.main' : 'text.secondary',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    {React.cloneElement(getIcon(feature.icon_name), { 
+                      sx: { fontSize: 30, color: isActive ? 'primary.main' : 'text.secondary' } 
+                    })}
+                  </Box>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: isActive ? 'white' : 'text.primary' }}>
+                      {feature.title}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: isActive ? 'white' : 'text.secondary' }}>
+                      {feature.description}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', color: feature.active ? 'white' : 'text.primary' }}>
-                    {feature.title}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: feature.active ? 'white' : 'text.secondary' }}>
-                    {feature.description}
-                  </Typography>
-                </Box>
-              </Box>
-            ))}
+              );
+            })}
           </Box>
         </Grid>
         <Grid item xs={12} md={6}>
-        <Box sx={{ marginTop: '5rem' , marginBottom: '3rem'}}>
+          <Box sx={{ marginTop: '5rem', marginBottom: '3rem' }}>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-            Explore the premier UK property hub to discover a range of houses and flats for sale or rent.
-          </Typography>
-        </Box>
+              Explore the premier UK property hub to discover a range of houses and flats for sale or rent.
+            </Typography>
+          </Box>
           <Box sx={{
             position: 'relative',
             height: 400,
-            backgroundImage: 'url(https://via.placeholder.com/600x400?text=Why+Choose+Us+Image)', // Placeholder image
+            backgroundImage: videoUrl ? `url(${getImageUrl(videoUrl)})` : 'url(https://via.placeholder.com/600x400?text=Why+Choose+Us+Image)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             borderRadius: '8px',
@@ -142,14 +174,13 @@ export default function WhyChooseUs() {
           }}>
             <PlayArrowIcon sx={{ fontSize: 80, color: 'white', zIndex: 1 }} />
           </Box>
-
         </Grid>
         <Grid item xs={12} md={12}>
-             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, gap: 2 }}>
-                <Button variant="outlined"  size="large" sx={{ borderColor: 'primary.main', color: 'primary.main' }}>
-                Learn More <ArrowOutwardIcon sx={{ ml: 1, fontSize: '1rem' }} />
-                </Button>
-            </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, gap: 2 }}>
+            <Button variant="outlined" size="large" sx={{ borderColor: 'primary.main', color: 'primary.main' }}>
+              Learn More <ArrowOutwardIcon sx={{ ml: 1, fontSize: '1rem' }} />
+            </Button>
+          </Box>
         </Grid>
       </Grid>
     </Box>

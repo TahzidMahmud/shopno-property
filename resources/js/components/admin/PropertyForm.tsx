@@ -16,7 +16,11 @@ import {
   CircularProgress,
   Checkbox,
   ListItemText,
+  CardMedia,
+  IconButton,
+  Card,
 } from '@mui/material';
+import { Close as CloseIcon } from '@mui/icons-material';
 import { Property, PropertyFormData } from '../../types/Property';
 import { Facility } from '../../types/Facility';
 import { facilityService } from '../../services/facilityService';
@@ -63,6 +67,25 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
   const [transportInput, setTransportInput] = useState('');
   const [availableFacilities, setAvailableFacilities] = useState<Facility[]>([]);
   const [loadingFacilities, setLoadingFacilities] = useState(false);
+  
+  // Preview URLs for new files
+  const [mainImagePreview, setMainImagePreview] = useState<string | null>(null);
+  const [demoVideoPreview, setDemoVideoPreview] = useState<string | null>(null);
+  const [layoutImagesPreviews, setLayoutImagesPreviews] = useState<string[]>([]);
+  const [galleryImagesPreviews, setGalleryImagesPreviews] = useState<string[]>([]);
+  
+  // Existing images from property (when editing)
+  const [existingMainImage, setExistingMainImage] = useState<string | null>(null);
+  const [existingDemoVideo, setExistingDemoVideo] = useState<string | null>(null);
+  const [existingLayoutImages, setExistingLayoutImages] = useState<string[]>([]);
+  const [existingGalleryImages, setExistingGalleryImages] = useState<string[]>([]);
+  
+  // Helper function to get image URL
+  const getImageUrl = (path: string | undefined) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `/storage/${path}`;
+  };
 
   useEffect(() => {
     // Load available facilities
@@ -105,6 +128,22 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
         company_name: property.company_name || '',
         facilities: property.facilities?.map(f => f.id!).filter((id): id is number => id !== undefined) || [],
       });
+      
+      // Set existing images for preview
+      setExistingMainImage(getImageUrl(property.main_image) || null);
+      setExistingDemoVideo(getImageUrl(property.demo_video) || null);
+      setExistingLayoutImages(
+        property.layout_images?.map(img => getImageUrl(img)).filter((url): url is string => url !== null) || []
+      );
+      setExistingGalleryImages(
+        property.gallery_images?.map(img => getImageUrl(img)).filter((url): url is string => url !== null) || []
+      );
+    } else {
+      // Reset existing images when creating new property
+      setExistingMainImage(null);
+      setExistingDemoVideo(null);
+      setExistingLayoutImages([]);
+      setExistingGalleryImages([]);
     }
   }, [property]);
 
@@ -117,14 +156,91 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
 
   const handleFileChange = (field: 'main_image' | 'demo_video', file: File | null) => {
     setFormData(prev => ({ ...prev, [field]: file }));
+    
+    // Create preview URL for new file
+    if (file) {
+      // Revoke old preview URL if exists
+      if (field === 'main_image' && mainImagePreview) {
+        URL.revokeObjectURL(mainImagePreview);
+      } else if (field === 'demo_video' && demoVideoPreview) {
+        URL.revokeObjectURL(demoVideoPreview);
+      }
+      
+      const previewUrl = URL.createObjectURL(file);
+      if (field === 'main_image') {
+        setMainImagePreview(previewUrl);
+        setExistingMainImage(null); // Clear existing when new file is selected
+      } else if (field === 'demo_video') {
+        setDemoVideoPreview(previewUrl);
+        setExistingDemoVideo(null); // Clear existing when new file is selected
+      }
+    } else {
+      if (field === 'main_image') {
+        if (mainImagePreview) URL.revokeObjectURL(mainImagePreview);
+        setMainImagePreview(null);
+      } else if (field === 'demo_video') {
+        if (demoVideoPreview) URL.revokeObjectURL(demoVideoPreview);
+        setDemoVideoPreview(null);
+      }
+    }
   };
 
   const handleMultipleFileChange = (field: 'layout_images' | 'gallery_images', files: FileList | null) => {
     if (files) {
       const fileArray = Array.from(files);
       setFormData(prev => ({ ...prev, [field]: fileArray }));
+      
+      // Create preview URLs for new files
+      const previewUrls = fileArray.map(file => URL.createObjectURL(file));
+      if (field === 'layout_images') {
+        setLayoutImagesPreviews(prev => [...prev, ...previewUrls]);
+      } else if (field === 'gallery_images') {
+        setGalleryImagesPreviews(prev => [...prev, ...previewUrls]);
+      }
     }
   };
+  
+  const removeLayoutImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      layout_images: prev.layout_images.filter((_, i) => i !== index)
+    }));
+    setLayoutImagesPreviews(prev => {
+      const newPreviews = [...prev];
+      URL.revokeObjectURL(newPreviews[index]);
+      return newPreviews.filter((_, i) => i !== index);
+    });
+  };
+  
+  const removeGalleryImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      gallery_images: prev.gallery_images.filter((_, i) => i !== index)
+    }));
+    setGalleryImagesPreviews(prev => {
+      const newPreviews = [...prev];
+      URL.revokeObjectURL(newPreviews[index]);
+      return newPreviews.filter((_, i) => i !== index);
+    });
+  };
+  
+  const removeExistingLayoutImage = (index: number) => {
+    setExistingLayoutImages(prev => prev.filter((_, i) => i !== index));
+  };
+  
+  const removeExistingGalleryImage = (index: number) => {
+    setExistingGalleryImages(prev => prev.filter((_, i) => i !== index));
+  };
+  
+  // Cleanup preview URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (mainImagePreview) URL.revokeObjectURL(mainImagePreview);
+      if (demoVideoPreview) URL.revokeObjectURL(demoVideoPreview);
+      layoutImagesPreviews.forEach(url => URL.revokeObjectURL(url));
+      galleryImagesPreviews.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [mainImagePreview, demoVideoPreview, layoutImagesPreviews, galleryImagesPreviews]);
 
   const addTransport = () => {
     if (transportInput.trim() && !formData.key_transports.includes(transportInput.trim())) {
@@ -447,10 +563,38 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                 onChange={(e) => handleFileChange('main_image', e.target.files?.[0] || null)}
               />
             </Button>
-            {formData.main_image && (
-              <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                Selected: {formData.main_image.name}
-              </Typography>
+            {(mainImagePreview || existingMainImage) && (
+              <Box sx={{ mt: 2, position: 'relative' }}>
+                <Card sx={{ position: 'relative' }}>
+                  <CardMedia
+                    component="img"
+                    image={mainImagePreview || existingMainImage || ''}
+                    alt="Main Image Preview"
+                    sx={{ height: 200, objectFit: 'cover' }}
+                  />
+                  <IconButton
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      bgcolor: 'rgba(0, 0, 0, 0.5)',
+                      color: 'white',
+                      '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+                    }}
+                    onClick={() => {
+                      handleFileChange('main_image', null);
+                      setExistingMainImage(null);
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Card>
+                {formData.main_image && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                    Selected: {formData.main_image.name}
+                  </Typography>
+                )}
+              </Box>
             )}
           </Grid>
 
@@ -469,10 +613,45 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                 onChange={(e) => handleFileChange('demo_video', e.target.files?.[0] || null)}
               />
             </Button>
-            {formData.demo_video && (
-              <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                Selected: {formData.demo_video.name}
-              </Typography>
+            {(demoVideoPreview || existingDemoVideo) && (
+              <Box sx={{ mt: 2, position: 'relative' }}>
+                <Card sx={{ position: 'relative' }}>
+                  {demoVideoPreview ? (
+                    <video
+                      src={demoVideoPreview}
+                      controls
+                      style={{ width: '100%', maxHeight: 200, objectFit: 'cover' }}
+                    />
+                  ) : existingDemoVideo ? (
+                    <video
+                      src={existingDemoVideo}
+                      controls
+                      style={{ width: '100%', maxHeight: 200, objectFit: 'cover' }}
+                    />
+                  ) : null}
+                  <IconButton
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      bgcolor: 'rgba(0, 0, 0, 0.5)',
+                      color: 'white',
+                      '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+                    }}
+                    onClick={() => {
+                      handleFileChange('demo_video', null);
+                      setExistingDemoVideo(null);
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Card>
+                {formData.demo_video && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                    Selected: {formData.demo_video.name}
+                  </Typography>
+                )}
+              </Box>
             )}
           </Grid>
 
@@ -492,10 +671,70 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                 onChange={(e) => handleMultipleFileChange('layout_images', e.target.files)}
               />
             </Button>
-            {formData.layout_images.length > 0 && (
-              <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                Selected: {formData.layout_images.length} files
-              </Typography>
+            {(formData.layout_images.length > 0 || existingLayoutImages.length > 0) && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="caption" display="block" sx={{ mb: 1 }}>
+                  {formData.layout_images.length + existingLayoutImages.length} image(s) selected
+                </Typography>
+                <Grid container spacing={2}>
+                  {/* Existing layout images */}
+                  {existingLayoutImages.map((url, index) => (
+                    <Grid item xs={6} sm={4} md={3} key={`existing-layout-${index}`}>
+                      <Card sx={{ position: 'relative' }}>
+                        <CardMedia
+                          component="img"
+                          image={url}
+                          alt={`Layout ${index + 1}`}
+                          sx={{ height: 120, objectFit: 'cover' }}
+                        />
+                        <IconButton
+                          sx={{
+                            position: 'absolute',
+                            top: 4,
+                            right: 4,
+                            bgcolor: 'rgba(0, 0, 0, 0.5)',
+                            color: 'white',
+                            width: 24,
+                            height: 24,
+                            '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+                          }}
+                          onClick={() => removeExistingLayoutImage(index)}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </Card>
+                    </Grid>
+                  ))}
+                  {/* New layout images */}
+                  {layoutImagesPreviews.map((url, index) => (
+                    <Grid item xs={6} sm={4} md={3} key={`new-layout-${index}`}>
+                      <Card sx={{ position: 'relative' }}>
+                        <CardMedia
+                          component="img"
+                          image={url}
+                          alt={`New Layout ${index + 1}`}
+                          sx={{ height: 120, objectFit: 'cover' }}
+                        />
+                        <IconButton
+                          sx={{
+                            position: 'absolute',
+                            top: 4,
+                            right: 4,
+                            bgcolor: 'rgba(0, 0, 0, 0.5)',
+                            color: 'white',
+                            width: 24,
+                            height: 24,
+                            '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+                          }}
+                          onClick={() => removeLayoutImage(index)}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
             )}
           </Grid>
 
@@ -515,10 +754,70 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                 onChange={(e) => handleMultipleFileChange('gallery_images', e.target.files)}
               />
             </Button>
-            {formData.gallery_images.length > 0 && (
-              <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                Selected: {formData.gallery_images.length} files
-              </Typography>
+            {(formData.gallery_images.length > 0 || existingGalleryImages.length > 0) && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="caption" display="block" sx={{ mb: 1 }}>
+                  {formData.gallery_images.length + existingGalleryImages.length} image(s) selected
+                </Typography>
+                <Grid container spacing={2}>
+                  {/* Existing gallery images */}
+                  {existingGalleryImages.map((url, index) => (
+                    <Grid item xs={6} sm={4} md={3} key={`existing-gallery-${index}`}>
+                      <Card sx={{ position: 'relative' }}>
+                        <CardMedia
+                          component="img"
+                          image={url}
+                          alt={`Gallery ${index + 1}`}
+                          sx={{ height: 120, objectFit: 'cover' }}
+                        />
+                        <IconButton
+                          sx={{
+                            position: 'absolute',
+                            top: 4,
+                            right: 4,
+                            bgcolor: 'rgba(0, 0, 0, 0.5)',
+                            color: 'white',
+                            width: 24,
+                            height: 24,
+                            '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+                          }}
+                          onClick={() => removeExistingGalleryImage(index)}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </Card>
+                    </Grid>
+                  ))}
+                  {/* New gallery images */}
+                  {galleryImagesPreviews.map((url, index) => (
+                    <Grid item xs={6} sm={4} md={3} key={`new-gallery-${index}`}>
+                      <Card sx={{ position: 'relative' }}>
+                        <CardMedia
+                          component="img"
+                          image={url}
+                          alt={`New Gallery ${index + 1}`}
+                          sx={{ height: 120, objectFit: 'cover' }}
+                        />
+                        <IconButton
+                          sx={{
+                            position: 'absolute',
+                            top: 4,
+                            right: 4,
+                            bgcolor: 'rgba(0, 0, 0, 0.5)',
+                            color: 'white',
+                            width: 24,
+                            height: 24,
+                            '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+                          }}
+                          onClick={() => removeGalleryImage(index)}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
             )}
           </Grid>
 

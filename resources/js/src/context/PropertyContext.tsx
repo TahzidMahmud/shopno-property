@@ -1,21 +1,39 @@
-import React, { createContext, useState, ReactNode } from 'react'
+import React, { createContext, useState, ReactNode, useEffect } from 'react'
 import { Property } from '../types'
-import mockProperties from '../data/mockProperties'
+import { propertyService } from '../services/propertyService'
 
 type ContextValue = {
   properties: Property[]
   getPropertyById: (id: number) => Property | undefined
   addProperty: (p: Property) => void
+  loading: boolean
 }
 
 export const PropertyContext = createContext<ContextValue>({
   properties: [],
   getPropertyById: () => undefined,
-  addProperty: () => {}
+  addProperty: () => {},
+  loading: false
 })
 
 export function PropertyProvider({ children }: { children: ReactNode }) {
-  const [properties, setProperties] = useState<Property[]>(mockProperties)
+  const [properties, setProperties] = useState<Property[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadProperties()
+  }, [])
+
+  const loadProperties = async () => {
+    try {
+      const data = await propertyService.getAll()
+      setProperties(data)
+    } catch (error) {
+      console.error('Error loading properties:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   function getPropertyById(id: number) {
     return properties.find(p => p.id === id)
@@ -26,7 +44,7 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <PropertyContext.Provider value={{ properties, getPropertyById, addProperty }}>
+    <PropertyContext.Provider value={{ properties, getPropertyById, addProperty, loading }}>
       {children}
     </PropertyContext.Provider>
   )

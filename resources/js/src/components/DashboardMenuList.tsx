@@ -17,6 +17,7 @@ import {
   People as PeopleIcon,
   Settings as SettingsIcon,
   Pool as PoolIcon,
+  Web as WebIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -78,6 +79,7 @@ const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
   { text: 'Properties', icon: <HomeIcon />, path: '/admin/dashboard/properties' },
   { text: 'Facilities', icon: <PoolIcon />, path: '/admin/dashboard/facilities' },
+  { text: 'Home Page Management', icon: <WebIcon />, path: '/admin/dashboard/homepage' },
   { text: 'Users', icon: <PeopleIcon />, path: '/admin/dashboard/users' },
   { text: 'Companies', icon: <BusinessIcon />, path: '/admin/dashboard/companies' },
   { text: 'Settings', icon: <SettingsIcon />, path: '/admin/dashboard/settings' },

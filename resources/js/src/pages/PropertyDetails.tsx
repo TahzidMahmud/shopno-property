@@ -1,83 +1,140 @@
-import React from 'react';
-import { Box, Typography, Container, Grid, Card, CardContent, CardMedia, IconButton, Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { ArrowBack, ArrowForward, ArrowOutward, PlayArrow } from '@mui/icons-material'; // Import new icons
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Box, Typography, Container, Grid, Card, CardContent, CardMedia, IconButton, Button, TextField, FormControl, InputLabel, Select, MenuItem, CircularProgress, Alert } from '@mui/material';
+import { ArrowBack, ArrowForward, ArrowOutward, PlayArrow } from '@mui/icons-material';
 import Footer from '../components/Footer';
+import { propertyService } from '../services/propertyService';
+import { Property } from '../types/Property';
 
 const PropertyDetails: React.FC = () => {
-  const property = {
-    title: 'The Cayantal',
-    mainImage: '/assets/house1.jpg', // Placeholder image
-    description: 'Get into the most profitable investment industry and turn your sale money into profits.',
-    details: [
-      { label: 'Status', value: 'Under Construction' },
-      { label: 'Area', value: '1000 - 1500 Sq Ft' },
-      { label: 'Location', value: 'New York, USA' },
-      { label: 'Type', value: 'Apartment' },
-      { label: 'Total Floor', value: '06' },
-      { label: 'Total Flat', value: '10' },
-      { label: 'Flat Size', value: '100 - 150 Sq Ft' },
-      { label: 'Total Parking', value: '10' },
-      { label: 'Price Range', value: '৳ 80 LACH - ৳ 90 LACH' },
-    ],
-    galleryImages: [
-      '/assets/house2.jpg', // Placeholder image
-      '/assets/house3.jpg', // Placeholder image
-    ],
-    layoutImages: [
-      '/assets/layout1.html', // Placeholder image for layout
-      '/assets/layout2.html', // Another placeholder
-    ],
-    galleryImagesGrid: [ // New array for gallery grid
-      '/assets/house1.jpg',
-      '/assets/house2.jpg',
-      '/assets/house3.jpg',
-      '/assets/gallery_img4.html',
-      '/assets/gallery_img5.html',
-      '/assets/gallery_img6.html',
-    ],
-    videoThumbnail: '/assets/video_thumbnail.html', // Placeholder for video thumbnail
-    facilities: [
-      { icon: 'A', name: 'Surveillance System' }, // Placeholder icons
-      { icon: 'B', name: '24x7 Security' },
-      { icon: 'C', name: 'Firefighting System' },
-      { icon: 'D', name: 'Swimming Pool' },
-      { icon: 'E', name: 'Children\'s Play Area' },
-      { icon: 'F', name: 'Landscape Garden' },
-      { icon: 'G', name: 'Community Hall' },
-      { icon: 'H', name: 'Fitness Center' },
-    ],
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [propertyData, setPropertyData] = useState<Property | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProperty = async () => {
+      if (!id) {
+        setError('Property ID is required');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const data = await propertyService.getById(parseInt(id));
+        setPropertyData(data);
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Failed to load property details');
+        console.error('Error fetching property:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperty();
+  }, [id]);
+
+  // Transform API data to match component structure
+  const getImageUrl = (path: string | undefined) => {
+    if (!path) return '/assets/house1.jpg'; // Fallback placeholder
+    if (path.startsWith('http')) return path;
+    return `/storage/${path}`;
   };
 
-  const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-  const [currentLayoutImageIndex, setCurrentLayoutImageIndex] = React.useState(0); // New state for layout carousel
+  const property = propertyData ? {
+    title: propertyData.title || 'Property',
+    mainImage: getImageUrl(propertyData.main_image),
+    description: propertyData.full_address || 'Get into the most profitable investment industry and turn your sale money into profits.',
+    details: [
+      { label: 'Status', value: propertyData.status || 'N/A' },
+      { label: 'Area', value: propertyData.area || 'N/A' },
+      { label: 'Location', value: propertyData.location || 'N/A' },
+      { label: 'Type', value: propertyData.type || 'N/A' },
+      { label: 'Total Floor', value: propertyData.total_floor?.toString() || 'N/A' },
+      { label: 'Total Flat', value: propertyData.total_flat?.toString() || 'N/A' },
+      { label: 'Flat Size', value: propertyData.flat_size ? `${propertyData.flat_size} Sq Ft` : 'N/A' },
+      { label: 'Total Parking', value: propertyData.total_parking?.toString() || 'N/A' },
+      { label: 'Price Range', value: propertyData.price_range || 'N/A' },
+    ],
+    galleryImages: propertyData.gallery_images && propertyData.gallery_images.length > 0
+      ? propertyData.gallery_images.map(img => getImageUrl(img))
+      : [getImageUrl(propertyData.main_image)],
+    layoutImages: propertyData.layout_images && propertyData.layout_images.length > 0
+      ? propertyData.layout_images.map(img => getImageUrl(img))
+      : [getImageUrl(propertyData.main_image)],
+    galleryImagesGrid: [
+      ...(propertyData.gallery_images?.map(img => getImageUrl(img)) || []),
+      ...(propertyData.layout_images?.map(img => getImageUrl(img)) || []),
+      ...(propertyData.main_image ? [getImageUrl(propertyData.main_image)] : [])
+    ].slice(0, 6), // Limit to 6 images
+    videoThumbnail: propertyData.demo_video ? getImageUrl(propertyData.demo_video) : '/assets/video_thumbnail.html',
+    facilities: propertyData.facilities && propertyData.facilities.length > 0
+      ? propertyData.facilities.map((facility, index) => ({
+          icon: facility.title?.charAt(0).toUpperCase() || String.fromCharCode(65 + index),
+          name: facility.title || 'Facility',
+          image: facility.image ? getImageUrl(facility.image) : undefined,
+        }))
+      : [
+          { icon: 'A', name: 'Surveillance System', image: undefined },
+          { icon: 'B', name: '24x7 Security', image: undefined },
+          { icon: 'C', name: 'Firefighting System', image: undefined },
+          { icon: 'D', name: 'Swimming Pool', image: undefined },
+        ],
+  } : {
+    title: 'Loading...',
+    mainImage: '/assets/house1.jpg',
+    description: '',
+    details: [],
+    galleryImages: [],
+    layoutImages: [],
+    galleryImagesGrid: [],
+    videoThumbnail: '/assets/video_thumbnail.html',
+    facilities: [],
+  };
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentLayoutImageIndex, setCurrentLayoutImageIndex] = useState(0); // New state for layout carousel
 
   // State for Installment Calculation
-  const [propertyName, setPropertyName] = React.useState('Shopno Property House');
-  const [propertyPrice, setPropertyPrice] = React.useState(5000000);
-  const [loanPeriod, setLoanPeriod] = React.useState(5); // Years
-  const [downPaymentPercentage, setDownPaymentPercentage] = React.useState(20); // Percentage
-  const [monthlyInstallment, setMonthlyInstallment] = React.useState(0);
-  const [dueAmount, setDueAmount] = React.useState(0);
+  const [propertyName, setPropertyName] = useState(propertyData?.title || 'Shopno Property House');
+  const [propertyPrice, setPropertyPrice] = useState(5000000);
+  const [loanPeriod, setLoanPeriod] = useState(5); // Years
+  const [downPaymentPercentage, setDownPaymentPercentage] = useState(20); // Percentage
+  const [monthlyInstallment, setMonthlyInstallment] = useState(0);
+  const [dueAmount, setDueAmount] = useState(0);
+
+  // Update property name when property data loads
+  useEffect(() => {
+    if (propertyData?.title) {
+      setPropertyName(propertyData.title);
+    }
+  }, [propertyData]);
 
   const handlePreviousImage = () => {
+    if (property.galleryImages.length === 0) return;
     setCurrentImageIndex((prevIndex) =>
       prevIndex === 0 ? property.galleryImages.length - 1 : prevIndex - 1
     );
   };
 
   const handleNextImage = () => {
+    if (property.galleryImages.length === 0) return;
     setCurrentImageIndex((prevIndex) =>
       prevIndex === property.galleryImages.length - 1 ? 0 : prevIndex + 1
     );
   };
 
   const handlePreviousLayoutImage = () => {
+    if (property.layoutImages.length === 0) return;
     setCurrentLayoutImageIndex((prevIndex) =>
       prevIndex === 0 ? property.layoutImages.length - 1 : prevIndex - 1
     );
   };
 
   const handleNextLayoutImage = () => {
+    if (property.layoutImages.length === 0) return;
     setCurrentLayoutImageIndex((prevIndex) =>
       prevIndex === property.layoutImages.length - 1 ? 0 : prevIndex + 1
     );
@@ -99,15 +156,36 @@ const PropertyDetails: React.FC = () => {
     setDueAmount(Math.round(loanAmount));
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     handleCalculate();
   }, [propertyPrice, loanPeriod, downPaymentPercentage]);
 
   const isFirstSlide = currentImageIndex === 0;
-  const isLastSlide = currentImageIndex === property.galleryImages.length - 1;
+  const isLastSlide = property.galleryImages.length > 0 && currentImageIndex === property.galleryImages.length - 1;
 
   const isFirstLayoutSlide = currentLayoutImageIndex === 0;
-  const isLastLayoutSlide = currentLayoutImageIndex === property.layoutImages.length - 1;
+  const isLastLayoutSlide = property.layoutImages.length > 0 && currentLayoutImageIndex === property.layoutImages.length - 1;
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error || !propertyData) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error || 'Property not found'}
+        </Alert>
+        <Button variant="contained" onClick={() => navigate('/')}>
+          Back to Home
+        </Button>
+      </Container>
+    );
+  }
 
   return (
     <Box>
@@ -250,17 +328,27 @@ const PropertyDetails: React.FC = () => {
                         width: 60,
                         height: 60,
                         borderRadius: '8px',
-                        bgcolor: 'primary.light', // Light blue background for icon
+                        bgcolor: 'primary.light',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         mx: 'auto',
                         mb: 2,
-                        color: 'primary.main', // Icon color
+                        color: 'primary.main',
                         fontSize: '2rem',
                         fontWeight: 'bold',
+                        overflow: 'hidden',
                       }}>
-                        {facility.icon}
+                        {facility.image ? (
+                          <CardMedia
+                            component="img"
+                            image={facility.image}
+                            alt={facility.name}
+                            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          facility.icon
+                        )}
                       </Box>
                       <Typography variant="subtitle1" component="div" sx={{ fontWeight: 'bold', color: 'black' }}>{facility.name}</Typography>
                     </CardContent>
@@ -272,13 +360,13 @@ const PropertyDetails: React.FC = () => {
         </Box>
 
         {/* Our Layout Section */}
-        <Box sx={{ mt: 6, mb: 6, textAlign: 'center' }}> {/* Centered text */}
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}> {/* Centered dot and text */}
+        <Box sx={{ mt: 6, mb: 6, textAlign: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
             <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', mr: 1 }} />
             <Typography variant="subtitle2" color="text.secondary">Gallery</Typography>
           </Box>
           <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', mb: 4 }}>
-            Our Layout
+            Our <Box component="span" sx={{ bgcolor: 'primary.main', color: 'white', px: 1, py: 0.5, borderRadius: 1 }}>Layout</Box>
           </Typography>
           <Box sx={{ position: 'relative', width: '100%', height: '500px', borderRadius: 2, overflow: 'hidden' }}>
             <CardMedia
@@ -290,15 +378,15 @@ const PropertyDetails: React.FC = () => {
             <IconButton
               sx={{
                 position: 'absolute',
-                left: -15, // Position outside the image
+                left: -15,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                bgcolor: 'primary.main',
-                color: 'white',
-                border: 'none',
-                boxShadow: 'none',
-                borderRadius: '8px', // Rounded rectangle
-                '&:hover': { bgcolor: 'primary.dark' },
+                bgcolor: 'white',
+                color: 'black',
+                border: '1px solid #e0e0e0',
+                boxShadow: 1,
+                borderRadius: '8px',
+                '&:hover': { bgcolor: '#f0f0f0' },
               }}
               onClick={handlePreviousLayoutImage}
             >
@@ -307,14 +395,14 @@ const PropertyDetails: React.FC = () => {
             <IconButton
               sx={{
                 position: 'absolute',
-                right: -15, // Position outside the image
+                right: -15,
                 top: '50%',
                 transform: 'translateY(-50%)',
                 bgcolor: 'primary.main',
                 color: 'white',
                 border: 'none',
                 boxShadow: 'none',
-                borderRadius: '8px', // Rounded rectangle
+                borderRadius: '8px',
                 '&:hover': { bgcolor: 'primary.dark' },
               }}
               onClick={handleNextLayoutImage}
@@ -426,8 +514,7 @@ const PropertyDetails: React.FC = () => {
                     label="Property Name"
                     sx={{ bgcolor: '#f0f0f0', borderRadius: 1 }}
                   >
-                    <MenuItem value="Shopno Property House">Shopno Property House</MenuItem>
-                    <MenuItem value="Another Property">Another Property</MenuItem>
+                    <MenuItem value={propertyName}>{propertyName}</MenuItem>
                   </Select>
                 </FormControl>
                 <TextField
@@ -453,21 +540,20 @@ const PropertyDetails: React.FC = () => {
                     <MenuItem value={15}>15 Years</MenuItem>
                   </Select>
                 </FormControl>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Down Payment</InputLabel>
-                  <Select
-                    value={downPaymentPercentage}
-                    onChange={(e) => setDownPaymentPercentage(Number(e.target.value))}
-                    label="Down Payment"
-                    sx={{ bgcolor: '#f0f0f0', borderRadius: 1 }}
-                  >
-                    <MenuItem value={10}>10%</MenuItem>
-                    <MenuItem value={20}>20%</MenuItem>
-                    <MenuItem value={30}>30%</MenuItem>
-                  </Select>
-                </FormControl>
+                <TextField
+                  label="Down Payment"
+                  type="number"
+                  value={downPaymentPercentage}
+                  onChange={(e) => setDownPaymentPercentage(Number(e.target.value))}
+                  fullWidth
+                  sx={{ bgcolor: '#f0f0f0', borderRadius: 1 }}
+                  InputProps={{
+                    style: { borderRadius: '8px' },
+                    endAdornment: <Typography variant="body2" sx={{ mr: 1 }}>%</Typography>
+                  }}
+                />
                 <Button variant="contained" color="primary" onClick={handleCalculate} sx={{ py: 1.5, borderRadius: 1 }}>
-                  Calculate
+                  Calculate Loan
                 </Button>
               </Box>
             </Grid>

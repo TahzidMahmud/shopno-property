@@ -41,6 +41,12 @@ const DashboardHome: React.FC = () => {
       color: '#2e7d32',
     },
     {
+      title: 'Home Page Management',
+      description: 'Manage hero slides, features, blog posts, and more',
+      action: () => navigate('/admin/dashboard/homepage'),
+      color: '#9c27b0',
+    },
+    {
       title: 'User Management',
       description: 'Manage user accounts and permissions',
       action: () => navigate('/admin/dashboard/users'),

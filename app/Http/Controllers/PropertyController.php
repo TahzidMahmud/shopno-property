@@ -175,12 +175,12 @@ class PropertyController extends Controller
                 'uploads/properties/layouts'
             );
 
-            // Merge new paths with existing ones (assuming paths are stored as JSON/array in the model)
-            $existingLayouts = json_decode($property->layout_images ?? '[]', true);
+            // Merge new paths with existing ones
+            // Since the model casts layout_images as 'array', it's already an array, not JSON
+            $existingLayouts = is_array($property->layout_images) 
+                ? $property->layout_images 
+                : (is_string($property->layout_images) ? json_decode($property->layout_images, true) ?? [] : []);
             $validated['layout_images'] = array_merge($existingLayouts, $newLayoutPaths);
-
-            // Ensure this is encoded if your model doesn't use the 'array' cast
-            // $validated['layout_images'] = json_encode($validated['layout_images']);
         }
 
         if ($request->hasFile('gallery_images')) {
@@ -189,11 +189,11 @@ class PropertyController extends Controller
                 'uploads/properties/gallery'
             );
 
-            $existingGallery = json_decode($property->gallery_images ?? '[]', true);
+            // Since the model casts gallery_images as 'array', it's already an array, not JSON
+            $existingGallery = is_array($property->gallery_images) 
+                ? $property->gallery_images 
+                : (is_string($property->gallery_images) ? json_decode($property->gallery_images, true) ?? [] : []);
             $validated['gallery_images'] = array_merge($existingGallery, $newGalleryPaths);
-
-            // Ensure this is encoded if your model doesn't use the 'array' cast
-            // $validated['gallery_images'] = json_encode($validated['gallery_images']);
         }
 
 
@@ -227,14 +227,19 @@ class PropertyController extends Controller
         if ($property->demo_video) Storage::disk('public')->delete($property->demo_video);
 
         // 7. 🚨 Delete: Handle array/multiple images
-        $layoutImages = json_decode($property->layout_images ?? '[]', true);
+        // Since the model casts these as 'array', they're already arrays
+        $layoutImages = is_array($property->layout_images) 
+            ? $property->layout_images 
+            : (is_string($property->layout_images) ? json_decode($property->layout_images, true) ?? [] : []);
         foreach ($layoutImages as $path) {
-            Storage::disk('public')->delete($path);
+            if ($path) Storage::disk('public')->delete($path);
         }
 
-        $galleryImages = json_decode($property->gallery_images ?? '[]', true);
+        $galleryImages = is_array($property->gallery_images) 
+            ? $property->gallery_images 
+            : (is_string($property->gallery_images) ? json_decode($property->gallery_images, true) ?? [] : []);
         foreach ($galleryImages as $path) {
-            Storage::disk('public')->delete($path);
+            if ($path) Storage::disk('public')->delete($path);
         }
 
         $property->delete();

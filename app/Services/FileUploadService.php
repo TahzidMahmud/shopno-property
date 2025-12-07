@@ -4,7 +4,7 @@ namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
 use Intervention\Image\Facades\Image; // Requires composer require intervention/image
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class FileUploadService
 {
@@ -12,40 +12,43 @@ class FileUploadService
      * Handles the upload and conversion of a single file to WebP (if an image).
      *
      * @param UploadedFile $file The uploaded file instance.
-     * @param string $path The public path segment (e.g., 'uploads/properties/main').
-     * @return string The public relative path to the saved file.
+     * @param string $path The storage path segment (e.g., 'uploads/properties/main').
+     * @return string The storage relative path to the saved file.
      * @throws \Exception If the directory cannot be created.
      */
     public function uploadFile(UploadedFile $file, string $path): string
     {
         $mimeType = $file->getClientMimeType();
-        $basePath = public_path($path);
 
-        // 1. Ensure destination directory exists
-        if (!File::isDirectory($basePath)) {
-            if (!File::makeDirectory($basePath, 0755, true)) {
-                throw new \Exception("Could not create directory: {$basePath}");
-            }
+        // 1. Ensure destination directory exists in storage
+        $storagePath = $path;
+        if (!Storage::disk('public')->exists($storagePath)) {
+            Storage::disk('public')->makeDirectory($storagePath);
         }
 
         // 2. Handle Image Conversion (WebP)
         if (str_starts_with($mimeType, 'image/')) {
             $filename = uniqid() . '.webp';
-            $fullDestinationPath = $basePath . '/' . $filename;
+            $fullStoragePath = $storagePath . '/' . $filename;
 
             // Use Intervention Image to read, encode to webp (quality 80), and save
-            Image::make($file->getRealPath())
-                ->encode('webp', 80)
-                ->save($fullDestinationPath);
+            $image = Image::make($file->getRealPath())
+                ->encode('webp', 80);
+            
+            // Save to storage - get the encoded image as string
+            Storage::disk('public')->put($fullStoragePath, (string) $image);
 
-            return $path . '/' . $filename;
+            return $fullStoragePath;
         }
 
         // 3. Handle Non-Image Files (e.g., videos)
         $filename = uniqid() . '.' . $file->extension();
-        $file->move($basePath, $filename);
+        $fullStoragePath = $storagePath . '/' . $filename;
+        
+        // Store file in storage
+        Storage::disk('public')->putFileAs($storagePath, $file, $filename);
 
-        return $path . '/' . $filename;
+        return $fullStoragePath;
     }
 
     /**
