@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, Container, Typography, Grid, Button, MenuItem, Select, FormControl, InputLabel, CircularProgress, Alert } from '@mui/material';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -11,17 +11,18 @@ const ITEMS_PER_PAGE = 9; // 3 columns x 3 rows
 
 const Projects: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [allProperties, setAllProperties] = useState<Property[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Filter states
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [typeFilter, setTypeFilter] = useState<string>('');
-  const [locationFilter, setLocationFilter] = useState<string>('');
-  const [budgetFilter, setBudgetFilter] = useState<string>('');
+  // Filter states - initialize from URL params
+  const [statusFilter, setStatusFilter] = useState<string>(searchParams.get('status') || '');
+  const [typeFilter, setTypeFilter] = useState<string>(searchParams.get('type') || '');
+  const [locationFilter, setLocationFilter] = useState<string>(searchParams.get('location') || '');
+  const [budgetFilter, setBudgetFilter] = useState<string>(searchParams.get('budget') || '');
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -41,6 +42,75 @@ const Projects: React.FC = () => {
     fetchProperties();
   }, []);
 
+  // Helper function to apply filters with specific parameters
+  const applyFiltersWithParams = React.useCallback((status: string, type: string, location: string, budget: string) => {
+    let filtered = [...allProperties];
+
+    if (status) {
+      filtered = filtered.filter(p =>
+        p.status?.toLowerCase() === status.toLowerCase() ||
+        (status === 'Under Construction' && p.under_development?.toLowerCase().includes('yes'))
+      );
+    }
+
+    if (type) {
+      filtered = filtered.filter(p =>
+        p.type?.toLowerCase().includes(type.toLowerCase())
+      );
+    }
+
+    if (location) {
+      filtered = filtered.filter(p =>
+        p.location?.toLowerCase().includes(location.toLowerCase()) ||
+        p.full_address?.toLowerCase().includes(location.toLowerCase())
+      );
+    }
+
+    if (budget) {
+      filtered = filtered.filter(p => {
+        if (!p.price_range) return false;
+        const priceStr = p.price_range.replace(/[^0-9]/g, '');
+        const price = parseInt(priceStr);
+
+        if (budget === 'lessThan100k') {
+          return price < 100000;
+        } else if (budget === 'greaterThan500k') {
+          return price > 500000;
+        } else if (budget === '$195000 - $390000') {
+          return price >= 195000 && price <= 390000;
+        }
+        return true;
+      });
+    }
+
+    setFilteredProperties(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [allProperties]);
+
+  // Apply filters when URL params change or filters are set
+  useEffect(() => {
+    if (allProperties.length > 0) {
+      // Update filter states from URL params
+      const statusParam = searchParams.get('status') || '';
+      const typeParam = searchParams.get('type') || '';
+      const locationParam = searchParams.get('location') || '';
+      const budgetParam = searchParams.get('budget') || '';
+
+      setStatusFilter(statusParam);
+      setTypeFilter(typeParam);
+      setLocationFilter(locationParam);
+      setBudgetFilter(budgetParam);
+
+      // Apply filters if any are set
+      if (statusParam || typeParam || locationParam || budgetParam) {
+        applyFiltersWithParams(statusParam, typeParam, locationParam, budgetParam);
+      } else {
+        // If no params, show all properties
+        setFilteredProperties(allProperties);
+      }
+    }
+  }, [searchParams, allProperties, applyFiltersWithParams]);
+
   // Get unique filter options from properties
   const availableStatuses = useMemo(() => {
     const statuses = Array.from(new Set(allProperties.map(p => p.status).filter(Boolean)));
@@ -59,50 +129,18 @@ const Projects: React.FC = () => {
 
   // Filter properties based on selected filters
   const applyFilters = () => {
-    let filtered = [...allProperties];
-
-    if (statusFilter) {
-      filtered = filtered.filter(p =>
-        p.status?.toLowerCase() === statusFilter.toLowerCase() ||
-        (statusFilter === 'Under Construction' && p.under_development?.toLowerCase().includes('yes'))
-      );
-    }
-
-    if (typeFilter) {
-      filtered = filtered.filter(p =>
-        p.type?.toLowerCase().includes(typeFilter.toLowerCase())
-      );
-    }
-
-    if (locationFilter) {
-      filtered = filtered.filter(p =>
-        p.location?.toLowerCase().includes(locationFilter.toLowerCase()) ||
-        p.full_address?.toLowerCase().includes(locationFilter.toLowerCase())
-      );
-    }
-
-    if (budgetFilter) {
-      filtered = filtered.filter(p => {
-        if (!p.price_range) return false;
-        const priceStr = p.price_range.replace(/[^0-9]/g, '');
-        const price = parseInt(priceStr);
-
-        if (budgetFilter === 'lessThan100k') {
-          return price < 100000;
-        } else if (budgetFilter === 'greaterThan500k') {
-          return price > 500000;
-        } else if (budgetFilter === '$195000 - $390000') {
-          return price >= 195000 && price <= 390000;
-        }
-        return true;
-      });
-    }
-
-    setFilteredProperties(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
+    applyFiltersWithParams(statusFilter, typeFilter, locationFilter, budgetFilter);
   };
 
   const handleSearch = () => {
+    // Update URL params when search is clicked
+    const params = new URLSearchParams();
+    if (statusFilter) params.set('status', statusFilter);
+    if (typeFilter) params.set('type', typeFilter);
+    if (locationFilter) params.set('location', locationFilter);
+    if (budgetFilter) params.set('budget', budgetFilter);
+
+    setSearchParams(params);
     applyFilters();
   };
 
@@ -113,6 +151,8 @@ const Projects: React.FC = () => {
     setBudgetFilter('');
     setFilteredProperties(allProperties);
     setCurrentPage(1);
+    // Clear URL params
+    setSearchParams({});
   };
 
   const handlePropertyClick = (id: number) => {
@@ -161,35 +201,36 @@ const Projects: React.FC = () => {
           backgroundImage: 'url(/assets/house1.jpg)', // Placeholder image
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          height: '300px',
+          height: { xs: '200px', sm: '250px', md: '300px' },
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
           textAlign: 'center',
+          px: { xs: 2, md: 0 },
         }}
       >
-        <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold' }}>
+        <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}>
           Projects
         </Typography>
       </Box>
 
       {/* Search Filters */}
-      <Container sx={{ my: 4 }}>
+      <Container sx={{ my: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
         <Box
           sx={{
-            p: 3,
+            p: { xs: 2, md: 3 },
             boxShadow: 3,
             borderRadius: 2,
             backgroundColor: 'white',
             display: 'flex',
             flexWrap: 'wrap',
-            gap: 2,
+            gap: { xs: 1.5, md: 2 },
             alignItems: 'center',
-            justifyContent: 'space-around',
+            justifyContent: { xs: 'flex-start', md: 'space-around' },
           }}
         >
-          <FormControl sx={{ minWidth: 180 }}>
+          <FormControl sx={{ minWidth: { xs: '100%', sm: 180 }, flex: { xs: '1 1 100%', sm: '0 0 auto' } }}>
             <InputLabel>Project Status</InputLabel>
             <Select
               value={statusFilter}
@@ -205,7 +246,7 @@ const Projects: React.FC = () => {
             </Select>
           </FormControl>
 
-          <FormControl sx={{ minWidth: 180 }}>
+          <FormControl sx={{ minWidth: { xs: '100%', sm: 180 }, flex: { xs: '1 1 100%', sm: '0 0 auto' } }}>
             <InputLabel>Project Type</InputLabel>
             <Select
               value={typeFilter}
@@ -222,7 +263,7 @@ const Projects: React.FC = () => {
             </Select>
           </FormControl>
 
-          <FormControl sx={{ minWidth: 180 }}>
+          <FormControl sx={{ minWidth: { xs: '100%', sm: 180 }, flex: { xs: '1 1 100%', sm: '0 0 auto' } }}>
             <InputLabel>Location</InputLabel>
             <Select
               value={locationFilter}
@@ -239,7 +280,7 @@ const Projects: React.FC = () => {
             </Select>
           </FormControl>
 
-          <FormControl sx={{ minWidth: 180 }}>
+          <FormControl sx={{ minWidth: { xs: '100%', sm: 180 }, flex: { xs: '1 1 100%', sm: '0 0 auto' } }}>
             <InputLabel>Budget</InputLabel>
             <Select
               value={budgetFilter}
@@ -256,7 +297,12 @@ const Projects: React.FC = () => {
           <Button
             variant="contained"
             color="primary"
-            sx={{ height: '56px' }}
+            sx={{
+              height: { xs: '48px', md: '56px' },
+              flex: { xs: '1 1 100%', sm: '0 0 auto' },
+              minWidth: { xs: '100%', sm: 'auto' },
+              fontSize: { xs: '0.9rem', md: '1rem' }
+            }}
             onClick={handleSearch}
           >
             Search
@@ -265,7 +311,12 @@ const Projects: React.FC = () => {
             <Button
               variant="outlined"
               color="secondary"
-              sx={{ height: '56px' }}
+              sx={{
+                height: { xs: '48px', md: '56px' },
+                flex: { xs: '1 1 100%', sm: '0 0 auto' },
+                minWidth: { xs: '100%', sm: 'auto' },
+                fontSize: { xs: '0.9rem', md: '1rem' }
+              }}
               onClick={handleResetFilters}
             >
               Reset
@@ -275,7 +326,7 @@ const Projects: React.FC = () => {
       </Container>
 
       {/* Project List */}
-      <Container sx={{ my: 4 }}>
+      <Container sx={{ my: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
             <CircularProgress />
@@ -285,14 +336,14 @@ const Projects: React.FC = () => {
             {error}
           </Alert>
         ) : filteredProperties.length === 0 ? (
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <Typography variant="h6" color="text.secondary">
+          <Box sx={{ textAlign: 'center', py: { xs: 4, md: 8 } }}>
+            <Typography variant="h6" color="text.secondary" sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
               No properties found
             </Typography>
           </Box>
         ) : (
           <>
-            <Grid container spacing={3}>
+            <Grid container spacing={{ xs: 2, md: 3 }}>
               {paginatedProperties.map((property: Property) => (
                 <Grid item xs={12} sm={6} md={4} key={property.id}>
                   <PropertyCard property={property} onOpen={handlePropertyClick} />
@@ -302,13 +353,18 @@ const Projects: React.FC = () => {
 
             {/* Pagination */}
             {totalPages > 0 && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', my: { xs: 3, md: 4 }, flexWrap: 'wrap', gap: { xs: 0.5, md: 0 } }}>
                 {pageNumbers.map((page) => (
                   <Button
                     key={page}
                     variant={currentPage === page ? 'contained' : 'outlined'}
                     onClick={() => handlePageChange(page)}
-                    sx={{ mx: 0.5 }}
+                    sx={{
+                      mx: { xs: 0.25, md: 0.5 },
+                      minWidth: { xs: 36, md: 40 },
+                      height: { xs: 36, md: 40 },
+                      fontSize: { xs: '0.85rem', md: '1rem' }
+                    }}
                   >
                     {page}
                   </Button>

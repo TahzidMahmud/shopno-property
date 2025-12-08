@@ -61,16 +61,27 @@ export default function BlogSection() {
           </Typography>
           <Box sx={{ width: 8, height: 8, backgroundColor: 'purple.600', transform: 'rotate(45deg)', ml: 0.5 }} />
         </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 5 }}>
-          <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', color: 'grey.900' }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: { xs: 3, md: 5 }, gap: { xs: 2, sm: 0 } }}>
+          <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', color: 'grey.900', fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' } }}>
             Read Our{' '}
-            <Box component="span" sx={{ backgroundColor: 'info.main', color: 'white', px: 1.5, py: 0.5, borderRadius: 1, transform: 'rotate(-6deg)', display: 'inline-block' }}>
+            <Box component="span" sx={{ backgroundColor: '#00bcd4', color: 'white', px: { xs: 1, md: 1.5 }, py: { xs: 0.3, md: 0.5 }, borderRadius: '4px', transform: 'rotate(-5deg)', display: 'inline-block' }}>
               Blog
             </Box>
           </Typography>
           <Button
             variant="outlined"
-            sx={{ color: 'info.main', borderColor: 'info.main', '&:hover': { backgroundColor: 'info.50' } }}
+            sx={{ 
+              color: '#00bcd4', 
+              borderColor: '#00bcd4',
+              textTransform: 'none',
+              padding: { xs: '8px 16px', md: '10px 20px' },
+              fontSize: { xs: '0.85rem', md: '1rem' },
+              width: { xs: '100%', sm: 'auto' },
+              '&:hover': { 
+                backgroundColor: 'rgba(0, 188, 212, 0.04)',
+                borderColor: '#00acc1',
+              } 
+            }}
             endIcon={<ArrowForwardIcon />}
           >
             View All
@@ -87,21 +98,29 @@ export default function BlogSection() {
                   height="200"
                   image={getImageUrl(post.image)}
                   alt={post.title}
-                  sx={{ width: '100%', height: 192, objectFit: 'cover' }}
+                  sx={{ width: '100%', height: { xs: 180, md: 192 }, objectFit: 'cover' }}
                 />
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ color: 'grey.500', mb: 1 }}>
+                <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ color: 'grey.500', mb: 1, fontSize: { xs: '0.8rem', md: '0.875rem' } }}>
                     {formatDate(post.published_date)}
                   </Typography>
-                  <Typography variant="h6" component="div" sx={{ fontWeight: 'semibold', color: 'grey.800', mb: 2 }}>
+                  <Typography variant="h6" component="div" sx={{ fontWeight: 'semibold', color: 'grey.800', mb: 2, fontSize: { xs: '1rem', md: '1.25rem' } }}>
                     {post.title}
                   </Typography>
                   <Button
                     size="small"
-                    sx={{ color: 'info.main', fontWeight: 'semibold', '&:hover': { textDecoration: 'underline' } }}
-                    endIcon={<ArrowForwardIcon />}
+                    sx={{ 
+                      color: '#00bcd4', 
+                      fontWeight: 'semibold', 
+                      textTransform: 'none',
+                      '&:hover': { 
+                        textDecoration: 'underline',
+                        backgroundColor: 'transparent',
+                      } 
+                    }}
+                    endIcon={<ArrowForwardIcon sx={{ fontSize: '1rem' }} />}
                   >
-                    READ MORE
+                    Read More
                   </Button>
                 </CardContent>
               </Card>

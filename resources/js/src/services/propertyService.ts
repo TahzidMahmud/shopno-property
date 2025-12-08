@@ -41,14 +41,18 @@ export const propertyService = {
     formData.append('total_parking', data.total_parking.toString());
     formData.append('price_range', data.price_range);
     formData.append('full_address', data.full_address);
+    if (data.latitude !== '') formData.append('latitude', data.latitude.toString());
+    if (data.longitude !== '') formData.append('longitude', data.longitude.toString());
     formData.append('under_development', data.under_development);
     formData.append('bedrooms', data.bedrooms.toString());
     formData.append('bathrooms', data.bathrooms.toString());
     formData.append('company_name', data.company_name);
 
-    // Append key_transports array
+    // Append key_transports array as objects
     data.key_transports.forEach((transport, index) => {
-      formData.append(`key_transports[${index}]`, transport);
+      formData.append(`key_transports[${index}][name]`, transport.name);
+      formData.append(`key_transports[${index}][icon]`, transport.icon);
+      formData.append(`key_transports[${index}][distance]`, transport.distance);
     });
 
     // Append facilities array
@@ -63,6 +67,10 @@ export const propertyService = {
 
     if (data.demo_video) {
       formData.append('demo_video', data.demo_video);
+    }
+
+    if (data.booking_form_background_image) {
+      formData.append('booking_form_background_image', data.booking_form_background_image);
     }
 
     // Append multiple files
@@ -101,14 +109,18 @@ export const propertyService = {
     formData.append('total_parking', data.total_parking.toString());
     formData.append('price_range', data.price_range);
     formData.append('full_address', data.full_address);
+    if (data.latitude !== '') formData.append('latitude', data.latitude.toString());
+    if (data.longitude !== '') formData.append('longitude', data.longitude.toString());
     formData.append('under_development', data.under_development);
     formData.append('bedrooms', data.bedrooms.toString());
     formData.append('bathrooms', data.bathrooms.toString());
     formData.append('company_name', data.company_name);
 
-    // Append key_transports array
+    // Append key_transports array as objects
     data.key_transports.forEach((transport, index) => {
-      formData.append(`key_transports[${index}]`, transport);
+      formData.append(`key_transports[${index}][name]`, transport.name);
+      formData.append(`key_transports[${index}][icon]`, transport.icon);
+      formData.append(`key_transports[${index}][distance]`, transport.distance);
     });
 
     // Append facilities array
@@ -123,6 +135,10 @@ export const propertyService = {
 
     if (data.demo_video) {
       formData.append('demo_video', data.demo_video);
+    }
+
+    if (data.booking_form_background_image) {
+      formData.append('booking_form_background_image', data.booking_form_background_image);
     }
 
     // Append multiple files

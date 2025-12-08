@@ -43,7 +43,13 @@ class PropertyController extends Controller
             'gallery_images.*' => 'nullable|image|max:2048',
             'demo_video' => 'nullable|mimetypes:video/mp4,video/mpeg,video/quicktime|max:100000',
             'full_address' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'key_transports' => 'nullable|array',
+            'key_transports.*.name' => 'required_with:key_transports|string',
+            'key_transports.*.icon' => 'required_with:key_transports|string',
+            'key_transports.*.distance' => 'required_with:key_transports|string',
+            'booking_form_background_image' => 'nullable|image|max:2048',
             'under_development' => 'nullable|string',
             'bedrooms' => 'nullable|integer',
             'bathrooms' => 'nullable|integer',
@@ -82,6 +88,14 @@ class PropertyController extends Controller
             $validated['demo_video'] = $this->fileUploadService->uploadFile(
                 $request->file('demo_video'),
                 'uploads/properties/videos'
+            );
+        }
+
+        // Handle booking form background image
+        if ($request->hasFile('booking_form_background_image')) {
+            $validated['booking_form_background_image'] = $this->fileUploadService->uploadFile(
+                $request->file('booking_form_background_image'),
+                'uploads/properties/booking'
             );
         }
 
@@ -136,7 +150,13 @@ class PropertyController extends Controller
             'gallery_images.*' => 'nullable|image|max:2048',
             'demo_video' => 'nullable|mimetypes:video/mp4,video/mpeg,video/quicktime|max:100000',
             'full_address' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'key_transports' => 'nullable|array',
+            'key_transports.*.name' => 'required_with:key_transports|string',
+            'key_transports.*.icon' => 'required_with:key_transports|string',
+            'key_transports.*.distance' => 'required_with:key_transports|string',
+            'booking_form_background_image' => 'nullable|image|max:2048',
             'under_development' => 'nullable|string',
             'bedrooms' => 'nullable|integer',
             'bathrooms' => 'nullable|integer',
@@ -165,6 +185,17 @@ class PropertyController extends Controller
             $validated['demo_video'] = $this->fileUploadService->uploadFile(
                 $request->file('demo_video'),
                 'uploads/properties/videos'
+            );
+        }
+
+        if ($request->hasFile('booking_form_background_image')) {
+            // Delete old booking form background image
+            if ($property->booking_form_background_image) Storage::disk('public')->delete($property->booking_form_background_image);
+
+            // Upload new booking form background image
+            $validated['booking_form_background_image'] = $this->fileUploadService->uploadFile(
+                $request->file('booking_form_background_image'),
+                'uploads/properties/booking'
             );
         }
 
@@ -225,6 +256,7 @@ class PropertyController extends Controller
         // Delete single files
         if ($property->main_image) Storage::disk('public')->delete($property->main_image);
         if ($property->demo_video) Storage::disk('public')->delete($property->demo_video);
+        if ($property->booking_form_background_image) Storage::disk('public')->delete($property->booking_form_background_image);
 
         // 7. 🚨 Delete: Handle array/multiple images
         // Since the model casts these as 'array', they're already arrays

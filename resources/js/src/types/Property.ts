@@ -1,5 +1,11 @@
 import { Facility } from './Facility';
 
+export interface KeyTransport {
+  name: string;
+  icon: string;
+  distance: string;
+}
+
 export interface Property {
   id?: number;
   title: string;
@@ -16,8 +22,11 @@ export interface Property {
   layout_images?: string[];
   gallery_images?: string[];
   demo_video?: string;
+  booking_form_background_image?: string;
   full_address?: string;
-  key_transports?: string[];
+  latitude?: number;
+  longitude?: number;
+  key_transports?: KeyTransport[];
   under_development?: string;
   bedrooms?: number;
   bathrooms?: number;
@@ -42,8 +51,11 @@ export interface PropertyFormData {
   layout_images: File[];
   gallery_images: File[];
   demo_video: File | null;
+  booking_form_background_image: File | null;
   full_address: string;
-  key_transports: string[];
+  latitude: number | '';
+  longitude: number | '';
+  key_transports: KeyTransport[];
   under_development: string;
   bedrooms: number | '';
   bathrooms: number | '';

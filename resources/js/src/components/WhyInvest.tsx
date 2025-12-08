@@ -14,6 +14,7 @@ const iconMap: Record<string, React.ReactElement> = {
   Storage: <StorageIcon sx={{ fontSize: 48, mb: 2, color: '#00bcd4' }} />,
   Hub: <HubIcon sx={{ fontSize: 48, mb: 2, color: '#00bcd4' }} />,
   ArrowUpward: <ArrowUpwardIcon sx={{ fontSize: 48, mb: 2, color: '#00bcd4' }} />,
+  Diamond: <Box sx={{ width: 48, height: 48, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💎</Box>,
 };
 
 const getIcon = (iconName: string) => {
@@ -56,8 +57,8 @@ export default function WhyInvest() {
             <HomeIcon sx={{ fontSize: '1rem', color: 'secondary.main', mr: 0.5 }} />
             Reson For you
           </Typography>
-          <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', mt: 1 }}>
-            Why Should You<br />Invest In Real <Box component="span" sx={{ bgcolor: 'primary.main', color: 'white', px: 1.5, py: 0.5, borderRadius: 1, transform: 'rotate(-5deg)', display: 'inline-block', ml: 1 }}>Estate?</Box>
+          <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', mt: 1, fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
+            Why Should You<br />Invest In Real <Box component="span" sx={{ bgcolor: '#00bcd4', color: 'white', px: 1.5, py: 0.5, borderRadius: '4px', transform: 'rotate(-5deg)', display: 'inline-block', ml: 1 }}>Estate?</Box>
           </Typography>
         </Box>
         <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 300, textAlign: { xs: 'center', md: 'right' } }}>

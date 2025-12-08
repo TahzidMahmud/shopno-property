@@ -96,8 +96,8 @@ export default function LandShareGrid() {
               Land Share
             </Typography>
           </Box>
-          <Typography variant="h4" component="h2" sx={{ fontWeight: 700 }}>
-            Search <Box component="span" sx={{ bgcolor: '#00bcd4', color: 'white', px: 1, borderRadius: '4px' }}>Perfect</Box>
+          <Typography variant="h4" component="h2" sx={{ fontWeight: 700, fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
+            Search <Box component="span" sx={{ bgcolor: '#00bcd4', color: 'white', px: 1.5, py: 0.5, borderRadius: '4px', transform: 'rotate(-5deg)', display: 'inline-block' }}>Perfect</Box>
             <br />
             Land Share
           </Typography>

@@ -112,14 +112,14 @@ export default function ExploreByProperty() {
           </Typography>
           <Box sx={{ width: 8, height: 8, backgroundColor: 'purple.300', transform: 'rotate(45deg)', ml: 0.5 }} />
         </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 8 }}>
-          <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', color: 'white' }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, mb: { xs: 4, md: 8 }, gap: { xs: 2, md: 0 } }}>
+          <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', color: 'white', fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' } }}>
             Explore By{' '}
-            <Box component="span" sx={{ backgroundColor: 'info.main', color: 'white', px: 1.5, py: 0.5, borderRadius: 1, transform: 'rotate(-6deg)', display: 'inline-block' }}>
+            <Box component="span" sx={{ backgroundColor: '#00bcd4', color: 'white', px: { xs: 1, md: 1.5 }, py: { xs: 0.3, md: 0.5 }, borderRadius: '4px', transform: 'rotate(-5deg)', display: 'inline-block' }}>
               Property Type
             </Box>
           </Typography>
-          <Typography variant="body1" sx={{ color: 'grey.300', maxWidth: '300px', textAlign: 'right' }}>
+          <Typography variant="body1" sx={{ color: 'grey.300', maxWidth: { xs: '100%', md: '300px' }, textAlign: { xs: 'left', md: 'right' }, fontSize: { xs: '0.9rem', md: '1rem' } }}>
             Explore homes, apartments, and villas tailored to you
           </Typography>
         </Box>
@@ -129,25 +129,29 @@ export default function ExploreByProperty() {
           {propertyTypes.map(type => (
             <Grid item xs={12} sm={6} md={2} key={type.id}>
               <Paper sx={{
-                p: 3,
+                p: { xs: 2, md: 3 },
                 textAlign: 'center',
                 borderRadius: 2,
                 boxShadow: 3,
                 backgroundColor: 'white',
                 color: 'text.primary',
-                height: 180,
+                height: { xs: 150, md: 180 },
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
+                border: '2px solid #9c27b0',
                 transition: 'transform 0.2s',
                 '&:hover': {
                   transform: 'scale(1.05)',
+                  boxShadow: 6,
                 },
               }}>
-                {type.icon}
-                <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 'bold' }}>{type.name}</Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Box sx={{ fontSize: { xs: 40, md: 50 } }}>
+                  {type.icon}
+                </Box>
+                <Typography variant="subtitle1" sx={{ mt: { xs: 1, md: 2 }, fontWeight: 'bold', fontSize: { xs: '0.9rem', md: '1rem' } }}>{type.name}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8rem', md: '0.875rem' } }}>
                   {type.count} {type.count === 1 ? 'Property' : 'Properties'}
                 </Typography>
               </Paper>

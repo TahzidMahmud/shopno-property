@@ -46,20 +46,31 @@ export default function PropertyGrid() {
 
   return (
     <Box sx={{ py: '4rem', px: { xs: 2, md: 8 }, maxWidth: 'lg', mx: 'auto' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 4, gap: { xs: 2, sm: 0 } }}>
         <Box>
-          <Typography variant="overline" sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-            <HomeIcon sx={{ fontSize: '1rem', color: 'secondary.main', mr: 0.5 }} />
+          <Typography variant="overline" sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', fontSize: { xs: '0.7rem', md: '0.75rem' } }}>
+            <HomeIcon sx={{ fontSize: { xs: '0.8rem', md: '1rem' }, color: 'secondary.main', mr: 0.5 }} />
             Property Size
           </Typography>
-          <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold' }}>
-            Perfect Size,<br />Perfect <Box component="span" sx={{ bgcolor: 'info.main', color: 'white', px: 1.5, py: 0.5, borderRadius: 1, transform: 'rotate(-5deg)', display: 'inline-block', ml: 1 }}>Comfort</Box>
+          <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' } }}>
+            Perfect Size,<br />Perfect <Box component="span" sx={{ bgcolor: '#00bcd4', color: 'white', px: { xs: 1, md: 1.5 }, py: { xs: 0.3, md: 0.5 }, borderRadius: '4px', transform: 'rotate(-5deg)', display: 'inline-block', ml: 1 }}>Comfort</Box>
           </Typography>
         </Box>
         <Button 
           variant="outlined" 
-          sx={{ color: 'info.main', borderColor: 'info.main' }} 
-          endIcon={<ArrowForwardIcon sx={{ color: 'info.main' }} />}
+          sx={{ 
+            color: '#00bcd4', 
+            borderColor: '#00bcd4',
+            textTransform: 'none',
+            padding: { xs: '8px 16px', md: '10px 20px' },
+            fontSize: { xs: '0.85rem', md: '1rem' },
+            width: { xs: '100%', sm: 'auto' },
+            '&:hover': {
+              borderColor: '#00acc1',
+              backgroundColor: 'rgba(0, 188, 212, 0.04)',
+            }
+          }} 
+          endIcon={<ArrowForwardIcon sx={{ color: '#00bcd4' }} />}
           onClick={handleViewAll}
         >
           View All

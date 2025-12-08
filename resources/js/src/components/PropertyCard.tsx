@@ -35,31 +35,29 @@ export default function PropertyCard({ property, onOpen }: Props) {
         alt={property.title}
         sx={{ objectFit: 'cover' }}
       />
-      <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-          <Typography variant="h6" sx={{ color: 'info.main', fontSize: '1.1rem' }}>{property.title}</Typography>
-          <Box sx={{ bgcolor: '#f0f0f0', px: 1, py: 0.5, borderRadius: 1, fontSize: '0.8rem' }}>
-            {area}
-          </Box>
+      <CardContent sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+          <Typography variant="h6" sx={{ color: '#212121', fontSize: '1.1rem', fontWeight: 'bold', flex: 1 }}>{property.title}</Typography>
         </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontSize: '0.875rem' }}>
           {property.full_address || location}
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', mb: 1 }}>
-          <Typography variant="body2" sx={{ color: 'info.main', mr: 1 }}>{status}:</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>{propertyType}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
           {bedrooms > 0 && (
-            <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>• {bedrooms} Bedrooms</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>{bedrooms} Bedrooms</Typography>
           )}
           {bathrooms > 0 && (
-            <Typography variant="body2" color="text.secondary">• {bathrooms} Bathroom</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>• {bathrooms} Bathroom</Typography>
+          )}
+          {property.total_parking && property.total_parking > 0 && (
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>• {property.total_parking} Garage</Typography>
+          )}
+          {property.area && (
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>• {property.area} Sqft</Typography>
           )}
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
-          <Typography variant="body2" color="text.secondary">Company Name:</Typography>
-          <Box sx={{ bgcolor: '#f0f0f0', px: 1, py: 0.5, borderRadius: 1, fontSize: '0.8rem' }}>
-            {companyName}
-          </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2, pt: 2, borderTop: '1px solid #e0e0e0' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>{companyName}</Typography>
         </Box>
       </CardContent>
     </Card>

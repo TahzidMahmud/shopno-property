@@ -79,18 +79,19 @@ export default function WhyChooseUs() {
             <Typography variant="overline" sx={{ display: 'flex', alignItems: 'center', mb: 1, color: '#1f191fff', fontWeight: 'bold' }}>
               <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#1f191fff', mr: 1 }} /> Our Approach <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#1f191fff', ml: 1 }} />
             </Typography>
-            <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
-              Why Choose Us <Box component="span" sx={{ fontWeight: 'bold' }}>Shopno</Box>{' '}
+            <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 'bold', fontSize: { xs: '2rem', md: '2.5rem' } }}>
+              Why Choose Us{' '}
               <Box component="span" sx={{
-                backgroundColor: 'primary.main',
+                backgroundColor: '#00bcd4',
                 color: 'white',
                 px: 2,
                 py: 0.5,
-                borderRadius: '20px',
+                borderRadius: '4px',
                 transform: 'rotate(-5deg)',
                 display: 'inline-block',
                 ml: 1,
-              }}>Property</Box>
+                fontWeight: 'bold',
+              }}>Shopno Property</Box>
             </Typography>
           </Box>
 
@@ -107,8 +108,8 @@ export default function WhyChooseUs() {
                     p: 2,
                     mb: 2,
                     borderRadius: '8px',
-                    backgroundColor: isActive ? 'primary.main' : 'white',
-                    color: isActive ? 'white' : 'text.primary',
+                    backgroundColor: isActive ? '#00bcd4' : 'white',
+                    color: isActive ? 'white' : '#212121',
                     boxShadow: isActive ? 3 : 1,
                     transition: 'background-color 0.3s ease-in-out, color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
                     cursor: 'pointer',
@@ -121,14 +122,16 @@ export default function WhyChooseUs() {
                     mr: 2,
                     p: 1.5,
                     borderRadius: '8px',
-                    backgroundColor: isActive ? 'white' : 'grey.100',
-                    color: isActive ? 'primary.main' : 'text.secondary',
+                    backgroundColor: isActive ? 'white' : '#f5f5f5',
+                    color: isActive ? '#00bcd4' : '#757575',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    minWidth: 56,
+                    minHeight: 56,
                   }}>
                     {React.cloneElement(getIcon(feature.icon_name), { 
-                      sx: { fontSize: 30, color: isActive ? 'primary.main' : 'text.secondary' } 
+                      sx: { fontSize: 30, color: isActive ? '#00bcd4' : '#757575' } 
                     })}
                   </Box>
                   <Box>
@@ -145,14 +148,14 @@ export default function WhyChooseUs() {
           </Box>
         </Grid>
         <Grid item xs={12} md={6}>
-          <Box sx={{ marginTop: '5rem', marginBottom: '3rem' }}>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+          <Box sx={{ marginTop: { xs: 2, md: '5rem' }, marginBottom: { xs: 2, md: '3rem' } }}>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: { xs: 2, md: 4 }, fontSize: { xs: '0.9rem', md: '1rem' } }}>
               Explore the premier UK property hub to discover a range of houses and flats for sale or rent.
             </Typography>
           </Box>
           <Box sx={{
             position: 'relative',
-            height: 400,
+            height: { xs: 250, sm: 300, md: 400 },
             backgroundImage: videoUrl ? `url(${getImageUrl(videoUrl)})` : 'url(https://via.placeholder.com/600x400?text=Why+Choose+Us+Image)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -172,13 +175,43 @@ export default function WhyChooseUs() {
               borderRadius: '8px',
             }
           }}>
-            <PlayArrowIcon sx={{ fontSize: 80, color: 'white', zIndex: 1 }} />
+            <Box sx={{
+              width: { xs: 60, md: 80 },
+              height: { xs: 60, md: 80 },
+              borderRadius: '50%',
+              backgroundColor: '#9c27b0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1,
+              cursor: 'pointer',
+              '&:hover': {
+                backgroundColor: '#7b1fa2',
+              }
+            }}>
+              <PlayArrowIcon sx={{ fontSize: { xs: 30, md: 40 }, color: 'white', ml: 0.5 }} />
+            </Box>
           </Box>
         </Grid>
         <Grid item xs={12} md={12}>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, gap: 2 }}>
-            <Button variant="outlined" size="large" sx={{ borderColor: 'primary.main', color: 'primary.main' }}>
-              Learn More <ArrowOutwardIcon sx={{ ml: 1, fontSize: '1rem' }} />
+          <Box sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' }, mt: { xs: 2, md: 4 }, gap: 2 }}>
+            <Button 
+              variant="outlined" 
+              size="large" 
+              sx={{ 
+                borderColor: '#00bcd4', 
+                color: '#00bcd4',
+                textTransform: 'none',
+                padding: { xs: '10px 20px', md: '12px 24px' },
+                fontSize: { xs: '0.9rem', md: '1rem' },
+                '&:hover': {
+                  borderColor: '#00acc1',
+                  backgroundColor: 'rgba(0, 188, 212, 0.04)',
+                }
+              }}
+              endIcon={<ArrowOutwardIcon sx={{ fontSize: '1rem' }} />}
+            >
+              Learn More
             </Button>
           </Box>
         </Grid>

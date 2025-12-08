@@ -49,7 +49,10 @@ const initialFormData: PropertyFormData = {
   layout_images: [],
   gallery_images: [],
   demo_video: null,
+  booking_form_background_image: null,
   full_address: '',
+  latitude: '',
+  longitude: '',
   key_transports: [],
   under_development: '',
   bedrooms: '',
@@ -66,19 +69,23 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
 }) => {
   const [formData, setFormData] = useState<PropertyFormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [transportInput, setTransportInput] = useState('');
+  const [transportName, setTransportName] = useState('');
+  const [transportIcon, setTransportIcon] = useState('');
+  const [transportDistance, setTransportDistance] = useState('');
   const [availableFacilities, setAvailableFacilities] = useState<Facility[]>([]);
   const [loadingFacilities, setLoadingFacilities] = useState(false);
   
   // Preview URLs for new files
   const [mainImagePreview, setMainImagePreview] = useState<string | null>(null);
   const [demoVideoPreview, setDemoVideoPreview] = useState<string | null>(null);
+  const [bookingFormBgPreview, setBookingFormBgPreview] = useState<string | null>(null);
   const [layoutImagesPreviews, setLayoutImagesPreviews] = useState<string[]>([]);
   const [galleryImagesPreviews, setGalleryImagesPreviews] = useState<string[]>([]);
   
   // Existing images from property (when editing)
   const [existingMainImage, setExistingMainImage] = useState<string | null>(null);
   const [existingDemoVideo, setExistingDemoVideo] = useState<string | null>(null);
+  const [existingBookingFormBg, setExistingBookingFormBg] = useState<string | null>(null);
   const [existingLayoutImages, setExistingLayoutImages] = useState<string[]>([]);
   const [existingGalleryImages, setExistingGalleryImages] = useState<string[]>([]);
   
@@ -122,7 +129,10 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
         layout_images: [],
         gallery_images: [],
         demo_video: null,
+        booking_form_background_image: null,
         full_address: property.full_address || '',
+        latitude: property.latitude || '',
+        longitude: property.longitude || '',
         key_transports: property.key_transports || [],
         under_development: property.under_development || '',
         bedrooms: property.bedrooms || '',
@@ -134,6 +144,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
       // Set existing images for preview
       setExistingMainImage(getImageUrl(property.main_image) || null);
       setExistingDemoVideo(getImageUrl(property.demo_video) || null);
+      setExistingBookingFormBg(getImageUrl(property.booking_form_background_image) || null);
       setExistingLayoutImages(
         property.layout_images?.map(img => getImageUrl(img)).filter((url): url is string => url !== null) || []
       );
@@ -144,6 +155,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
       // Reset existing images when creating new property
       setExistingMainImage(null);
       setExistingDemoVideo(null);
+      setExistingBookingFormBg(null);
       setExistingLayoutImages([]);
       setExistingGalleryImages([]);
     }
@@ -156,35 +168,43 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
     }
   };
 
-  const handleFileChange = (field: 'main_image' | 'demo_video', file: File | null) => {
+  const handleFileChange = (field: 'main_image' | 'demo_video' | 'booking_form_background_image', file: File | null) => {
     setFormData(prev => ({ ...prev, [field]: file }));
     
-    // Create preview URL for new file
-    if (file) {
-      // Revoke old preview URL if exists
-      if (field === 'main_image' && mainImagePreview) {
-        URL.revokeObjectURL(mainImagePreview);
-      } else if (field === 'demo_video' && demoVideoPreview) {
-        URL.revokeObjectURL(demoVideoPreview);
+      // Create preview URL for new file
+      if (file) {
+        // Revoke old preview URL if exists
+        if (field === 'main_image' && mainImagePreview) {
+          URL.revokeObjectURL(mainImagePreview);
+        } else if (field === 'demo_video' && demoVideoPreview) {
+          URL.revokeObjectURL(demoVideoPreview);
+        } else if (field === 'booking_form_background_image' && bookingFormBgPreview) {
+          URL.revokeObjectURL(bookingFormBgPreview);
+        }
+        
+        const previewUrl = URL.createObjectURL(file);
+        if (field === 'main_image') {
+          setMainImagePreview(previewUrl);
+          setExistingMainImage(null); // Clear existing when new file is selected
+        } else if (field === 'demo_video') {
+          setDemoVideoPreview(previewUrl);
+          setExistingDemoVideo(null); // Clear existing when new file is selected
+        } else if (field === 'booking_form_background_image') {
+          setBookingFormBgPreview(previewUrl);
+          setExistingBookingFormBg(null); // Clear existing when new file is selected
+        }
+      } else {
+        if (field === 'main_image') {
+          if (mainImagePreview) URL.revokeObjectURL(mainImagePreview);
+          setMainImagePreview(null);
+        } else if (field === 'demo_video') {
+          if (demoVideoPreview) URL.revokeObjectURL(demoVideoPreview);
+          setDemoVideoPreview(null);
+        } else if (field === 'booking_form_background_image') {
+          if (bookingFormBgPreview) URL.revokeObjectURL(bookingFormBgPreview);
+          setBookingFormBgPreview(null);
+        }
       }
-      
-      const previewUrl = URL.createObjectURL(file);
-      if (field === 'main_image') {
-        setMainImagePreview(previewUrl);
-        setExistingMainImage(null); // Clear existing when new file is selected
-      } else if (field === 'demo_video') {
-        setDemoVideoPreview(previewUrl);
-        setExistingDemoVideo(null); // Clear existing when new file is selected
-      }
-    } else {
-      if (field === 'main_image') {
-        if (mainImagePreview) URL.revokeObjectURL(mainImagePreview);
-        setMainImagePreview(null);
-      } else if (field === 'demo_video') {
-        if (demoVideoPreview) URL.revokeObjectURL(demoVideoPreview);
-        setDemoVideoPreview(null);
-      }
-    }
   };
 
   const handleMultipleFileChange = (field: 'layout_images' | 'gallery_images', files: FileList | null) => {
@@ -239,25 +259,33 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
     return () => {
       if (mainImagePreview) URL.revokeObjectURL(mainImagePreview);
       if (demoVideoPreview) URL.revokeObjectURL(demoVideoPreview);
+      if (bookingFormBgPreview) URL.revokeObjectURL(bookingFormBgPreview);
       layoutImagesPreviews.forEach(url => URL.revokeObjectURL(url));
       galleryImagesPreviews.forEach(url => URL.revokeObjectURL(url));
     };
-  }, [mainImagePreview, demoVideoPreview, layoutImagesPreviews, galleryImagesPreviews]);
+  }, [mainImagePreview, demoVideoPreview, bookingFormBgPreview, layoutImagesPreviews, galleryImagesPreviews]);
 
   const addTransport = () => {
-    if (transportInput.trim() && !formData.key_transports.includes(transportInput.trim())) {
+    if (transportName.trim() && transportIcon.trim() && transportDistance.trim()) {
+      const newTransport = {
+        name: transportName.trim(),
+        icon: transportIcon.trim(),
+        distance: transportDistance.trim(),
+      };
       setFormData(prev => ({
         ...prev,
-        key_transports: [...prev.key_transports, transportInput.trim()]
+        key_transports: [...prev.key_transports, newTransport]
       }));
-      setTransportInput('');
+      setTransportName('');
+      setTransportIcon('');
+      setTransportDistance('');
     }
   };
 
-  const removeTransport = (transport: string) => {
+  const removeTransport = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      key_transports: prev.key_transports.filter(t => t !== transport)
+      key_transports: prev.key_transports.filter((_, i) => i !== index)
     }));
   };
 
@@ -475,29 +503,70 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
             </FormControl>
           </Grid>
 
+          {/* Map & Location */}
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+              Map & Location
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Latitude"
+              type="number"
+              value={formData.latitude}
+              onChange={(e) => handleInputChange('latitude', e.target.value ? parseFloat(e.target.value) : '')}
+              inputProps={{ step: 'any' }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Longitude"
+              type="number"
+              value={formData.longitude}
+              onChange={(e) => handleInputChange('longitude', e.target.value ? parseFloat(e.target.value) : '')}
+              inputProps={{ step: 'any' }}
+            />
+          </Grid>
+
           {/* Key Transports */}
           <Grid item xs={12}>
             <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
               Key Transports
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+            <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
               <TextField
-                label="Add Transport"
-                value={transportInput}
-                onChange={(e) => setTransportInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTransport())}
+                label="Name (e.g., Supermarket)"
+                value={transportName}
+                onChange={(e) => setTransportName(e.target.value)}
                 size="small"
+                sx={{ flex: 1, minWidth: 150 }}
               />
-              <Button onClick={addTransport} variant="outlined">
+              <TextField
+                label="Icon (e.g., store, hospital, school)"
+                value={transportIcon}
+                onChange={(e) => setTransportIcon(e.target.value)}
+                size="small"
+                sx={{ flex: 1, minWidth: 150 }}
+              />
+              <TextField
+                label="Distance (e.g., 300m)"
+                value={transportDistance}
+                onChange={(e) => setTransportDistance(e.target.value)}
+                size="small"
+                sx={{ flex: 1, minWidth: 120 }}
+              />
+              <Button onClick={addTransport} variant="outlined" sx={{ minWidth: 80 }}>
                 Add
               </Button>
             </Box>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {formData.key_transports.map((transport) => (
+              {formData.key_transports.map((transport, index) => (
                 <Chip
-                  key={transport}
-                  label={transport}
-                  onDelete={() => removeTransport(transport)}
+                  key={index}
+                  label={`${transport.name} (${transport.distance})`}
+                  onDelete={() => removeTransport(index)}
                 />
               ))}
             </Box>
@@ -651,6 +720,56 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                 {formData.demo_video && (
                   <Typography variant="caption" display="block" sx={{ mt: 1 }}>
                     Selected: {formData.demo_video.name}
+                  </Typography>
+                )}
+              </Box>
+            )}
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{ height: 56 }}
+            >
+              Upload Booking Form Background
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={(e) => handleFileChange('booking_form_background_image', e.target.files?.[0] || null)}
+              />
+            </Button>
+            {(bookingFormBgPreview || existingBookingFormBg) && (
+              <Box sx={{ mt: 2, position: 'relative' }}>
+                <Card sx={{ position: 'relative' }}>
+                  <CardMedia
+                    component="img"
+                    image={bookingFormBgPreview || existingBookingFormBg || ''}
+                    alt="Booking Form Background Preview"
+                    sx={{ height: 200, objectFit: 'cover' }}
+                  />
+                  <IconButton
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      bgcolor: 'rgba(0, 0, 0, 0.5)',
+                      color: 'white',
+                      '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+                    }}
+                    onClick={() => {
+                      handleFileChange('booking_form_background_image', null);
+                      setExistingBookingFormBg(null);
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Card>
+                {formData.booking_form_background_image && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                    Selected: {formData.booking_form_background_image.name}
                   </Typography>
                 )}
               </Box>

@@ -63,6 +63,7 @@ export default function CallToAction() {
 
   return (
     <Box sx={{
+      position: 'relative',
       backgroundImage: `url(${backgroundImage})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
@@ -71,6 +72,17 @@ export default function CallToAction() {
       justifyContent: 'center',
       py: 8,
       minHeight: '100vh',
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backdropFilter: 'blur(2px)',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        zIndex: 0,
+      }
     }}>
       <Box sx={{
         backgroundColor: 'white',
@@ -81,6 +93,8 @@ export default function CallToAction() {
         display: 'flex',
         flexDirection: { xs: 'column', md: 'row' },
         overflow: 'hidden',
+        position: 'relative',
+        zIndex: 1,
       }}>
         {/* Left Section - Image and Text */}
         <Box sx={{
@@ -106,24 +120,24 @@ export default function CallToAction() {
           },
         }}>
           <Box sx={{ position: 'relative', zIndex: 1 }}>
-            <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', mb: 1 }}>
+            <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' } }}>
               Be A{' '}
-              <Box component="span" sx={{ backgroundColor: 'info.main', color: 'white', px: 1.5, py: 0.5, borderRadius: 1, transform: 'rotate(-6deg)', display: 'inline-block' }}>
+              <Box component="span" sx={{ backgroundColor: '#00bcd4', color: 'white', px: { xs: 1, md: 1.5 }, py: { xs: 0.3, md: 0.5 }, borderRadius: '4px', transform: 'rotate(-5deg)', display: 'inline-block' }}>
                 Partner?
               </Box>
             </Typography>
-            <Typography variant="body1">
+            <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
               We will confirm your appointment within 2 hours
             </Typography>
           </Box>
         </Box>
 
         {/* Right Section - Form */}
-        <Box sx={{ width: { xs: '100%', md: '60%' }, p: 4 }}>
+        <Box sx={{ width: { xs: '100%', md: '60%' }, p: { xs: 2, md: 4 } }}>
           <form onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
               <Grid item xs={12}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>Full Name*</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '0.9rem', md: '1rem' } }}>Full Name*</Typography>
                 <TextField 
                   fullWidth 
                   placeholder="Enter Your Name" 
@@ -134,7 +148,7 @@ export default function CallToAction() {
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>Company name</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '0.9rem', md: '1rem' } }}>Company name</Typography>
                 <TextField 
                   fullWidth 
                   placeholder="Enter name" 
@@ -144,7 +158,7 @@ export default function CallToAction() {
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>Location*</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '0.9rem', md: '1rem' } }}>Location*</Typography>
                 <TextField 
                   fullWidth 
                   placeholder="Enter Your Address" 
@@ -193,7 +207,15 @@ export default function CallToAction() {
                 <Button 
                   type="submit"
                   variant="contained" 
-                  sx={{ backgroundColor: 'info.main', '&:hover': { backgroundColor: 'info.dark' } }} 
+                  sx={{ 
+                    backgroundColor: '#00bcd4', 
+                    textTransform: 'none',
+                    padding: '14px 32px',
+                    fontSize: '1rem',
+                    '&:hover': { 
+                      backgroundColor: '#00acc1' 
+                    } 
+                  }} 
                   fullWidth
                 >
                   Submit Request

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, CircularProgress } from '@mui/material';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { heroSlideService } from '../services/homePageService';
 import { HeroSlide } from '../types/HomePage';
 
@@ -48,7 +49,7 @@ const Hero: React.FC = () => {
 
   if (loading) {
     return (
-      <Box sx={{ height: '700px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <Box sx={{ height: { xs: '500px', sm: '600px', md: '700px' }, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <CircularProgress />
       </Box>
     );
@@ -63,7 +64,7 @@ const Hero: React.FC = () => {
   return (
     <Box sx={{
       position: 'relative',
-      height: '700px',
+      height: { xs: '500px', sm: '600px', md: '700px' },
       backgroundImage: `url(${getImageUrl(activeSlide.background_image)})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
@@ -71,9 +72,10 @@ const Hero: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
-      alignItems: 'flex-start',
-      textAlign: 'left',
-      paddingLeft: '10%',
+      alignItems: { xs: 'center', md: 'flex-start' },
+      textAlign: { xs: 'center', md: 'left' },
+      paddingLeft: { xs: 2, md: '10%' },
+      paddingRight: { xs: 2, md: 0 },
       transition: 'background-image 1s ease-in-out',
       overflow: 'hidden',
       '&::before': {
@@ -86,27 +88,43 @@ const Hero: React.FC = () => {
         backgroundColor: 'rgba(0, 0, 0, 0.3)',
       }
     }}>
-      <Box sx={{ position: 'relative', zIndex: 1 }}>
-        <Typography variant="h6" sx={{ color: '#ffffff', mb: 1 }}>
-          {activeSlide.subtitle}
+      <Box sx={{ position: 'relative', zIndex: 1, maxWidth: { xs: '100%', md: '800px' }, px: { xs: 2, md: 0 } }}>
+        <Typography variant="h1" component="h1" gutterBottom sx={{ 
+          color: '#ffffff', 
+          fontSize: { xs: '2rem', sm: '3rem', md: '4.5rem' }, 
+          lineHeight: 1.2,
+          fontWeight: 'bold',
+          mb: { xs: 1.5, md: 2 }
+        }}>
+          {activeSlide.title}
         </Typography>
-        <Typography variant="h1" component="h1" gutterBottom sx={{ color: '#ffffff', fontSize: '4.5rem', lineHeight: 1.2 }}>
-          {activeSlide.title.split(' ').map((word, index) => (
-            <React.Fragment key={index}>
-              {word} {index === 1 && <br />}
-            </React.Fragment>
-          ))}
-        </Typography>
-        <Typography variant="body1" sx={{ color: '#ffffff', maxWidth: '500px', mb: 4 }}>
+        <Typography variant="body1" sx={{ 
+          color: '#ffffff', 
+          maxWidth: { xs: '100%', md: '600px' }, 
+          mb: { xs: 3, md: 4 },
+          fontSize: { xs: '0.9rem', md: '1.1rem' },
+          lineHeight: 1.6
+        }}>
           {activeSlide.description}
         </Typography>
         <Button 
           variant="contained" 
-          color="primary" 
-          sx={{ padding: '12px 30px', fontSize: '1rem' }}
+          sx={{ 
+            padding: { xs: '12px 24px', md: '14px 32px' }, 
+            fontSize: { xs: '0.9rem', md: '1rem' },
+            backgroundColor: '#00bcd4',
+            color: 'white',
+            textTransform: 'none',
+            borderRadius: '4px',
+            width: { xs: '100%', sm: 'auto' },
+            '&:hover': {
+              backgroundColor: '#00acc1',
+            }
+          }}
           href={activeSlide.button_link || '#'}
+          endIcon={<ArrowForwardIcon />}
         >
-          {activeSlide.button_text} <Box component="span" sx={{ ml: 1 }}>&#8599;</Box>
+          {activeSlide.button_text}
         </Button>
       </Box>
 
@@ -115,22 +133,23 @@ const Hero: React.FC = () => {
         <Box sx={{
           position: 'absolute',
           bottom: '2rem',
-          right: '4rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
           zIndex: 1,
           display: 'flex',
-          gap: '10px',
+          gap: '8px',
         }}>
           {slides.map((_, index) => (
             <Box
               key={index}
               sx={{
-                width: currentSlide === index ? 40 : 20,
+                width: 8,
                 height: 8,
-                borderRadius: '4px',
+                borderRadius: '50%',
                 backgroundColor: 'white',
                 opacity: currentSlide === index ? 1 : 0.5,
                 cursor: 'pointer',
-                transition: 'width 0.3s ease-in-out, opacity 0.3s ease-in-out',
+                transition: 'opacity 0.3s ease-in-out',
               }}
               onClick={() => handleDotClick(index)}
             />

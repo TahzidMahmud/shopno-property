@@ -82,9 +82,9 @@ export default function PartnersSection() {
     <Box sx={{ py: 8, px: { xs: 2, md: 4, lg: 8 }, backgroundColor: 'white' }}>
       <Box sx={{ maxWidth: '1280px', mx: 'auto', textAlign: 'center' }}>
         {/* Title Section */}
-        <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', color: 'grey.900', mb: 6 }}>
+        <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', color: 'grey.900', mb: 6, fontSize: { xs: '2rem', md: '2.5rem' } }}>
           We Are Partners{' '}
-          <Box component="span" sx={{ backgroundColor: 'info.main', color: 'white', px: 1.5, py: 0.5, borderRadius: 1, transform: 'rotate(-6deg)', display: 'inline-block' }}>
+          <Box component="span" sx={{ backgroundColor: '#00bcd4', color: 'white', px: 1.5, py: 0.5, borderRadius: '4px', transform: 'rotate(-5deg)', display: 'inline-block' }}>
             With
           </Box>
         </Typography>

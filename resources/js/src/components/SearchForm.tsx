@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Button, Grid, Select, MenuItem, FormControl, InputLabel, SelectChangeEvent, CircularProgress } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { searchOptionService } from '../services/homePageService';
 import { SearchOption } from '../types/HomePage';
 
 export default function SearchForm() {
+  const navigate = useNavigate();
   const [projectStatus, setProjectStatus] = useState('');
   const [propertyType, setPropertyType] = useState('');
   const [location, setLocation] = useState('');
@@ -49,8 +51,25 @@ export default function SearchForm() {
   };
 
   const handleSearch = () => {
-    // TODO: Implement search functionality
-    console.log('Search:', { projectStatus, propertyType, location, budget });
+    // Build query parameters
+    const params = new URLSearchParams();
+    
+    if (projectStatus) {
+      params.append('status', projectStatus);
+    }
+    if (propertyType) {
+      params.append('type', propertyType);
+    }
+    if (location) {
+      params.append('location', location);
+    }
+    if (budget) {
+      params.append('budget', budget);
+    }
+    
+    // Navigate to projects page with query parameters
+    const queryString = params.toString();
+    navigate(`/projects${queryString ? `?${queryString}` : ''}`);
   };
 
   if (loading) {
@@ -64,14 +83,16 @@ export default function SearchForm() {
   return (
     <Box sx={{
       backgroundColor: '#ffffff',
-      padding: 4,
+      padding: { xs: 2, sm: 2.5, md: 3 },
       borderRadius: 2,
-      width: '90%',
+      width: { xs: '95%', sm: '90%' },
       maxWidth: '1200px',
-      boxShadow: '2px 5px 5px rgba(0, 0, 0, 0.25)',
+      boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
       zIndex: 0,
       margin: '0 auto',
-      marginY: '4rem'
+      marginTop: { xs: '-2rem', md: '-3rem' },
+      marginBottom: { xs: '2rem', md: '4rem' },
+      position: 'relative'
     }}>
       <Grid container spacing={2} alignItems="center">
         <Grid item xs={12} sm={6} md={2.4}>
@@ -118,12 +139,20 @@ export default function SearchForm() {
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={2.4}>
+        <Grid item xs={12} sm={12} md={2.4}>
           <Button 
             variant="contained" 
-            color="primary" 
             fullWidth 
-            sx={{ height: '56px' }} 
+            sx={{ 
+              height: { xs: '48px', md: '56px' },
+              backgroundColor: '#00bcd4',
+              color: 'white',
+              textTransform: 'none',
+              fontSize: { xs: '0.9rem', md: '1rem' },
+              '&:hover': {
+                backgroundColor: '#00acc1',
+              }
+            }} 
             startIcon={<SearchIcon />}
             onClick={handleSearch}
           >
