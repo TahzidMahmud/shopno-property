@@ -5,11 +5,7 @@
 /public/storage
 /storage/*.key
 /vendor
-.env
-.env.backup
-.env.production
-.phpunit.result.cache
-Homestead.json
+.envd
 Homestead.yaml
 auth.json
 npm-debug.log

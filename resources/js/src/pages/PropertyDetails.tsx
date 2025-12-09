@@ -70,7 +70,9 @@ const PropertyDetails: React.FC = () => {
       ...(propertyData.main_image ? [getImageUrl(propertyData.main_image)] : [])
     ].slice(0, 6), // Limit to 6 images
     videoThumbnail: propertyData.demo_video ? getImageUrl(propertyData.demo_video) : '/assets/video_thumbnail.html',
-    keyTransports: propertyData.key_transports || [],
+    keyTransports: (propertyData.key_transports && Array.isArray(propertyData.key_transports))
+      ? propertyData.key_transports.filter((t: any) => t && (t.name || t.distance))
+      : [],
     latitude: propertyData.latitude,
     longitude: propertyData.longitude,
     bookingFormBg: propertyData.booking_form_background_image ? getImageUrl(propertyData.booking_form_background_image) : '/assets/house1.jpg',
@@ -178,7 +180,10 @@ const PropertyDetails: React.FC = () => {
   }, [propertyPrice, loanPeriod, downPaymentPercentage]);
 
   // Get transport icon
-  const getTransportIcon = (iconName: string) => {
+  const getTransportIcon = (iconName: string | undefined | null) => {
+    if (!iconName) {
+      return <Store sx={{ fontSize: 24 }} />;
+    }
     const iconMap: Record<string, React.ReactElement> = {
       store: <Store sx={{ fontSize: 24 }} />,
       supermarket: <Store sx={{ fontSize: 24 }} />,
@@ -286,7 +291,7 @@ const PropertyDetails: React.FC = () => {
           <Grid container spacing={{ xs: 2, md: 4 }}>
             <Grid item xs={12} md={7}>
               <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', mb: 2, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}>
-                Why Should You Invest In This <Box component="span" sx={{ bgcolor: 'primary.main', color: 'white', px: { xs: 0.5, md: 1 }, py: { xs: 0.3, md: 0.5 }, borderRadius: 1, fontSize: { xs: '1.2rem', md: 'inherit' } }}>Property</Box>
+                Why Should You Invest In This <Box component="span" sx={{ bgcolor: '#00bcd4', color: 'white', px: 1.5, py: 0.5, borderRadius: '4px', transform: 'rotate(5deg)', display: 'inline-block', ml: 1 }}>Property</Box>
               </Typography>
               <Box sx={{ position: 'relative', width: '100%', height: { xs: '250px', sm: '300px', md: '350px' }, borderRadius: 2 }}> {/* New wrapper Box for image and arrows */}
                 <CardMedia
@@ -370,7 +375,7 @@ const PropertyDetails: React.FC = () => {
           <Grid container spacing={{ xs: 2, md: 4 }}> {/* Use Grid for layout of text and cards container */}
             <Grid item xs={12} md={6}>
               <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', mb: { xs: 2, md: 4 }, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}>
-                Explore <Box component="span" sx={{ bgcolor: 'primary.main', color: 'white', px: { xs: 0.5, md: 1 }, py: { xs: 0.3, md: 0.5 }, borderRadius: 1, fontSize: { xs: '1.2rem', md: 'inherit' } }}>Our</Box> Facilities
+                Explore <Box component="span" sx={{ bgcolor: '#00bcd4', color: 'white', px: 1.5, py: 0.5, borderRadius: '4px', transform: 'rotate(5deg)', display: 'inline-block', ml: 1 }}>Our</Box> Facilities
               </Typography>
             </Grid>
             <Grid item xs={12} md={6} sx={{ display: 'flex', alignItems: { xs: 'flex-start', md: 'flex-end' }, justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
@@ -428,7 +433,7 @@ const PropertyDetails: React.FC = () => {
             <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>Gallery</Typography>
           </Box>
           <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', mb: { xs: 2, md: 4 }, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}>
-            Our <Box component="span" sx={{ bgcolor: 'primary.main', color: 'white', px: { xs: 0.5, md: 1 }, py: { xs: 0.3, md: 0.5 }, borderRadius: 1, fontSize: { xs: '1.2rem', md: 'inherit' } }}>Layout</Box>
+            Our Layout
           </Typography>
           <Box sx={{ position: 'relative', width: '100%', height: { xs: '300px', sm: '400px', md: '500px' }, borderRadius: 2, overflow: 'hidden' }}>
             <CardMedia
@@ -487,7 +492,7 @@ const PropertyDetails: React.FC = () => {
                 <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>Gallery</Typography>
               </Box>
               <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', mb: { xs: 2, md: 4 }, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}>
-                Explore <Box component="span" sx={{ bgcolor: 'primary.main', color: 'white', px: { xs: 0.5, md: 1 }, py: { xs: 0.3, md: 0.5 }, borderRadius: 1, fontSize: { xs: '1.2rem', md: 'inherit' } }}>Our</Box> Gallery
+                Explore <Box component="span" sx={{ bgcolor: '#00bcd4', color: 'white', px: 1.5, py: 0.5, borderRadius: '4px', transform: 'rotate(5deg)', display: 'inline-block', ml: 1 }}>Our</Box> Gallery
               </Typography>
             </Grid>
             <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
@@ -675,18 +680,20 @@ const PropertyDetails: React.FC = () => {
                       Key Transport
                     </Typography>
                     <Grid container spacing={{ xs: 1, md: 2 }}>
-                      {property.keyTransports.map((transport, index) => (
+                      {property.keyTransports
+                        .filter(transport => transport && (transport.name || transport.distance))
+                        .map((transport, index) => (
                         <Grid item xs={12} sm={6} key={index}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 1.5 }, mb: { xs: 1, md: 1.5 } }}>
                             <Box sx={{ color: '#00bcd4', display: 'flex', alignItems: 'center' }}>
-                              {getTransportIcon(transport.icon)}
+                              {getTransportIcon(transport?.icon)}
                             </Box>
                             <Box>
                               <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-                                {transport.name}
+                                {transport?.name || 'N/A'}
                               </Typography>
                               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', md: '0.75rem' } }}>
-                                {transport.distance}
+                                {transport?.distance || 'N/A'}
                               </Typography>
                             </Box>
                           </Box>
@@ -847,7 +854,6 @@ const PropertyDetails: React.FC = () => {
       </Box>
       <Box sx={{ height: { xs: '80px', sm: '60px' } }} /> {/* Spacer for sticky footer */}
 
-      <Footer />
     </Box>
   );
 };

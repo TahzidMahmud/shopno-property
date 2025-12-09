@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, Grid, Select, MenuItem, FormControl, InputLabel, SelectChangeEvent, CircularProgress } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { searchOptionService } from '../services/homePageService';
-import { SearchOption } from '../types/HomePage';
+import { propertyService } from '../services/propertyService';
+import { Property } from '../types/Property';
 
 export default function SearchForm() {
   const navigate = useNavigate();
@@ -12,39 +12,38 @@ export default function SearchForm() {
   const [location, setLocation] = useState('');
   const [budget, setBudget] = useState('');
   const [loading, setLoading] = useState(true);
-  const [options, setOptions] = useState<{
-    project_status: SearchOption[];
-    property_type: SearchOption[];
-    location: SearchOption[];
-    budget: SearchOption[];
-  }>({
-    project_status: [],
-    property_type: [],
-    location: [],
-    budget: [],
-  });
+  const [allProperties, setAllProperties] = useState<Property[]>([]);
 
   useEffect(() => {
-    loadOptions();
+    loadProperties();
   }, []);
 
-  const loadOptions = async () => {
+  const loadProperties = async () => {
     try {
-      const allOptions = await searchOptionService.getAll();
-      const activeOptions = allOptions.filter(opt => opt.is_active);
-      
-      setOptions({
-        project_status: activeOptions.filter(opt => opt.category === 'project_status').sort((a, b) => a.order - b.order),
-        property_type: activeOptions.filter(opt => opt.category === 'property_type').sort((a, b) => a.order - b.order),
-        location: activeOptions.filter(opt => opt.category === 'location').sort((a, b) => a.order - b.order),
-        budget: activeOptions.filter(opt => opt.category === 'budget').sort((a, b) => a.order - b.order),
-      });
+      const data = await propertyService.getAll();
+      setAllProperties(data);
     } catch (error) {
-      console.error('Error loading search options:', error);
+      console.error('Error loading properties:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  // Get unique filter options from properties (matching Projects page)
+  const availableStatuses = useMemo(() => {
+    const statuses = Array.from(new Set(allProperties.map(p => p.status).filter(Boolean)));
+    return statuses as string[];
+  }, [allProperties]);
+
+  const availableTypes = useMemo(() => {
+    const types = Array.from(new Set(allProperties.map(p => p.type).filter(Boolean)));
+    return types as string[];
+  }, [allProperties]);
+
+  const availableLocations = useMemo(() => {
+    const locations = Array.from(new Set(allProperties.map(p => p.location).filter(Boolean)));
+    return locations as string[];
+  }, [allProperties]);
 
   const handleChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (event: SelectChangeEvent) => {
     setter(event.target.value as string);
@@ -100,8 +99,10 @@ export default function SearchForm() {
             <InputLabel>Project Status</InputLabel>
             <Select label="Project Status" value={projectStatus} onChange={handleChange(setProjectStatus)}>
               <MenuItem value=""><em>All</em></MenuItem>
-              {options.project_status.map((option) => (
-                <MenuItem key={option.id} value={option.value}>{option.label}</MenuItem>
+              <MenuItem value="Under Construction">Under Construction</MenuItem>
+              <MenuItem value="Completed">Completed</MenuItem>
+              {availableStatuses.map(status => (
+                <MenuItem key={status} value={status}>{status}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -111,8 +112,11 @@ export default function SearchForm() {
             <InputLabel>Property Type</InputLabel>
             <Select label="Property Type" value={propertyType} onChange={handleChange(setPropertyType)}>
               <MenuItem value=""><em>All</em></MenuItem>
-              {options.property_type.map((option) => (
-                <MenuItem key={option.id} value={option.value}>{option.label}</MenuItem>
+              <MenuItem value="Villa">Villa</MenuItem>
+              <MenuItem value="Apartment">Apartment</MenuItem>
+              <MenuItem value="Penthouse">Penthouse</MenuItem>
+              {availableTypes.map(type => (
+                <MenuItem key={type} value={type}>{type}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -122,8 +126,11 @@ export default function SearchForm() {
             <InputLabel>Location</InputLabel>
             <Select label="Location" value={location} onChange={handleChange(setLocation)}>
               <MenuItem value=""><em>All</em></MenuItem>
-              {options.location.map((option) => (
-                <MenuItem key={option.id} value={option.value}>{option.label}</MenuItem>
+              <MenuItem value="Gulshan">Gulshan</MenuItem>
+              <MenuItem value="Dhanmondi">Dhanmondi</MenuItem>
+              <MenuItem value="Bashundhara">Bashundhara</MenuItem>
+              {availableLocations.map(location => (
+                <MenuItem key={location} value={location}>{location}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -133,9 +140,9 @@ export default function SearchForm() {
             <InputLabel>Budget</InputLabel>
             <Select label="Budget" value={budget} onChange={handleChange(setBudget)}>
               <MenuItem value=""><em>All</em></MenuItem>
-              {options.budget.map((option) => (
-                <MenuItem key={option.id} value={option.value}>{option.label}</MenuItem>
-              ))}
+              <MenuItem value="$195000 - $390000">$195000 - $390000</MenuItem>
+              <MenuItem value="lessThan100k">Less than $100000</MenuItem>
+              <MenuItem value="greaterThan500k">Greater than $500000</MenuItem>
             </Select>
           </FormControl>
         </Grid>
