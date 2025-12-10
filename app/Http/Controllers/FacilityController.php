@@ -78,7 +78,7 @@ class FacilityController extends Controller
         if ($request->hasFile('image')) {
             // Delete old image
             if ($facility->image) {
-                Storage::disk('public')->delete($facility->image);
+                $this->fileUploadService->deleteFile($facility->image);
             }
 
             // Upload new image
@@ -105,7 +105,7 @@ class FacilityController extends Controller
 
         // Delete image file
         if ($facility->image) {
-            Storage::disk('public')->delete($facility->image);
+            $this->fileUploadService->deleteFile($facility->image);
         }
 
         $facility->delete();

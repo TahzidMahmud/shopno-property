@@ -67,7 +67,7 @@ class PartnerController extends Controller
 
         if ($request->hasFile('logo')) {
             if ($partner->logo) {
-                Storage::disk('public')->delete($partner->logo);
+                $this->fileUploadService->deleteFile($partner->logo);
             }
             $validated['logo'] = $this->fileUploadService->uploadFile(
                 $request->file('logo'),
@@ -89,7 +89,7 @@ class PartnerController extends Controller
         $partner = Partner::findOrFail($id);
         
         if ($partner->logo) {
-            Storage::disk('public')->delete($partner->logo);
+            $this->fileUploadService->deleteFile($partner->logo);
         }
         
         $partner->delete();

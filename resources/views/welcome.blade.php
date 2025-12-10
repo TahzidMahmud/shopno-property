@@ -13,7 +13,7 @@
 
         <!-- Styles -->
         @viteReactRefresh
-        @vite(['resources/js/src/main.tsx', 'resources/css/app.css'])
+        @vite(['resources/js/src/main.tsx'])
     </head>
     <body class="antialiased">
         <div id="root"></div>

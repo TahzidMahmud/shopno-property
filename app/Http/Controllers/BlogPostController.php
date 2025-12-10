@@ -76,7 +76,7 @@ class BlogPostController extends Controller
 
         if ($request->hasFile('image')) {
             if ($post->image) {
-                Storage::disk('public')->delete($post->image);
+                $this->fileUploadService->deleteFile($post->image);
             }
             $validated['image'] = $this->fileUploadService->uploadFile(
                 $request->file('image'),
@@ -102,7 +102,7 @@ class BlogPostController extends Controller
         $post = BlogPost::findOrFail($id);
         
         if ($post->image) {
-            Storage::disk('public')->delete($post->image);
+            $this->fileUploadService->deleteFile($post->image);
         }
         
         $post->delete();

@@ -168,7 +168,7 @@ class PropertyController extends Controller
         // 5. 🚨 Update: Handle single file uploads (delete old, upload new)
         if ($request->hasFile('main_image')) {
             // Delete old file using the path stored in the database
-            if ($property->main_image) Storage::disk('public')->delete($property->main_image);
+            if ($property->main_image) $this->fileUploadService->deleteFile($property->main_image);
 
             // Upload new file via service (includes WebP conversion)
             $validated['main_image'] = $this->fileUploadService->uploadFile(
@@ -179,7 +179,7 @@ class PropertyController extends Controller
 
         if ($request->hasFile('demo_video')) {
             // Delete old video
-            if ($property->demo_video) Storage::disk('public')->delete($property->demo_video);
+            if ($property->demo_video) $this->fileUploadService->deleteFile($property->demo_video);
 
             // Upload new video via service
             $validated['demo_video'] = $this->fileUploadService->uploadFile(
@@ -190,7 +190,7 @@ class PropertyController extends Controller
 
         if ($request->hasFile('booking_form_background_image')) {
             // Delete old booking form background image
-            if ($property->booking_form_background_image) Storage::disk('public')->delete($property->booking_form_background_image);
+            if ($property->booking_form_background_image) $this->fileUploadService->deleteFile($property->booking_form_background_image);
 
             // Upload new booking form background image
             $validated['booking_form_background_image'] = $this->fileUploadService->uploadFile(
@@ -254,9 +254,9 @@ class PropertyController extends Controller
         }
 
         // Delete single files
-        if ($property->main_image) Storage::disk('public')->delete($property->main_image);
-        if ($property->demo_video) Storage::disk('public')->delete($property->demo_video);
-        if ($property->booking_form_background_image) Storage::disk('public')->delete($property->booking_form_background_image);
+        if ($property->main_image) $this->fileUploadService->deleteFile($property->main_image);
+        if ($property->demo_video) $this->fileUploadService->deleteFile($property->demo_video);
+        if ($property->booking_form_background_image) $this->fileUploadService->deleteFile($property->booking_form_background_image);
 
         // 7. 🚨 Delete: Handle array/multiple images
         // Since the model casts these as 'array', they're already arrays
@@ -264,14 +264,14 @@ class PropertyController extends Controller
             ? $property->layout_images 
             : (is_string($property->layout_images) ? json_decode($property->layout_images, true) ?? [] : []);
         foreach ($layoutImages as $path) {
-            if ($path) Storage::disk('public')->delete($path);
+            if ($path) $this->fileUploadService->deleteFile($path);
         }
 
         $galleryImages = is_array($property->gallery_images) 
             ? $property->gallery_images 
             : (is_string($property->gallery_images) ? json_decode($property->gallery_images, true) ?? [] : []);
         foreach ($galleryImages as $path) {
-            if ($path) Storage::disk('public')->delete($path);
+            if ($path) $this->fileUploadService->deleteFile($path);
         }
 
         $property->delete();

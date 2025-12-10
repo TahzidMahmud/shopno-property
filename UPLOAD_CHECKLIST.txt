@@ -1,0 +1,72 @@
+================================================================================
+FILES TO UPLOAD FOR NEW STORAGE SYSTEM
+================================================================================
+
+CRITICAL FILES (Must Upload):
+-----------------------------
+
+1. app/Services/FileUploadService.php
+   → This is the core file that handles all uploads
+
+2. app/Http/Controllers/PropertyController.php
+3. app/Http/Controllers/FacilityController.php
+4. app/Http/Controllers/BlogPostController.php
+5. app/Http/Controllers/PartnerController.php
+6. app/Http/Controllers/HeroSlideController.php
+7. app/Http/Controllers/HomePageSettingController.php
+8. app/Http/Controllers/AboutPageProjectController.php
+9. app/Http/Controllers/AboutPageTeamMemberController.php
+10. app/Http/Controllers/AboutPageTestimonialController.php
+11. app/Http/Controllers/AboutPageSettingController.php
+12. app/Http/Controllers/ContactPageSettingController.php
+13. app/Http/Controllers/HeaderController.php
+14. app/Http/Controllers/FooterController.php
+
+OPTIONAL FILES (Recommended):
+------------------------------
+
+15. public/storage/.htaccess
+    → Will be created automatically, but you can upload this to ensure it's correct
+
+16. public/setup.php
+    → Only if you want to re-run the setup wizard
+
+================================================================================
+QUICK UPLOAD OPTIONS:
+================================================================================
+
+OPTION 1 (Easiest - Upload Entire Folders):
+--------------------------------------------
+Upload these entire folders:
+  - app/Services/
+  - app/Http/Controllers/
+
+This ensures ALL files are updated.
+
+OPTION 2 (Selective - Upload Individual Files):
+------------------------------------------------
+Upload only the 14 files listed above.
+
+================================================================================
+AFTER UPLOAD - VERIFY:
+================================================================================
+
+1. Create public/storage/ directory (if it doesn't exist)
+   → Set permissions to 755
+
+2. Test: Upload a new image through admin panel
+   → Should appear in public/storage/uploads/
+   → Should be accessible via /storage/uploads/... URL
+
+3. Check: New uploads work immediately (no sync needed)
+
+================================================================================
+EXISTING FILES:
+================================================================================
+
+If you have existing files in storage/app/public/uploads/:
+  → Copy them to public/storage/uploads/ manually via cPanel
+  → OR leave them (they'll work if already accessible)
+
+================================================================================
+

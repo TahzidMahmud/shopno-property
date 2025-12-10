@@ -73,7 +73,7 @@ class HeroSlideController extends Controller
 
         if ($request->hasFile('background_image')) {
             if ($slide->background_image) {
-                Storage::disk('public')->delete($slide->background_image);
+                $this->fileUploadService->deleteFile($slide->background_image);
             }
             $validated['background_image'] = $this->fileUploadService->uploadFile(
                 $request->file('background_image'),
@@ -95,7 +95,7 @@ class HeroSlideController extends Controller
         $slide = HeroSlide::findOrFail($id);
         
         if ($slide->background_image) {
-            Storage::disk('public')->delete($slide->background_image);
+            $this->fileUploadService->deleteFile($slide->background_image);
         }
         
         $slide->delete();

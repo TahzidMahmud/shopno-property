@@ -72,7 +72,7 @@ class AboutPageTeamMemberController extends Controller
 
         if ($request->hasFile('image')) {
             if ($member->image) {
-                Storage::disk('public')->delete($member->image);
+                $this->fileUploadService->deleteFile($member->image);
             }
             $validated['image'] = $this->fileUploadService->uploadFile(
                 $request->file('image'),
@@ -92,7 +92,7 @@ class AboutPageTeamMemberController extends Controller
         }
 
         if ($member->image) {
-            Storage::disk('public')->delete($member->image);
+            $this->fileUploadService->deleteFile($member->image);
         }
 
         $member->delete();

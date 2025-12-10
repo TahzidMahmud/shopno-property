@@ -60,8 +60,8 @@ class HomePageSettingController extends Controller
         // Handle file upload if provided
         if ($request->hasFile('file')) {
             // Delete old file if it exists
-            if ($setting->value && Storage::disk('public')->exists($setting->value)) {
-                Storage::disk('public')->delete($setting->value);
+            if ($setting->value) {
+                $this->fileUploadService->deleteFile($setting->value);
             }
             $validated['value'] = $this->fileUploadService->uploadFile(
                 $request->file('file'),
@@ -78,8 +78,8 @@ class HomePageSettingController extends Controller
         $setting = HomePageSetting::where('key', $key)->firstOrFail();
         
         // Delete associated file if it exists
-        if ($setting->value && Storage::disk('public')->exists($setting->value)) {
-            Storage::disk('public')->delete($setting->value);
+        if ($setting->value) {
+            $this->fileUploadService->deleteFile($setting->value);
         }
         
         $setting->delete();

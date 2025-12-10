@@ -71,7 +71,7 @@ class AboutPageProjectController extends Controller
 
         if ($request->hasFile('image')) {
             if ($project->image) {
-                Storage::disk('public')->delete($project->image);
+                $this->fileUploadService->deleteFile($project->image);
             }
             $validated['image'] = $this->fileUploadService->uploadFile(
                 $request->file('image'),
@@ -91,7 +91,7 @@ class AboutPageProjectController extends Controller
         }
 
         if ($project->image) {
-            Storage::disk('public')->delete($project->image);
+            $this->fileUploadService->deleteFile($project->image);
         }
 
         $project->delete();

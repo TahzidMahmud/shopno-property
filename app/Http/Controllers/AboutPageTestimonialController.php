@@ -75,7 +75,7 @@ class AboutPageTestimonialController extends Controller
 
         if ($request->hasFile('image')) {
             if ($testimonial->image) {
-                Storage::disk('public')->delete($testimonial->image);
+                $this->fileUploadService->deleteFile($testimonial->image);
             }
             $validated['image'] = $this->fileUploadService->uploadFile(
                 $request->file('image'),
@@ -95,7 +95,7 @@ class AboutPageTestimonialController extends Controller
         }
 
         if ($testimonial->image) {
-            Storage::disk('public')->delete($testimonial->image);
+            $this->fileUploadService->deleteFile($testimonial->image);
         }
 
         $testimonial->delete();

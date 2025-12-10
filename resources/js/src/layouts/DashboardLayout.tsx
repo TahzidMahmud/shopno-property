@@ -7,8 +7,11 @@ import Toolbar from '@mui/material/Toolbar';
 import CssBaseline from '@mui/material/CssBaseline';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Outlet } from 'react-router-dom';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import DashboardMenuList from '../components/DashboardMenuList';
 import DashboardContent from '../components/DashboardContent';
 
@@ -53,6 +56,8 @@ const AppBar = styled(MuiAppBar, {
 export default function DashboardLayout() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -60,6 +65,11 @@ export default function DashboardLayout() {
 
   const handleDrawerClose = () => {
     setOpen(false);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/admin/login');
   };
 
   return (
@@ -79,9 +89,24 @@ export default function DashboardLayout() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Shopno Property - Admin Dashboard
           </Typography>
+          {user && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>
+                {user.name}
+              </Typography>
+              <Button
+                color="inherit"
+                startIcon={<LogoutIcon />}
+                onClick={handleLogout}
+                sx={{ textTransform: 'none' }}
+              >
+                Logout
+              </Button>
+            </Box>
+          )}
         </Toolbar>
       </AppBar>
       <DashboardMenuList open={open} handleDrawerClose={handleDrawerClose} theme={theme} />

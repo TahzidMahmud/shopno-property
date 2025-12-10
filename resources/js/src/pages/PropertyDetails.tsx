@@ -724,99 +724,201 @@ const PropertyDetails: React.FC = () => {
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
             },
           }}
         >
-          <Container maxWidth="md" sx={{ px: { xs: 2, md: 3 } }}>
+          <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 }, position: 'relative', zIndex: 1 }}>
             <Paper
               sx={{
                 position: 'relative',
                 zIndex: 1,
-                p: { xs: 2, md: 4 },
                 borderRadius: 2,
                 boxShadow: 6,
+                bgcolor: 'white',
+                overflow: 'hidden',
               }}
             >
-              <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', mb: { xs: 2, md: 3 }, textAlign: 'center', fontSize: { xs: '1.5rem', md: '2rem' } }}>
-                Book Your Property
-              </Typography>
-              <Box
-                component="form"
-                onSubmit={handleBookingSubmit}
-                sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 3 } }}
-              >
-                <TextField
-                  fullWidth
-                  label="Full Name"
-                  required
-                  value={bookingFormData.fullName}
-                  onChange={(e) => setBookingFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                  variant="outlined"
-                />
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  required
-                  type="tel"
-                  value={bookingFormData.phoneNumber}
-                  onChange={(e) => setBookingFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                  variant="outlined"
-                />
-                <TextField
-                  fullWidth
-                  label="Email"
-                  type="email"
-                  value={bookingFormData.email}
-                  onChange={(e) => setBookingFormData(prev => ({ ...prev, email: e.target.value }))}
-                  variant="outlined"
-                />
-                <FormControl fullWidth>
-                  <InputLabel>Project Type</InputLabel>
-                  <Select
-                    value={bookingFormData.projectType}
-                    onChange={(e) => setBookingFormData(prev => ({ ...prev, projectType: e.target.value }))}
-                    label="Project Type"
-                  >
-                    <MenuItem value="apartment">Apartment</MenuItem>
-                    <MenuItem value="villa">Villa</MenuItem>
-                    <MenuItem value="penthouse">Penthouse</MenuItem>
-                    <MenuItem value="commercial">Commercial</MenuItem>
-                  </Select>
-                </FormControl>
-                <TextField
-                  fullWidth
-                  label="Project Details"
-                  required
-                  multiline
-                  rows={4}
-                  value={bookingFormData.projectDetails}
-                  onChange={(e) => setBookingFormData(prev => ({ ...prev, projectDetails: e.target.value }))}
-                  variant="outlined"
-                />
-                <Box sx={{ display: 'flex', gap: { xs: 1, md: 2 }, flexWrap: 'wrap' }}>
-                  <Button variant="outlined" color="primary" sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: 1 }, minWidth: { xs: '100%', sm: 150 }, fontSize: { xs: '0.85rem', md: '1rem' } }}>
-                    Download Brochure
-                  </Button>
-                  <Button variant="outlined" color="primary" sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: 1 }, minWidth: { xs: '100%', sm: 150 }, fontSize: { xs: '0.85rem', md: '1rem' } }}>
-                    Payment Schedule
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
+              <Grid container>
+                {/* Left Column - Image with Overlay Text */}
+                <Grid item xs={12} md={5}>
+                  <Box
                     sx={{
-                      flex: { xs: '1 1 100%', md: 1 },
-                      minWidth: { xs: '100%', md: 150 },
-                      backgroundColor: '#00bcd4',
-                      fontSize: { xs: '0.85rem', md: '1rem' },
-                      '&:hover': { backgroundColor: '#00acc1' },
+                      position: 'relative',
+                      backgroundImage: `url(${property.mainImage})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      minHeight: { xs: '300px', md: '600px' },
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'flex-start',
+                      alignItems: 'flex-start',
+                      p: { xs: 3, md: 4 },
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                        zIndex: 0,
+                      },
                     }}
                   >
-                    Submit Request
-                  </Button>
-                </Box>
-              </Box>
+                    <Box sx={{ position: 'relative', zIndex: 1, color: 'white' }}>
+                      <Typography
+                        variant="h4"
+                        component="h2"
+                        sx={{
+                          fontWeight: 'bold',
+                          mb: 1,
+                          fontSize: { xs: '1.5rem', md: '2rem' },
+                          color: 'white',
+                        }}
+                      >
+                        Book Your
+                      </Typography>
+                      <Typography
+                        variant="h3"
+                        component="span"
+                        sx={{
+                          fontWeight: 'bold',
+                          fontSize: { xs: '2rem', md: '3rem' },
+                          bgcolor: '#00bcd4',
+                          color: 'white',
+                          px: { xs: 1.5, md: 2 },
+                          py: { xs: 0.5, md: 0.75 },
+                          borderRadius: 1,
+                          display: 'inline-block',
+                          mb: 2,
+                        }}
+                      >
+                        Property
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontSize: { xs: '0.875rem', md: '1rem' },
+                          color: 'white',
+                          mt: 2,
+                        }}
+                      >
+                        We will confirm your appointment within 2 hours
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+
+                {/* Right Column - Form */}
+                <Grid item xs={12} md={7}>
+                  <Box
+                    component="form"
+                    onSubmit={handleBookingSubmit}
+                    sx={{
+                      p: { xs: 3, md: 4 },
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: { xs: 2, md: 2.5 },
+                    }}
+                  >
+                    <TextField
+                      fullWidth
+                      label="Full Name*"
+                      placeholder="Enter Your Name"
+                      required
+                      value={bookingFormData.fullName}
+                      onChange={(e) => setBookingFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                      variant="outlined"
+                    />
+                    <TextField
+                      fullWidth
+                      label="Phone Number*"
+                      placeholder="Select Your Number"
+                      required
+                      type="tel"
+                      value={bookingFormData.phoneNumber}
+                      onChange={(e) => setBookingFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                      variant="outlined"
+                    />
+                    <TextField
+                      fullWidth
+                      label="Email"
+                      placeholder="Select Your Email"
+                      type="email"
+                      value={bookingFormData.email}
+                      onChange={(e) => setBookingFormData(prev => ({ ...prev, email: e.target.value }))}
+                      variant="outlined"
+                    />
+                    <FormControl fullWidth>
+                      <InputLabel>Project Type</InputLabel>
+                      <Select
+                        value={bookingFormData.projectType}
+                        onChange={(e) => setBookingFormData(prev => ({ ...prev, projectType: e.target.value }))}
+                        label="Project Type"
+                      >
+                        <MenuItem value="">Select Your Project</MenuItem>
+                        <MenuItem value="apartment">Apartment</MenuItem>
+                        <MenuItem value="villa">Villa</MenuItem>
+                        <MenuItem value="penthouse">Penthouse</MenuItem>
+                        <MenuItem value="commercial">Commercial</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <TextField
+                      fullWidth
+                      label="Project details*"
+                      placeholder="Tell us more about your idea"
+                      required
+                      multiline
+                      rows={4}
+                      value={bookingFormData.projectDetails}
+                      onChange={(e) => setBookingFormData(prev => ({ ...prev, projectDetails: e.target.value }))}
+                      variant="outlined"
+                    />
+                    <Box sx={{ display: 'flex', gap: { xs: 1, md: 2 }, flexWrap: 'wrap', mt: 1 }}>
+                      <Button
+                        variant="outlined"
+                        sx={{
+                          flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: 1 },
+                          minWidth: { xs: '100%', sm: 150 },
+                          fontSize: { xs: '0.85rem', md: '1rem' },
+                          borderColor: '#00bcd4',
+                          color: '#00bcd4',
+                          '&:hover': { borderColor: '#00acc1', bgcolor: 'rgba(0, 188, 212, 0.04)' },
+                        }}
+                      >
+                        Download Brochure
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        sx={{
+                          flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: 1 },
+                          minWidth: { xs: '100%', sm: 150 },
+                          fontSize: { xs: '0.85rem', md: '1rem' },
+                          borderColor: '#00bcd4',
+                          color: '#00bcd4',
+                          '&:hover': { borderColor: '#00acc1', bgcolor: 'rgba(0, 188, 212, 0.04)' },
+                        }}
+                      >
+                        Payment Schedule
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        sx={{
+                          flex: { xs: '1 1 100%', md: 1 },
+                          minWidth: { xs: '100%', md: 150 },
+                          backgroundColor: '#00bcd4',
+                          fontSize: { xs: '0.85rem', md: '1rem' },
+                          '&:hover': { backgroundColor: '#00acc1' },
+                        }}
+                      >
+                        Submit Request
+                      </Button>
+                    </Box>
+                  </Box>
+                </Grid>
+              </Grid>
             </Paper>
           </Container>
         </Box>
