@@ -28,6 +28,8 @@ export interface WhyChooseUsFeature {
   icon_name: string;
   title: string;
   description: string;
+  video_url?: string;
+  video_thumbnail?: string;
   is_active: boolean;
   order: number;
   created_at?: string;
@@ -38,6 +40,8 @@ export interface WhyChooseUsFeatureFormData {
   icon_name: string;
   title: string;
   description: string;
+  video_url: string;
+  video_thumbnail: File | null;
   is_active: boolean;
   order: number;
 }

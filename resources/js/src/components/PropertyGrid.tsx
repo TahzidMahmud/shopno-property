@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Grid, Button, CircularProgress } from '@mui/material';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import HomeIcon from '@mui/icons-material/Home';
+import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import { useNavigate } from 'react-router-dom';
 import PropertyCard from './PropertyCard';
 import { Property } from '../types/Property';
@@ -45,48 +44,140 @@ export default function PropertyGrid() {
   }
 
   return (
-    <Box sx={{ py: '4rem', px: { xs: 2, md: 8 }, maxWidth: 'lg', mx: 'auto' }}>
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 4, gap: { xs: 2, sm: 0 } }}>
-        <Box>
-          <Typography variant="overline" sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', fontSize: { xs: '0.7rem', md: '0.75rem' } }}>
-            <HomeIcon sx={{ fontSize: { xs: '0.8rem', md: '1rem' }, color: 'secondary.main', mr: 0.5 }} />
-            Property Size
-          </Typography>
-          <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' } }}>
-            Perfect Size,<br />Perfect <Box component="span" sx={{ bgcolor: '#00bcd4', color: 'white', px: { xs: 1, md: 1.5 }, py: { xs: 0.3, md: 0.5 }, borderRadius: '4px', transform: 'rotate(-5deg)', display: 'inline-block', ml: 1 }}>Comfort</Box>
-          </Typography>
+    <Box sx={{ py: { xs: '3rem', md: '4rem' }, px: { xs: 2, md: '120px' }, maxWidth: 'lg', mx: 'auto' }}>
+      {/* Header Section */}
+      <Box sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        justifyContent: 'space-between',
+        alignItems: { xs: 'flex-start', md: 'flex-end' },
+        mb: { xs: 3, md: 4 },
+        gap: { xs: 2, md: 0 }
+      }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: { xs: '1 1 100%', md: '0 0 auto' }, maxWidth: { xs: '100%', md: '356px' } }}>
+          {/* Property Size Label */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
+            <Box sx={{
+              width: '12px',
+              height: '12px',
+              clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+              bgcolor: '#411f57',
+            }} />
+            <Typography sx={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 500,
+              fontSize: '14px',
+              lineHeight: 1.2,
+              color: '#411f57'
+            }}>
+              Property Size
+            </Typography>
+            <Box sx={{
+              width: '12px',
+              height: '12px',
+              clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+              bgcolor: '#411f57',
+            }} />
+          </Box>
+
+          {/* Title with Comfort Badge */}
+          <Box sx={{ position: 'relative', display: 'inline-block', width: { xs: '100%', md: '356px' } }}>
+            <Typography sx={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 600,
+              fontSize: { xs: '32px', md: '40px' },
+              lineHeight: 1.3,
+              color: '#272222',
+              textTransform: 'capitalize',
+              display: 'inline-block',
+            }}>
+              Perfect Size, Perfect
+            </Typography>
+            <Box sx={{
+              position: 'absolute',
+              left: { xs: '0px', md: '156px' },
+              top: { xs: '40px', md: '50.8px' },
+              bgcolor: '#17badf',
+              color: '#fafafa',
+              px: '14px',
+              py: '10px',
+              borderRadius: '4px',
+              transform: 'rotate(4.4deg)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '42px',
+              minWidth: { xs: '140px', md: '159.759px' }
+            }}>
+              <Typography sx={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontWeight: 600,
+                fontSize: '32px',
+                lineHeight: 1.2,
+                color: '#fafafa',
+                whiteSpace: 'nowrap'
+              }}>
+                Comfort
+              </Typography>
+            </Box>
+          </Box>
         </Box>
-        <Button 
-          variant="outlined" 
-          sx={{ 
-            color: '#00bcd4', 
-            borderColor: '#00bcd4',
-            textTransform: 'none',
-            padding: { xs: '8px 16px', md: '10px 20px' },
-            fontSize: { xs: '0.85rem', md: '1rem' },
-            width: { xs: '100%', sm: 'auto' },
-            '&:hover': {
-              borderColor: '#00acc1',
-              backgroundColor: 'rgba(0, 188, 212, 0.04)',
-            }
-          }} 
-          endIcon={<ArrowForwardIcon sx={{ color: '#00bcd4' }} />}
+
+        {/* View All Button */}
+        <Button
+          variant="outlined"
           onClick={handleViewAll}
+          sx={{
+            border: '1px solid #17badf',
+            color: '#17badf',
+            textTransform: 'none',
+            px: '24px',
+            py: '12px',
+            borderRadius: '4px',
+            height: '50px',
+            minWidth: { xs: '100%', md: '155px' },
+            fontSize: '20px',
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 500,
+            lineHeight: 1.2,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            position: 'relative',
+            '&:hover': {
+              borderColor: '#17badf',
+              backgroundColor: 'rgba(23, 186, 223, 0.04)',
+            },
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: '-1px',
+              left: '-1px',
+              width: '2px',
+              height: '0',
+            }
+          }}
         >
           View All
+          <ArrowOutwardIcon sx={{ fontSize: '20.714px', transform: 'rotate(2.085deg)' }} />
         </Button>
       </Box>
 
-      <Grid container spacing={2}>
+      {/* Property Cards Grid */}
+      <Box sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+        gap: { xs: '20px', md: '14.004px' },
+        mt: { xs: 3, md: 4 }
+      }}>
         {properties.map(p => (
-          <Grid item xs={12} sm={6} md={4} key={p.id}>
-            <PropertyCard 
-              property={p} 
-              onOpen={(id) => navigate(`/property-details/${id}`)} 
-            />
-          </Grid>
+          <PropertyCard
+            key={p.id}
+            property={p}
+            onOpen={(id) => navigate(`/property-details/${id}`)}
+          />
         ))}
-      </Grid>
+      </Box>
     </Box>
   );
 }

@@ -67,8 +67,20 @@ const PropertiesManagement: React.FC = () => {
   };
 
   // Handle editing property
-  const handleEdit = (property: Property) => {
-    setSelectedProperty(property);
+  const handleEdit = async (property: Property) => {
+    // Fetch full property data to ensure all fields are loaded
+    try {
+      if (property.id) {
+        const fullProperty = await propertyService.getById(property.id);
+        setSelectedProperty(fullProperty);
+      } else {
+        setSelectedProperty(property);
+      }
+    } catch (error) {
+      console.error('Error fetching property details:', error);
+      // Fallback to using property from list
+      setSelectedProperty(property);
+    }
     setViewMode('form');
   };
 

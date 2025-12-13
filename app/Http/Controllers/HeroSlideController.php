@@ -6,6 +6,7 @@ use App\Models\HeroSlide;
 use Illuminate\Http\Request;
 use App\Services\FileUploadService;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class HeroSlideController extends Controller
 {
@@ -24,6 +25,7 @@ class HeroSlideController extends Controller
 
     public function store(Request $request)
     {
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'required|string|max:255',
@@ -60,7 +62,18 @@ class HeroSlideController extends Controller
     {
         $slide = HeroSlide::findOrFail($id);
 
-        $validated = $request->validate([
+        // Debug: Check what we're receiving
+        Log::info('HeroSlide Update Request', [
+            'method' => $request->method(),
+            'all' => $request->all(),
+            'input_title' => $request->input('title'),
+            'has_file' => $request->hasFile('background_image'),
+            'content_type' => $request->header('Content-Type'),
+            'raw_content_length' => $request->header('Content-Length'),
+        ]);
+
+        // Exclude _method from validation if present (method spoofing)
+        $validationRules = [
             'title' => 'required|string|max:255',
             'subtitle' => 'required|string|max:255',
             'description' => 'required|string',
@@ -69,7 +82,9 @@ class HeroSlideController extends Controller
             'background_image' => 'nullable|image|max:2048',
             'order' => 'nullable|integer',
             'is_active' => 'nullable|in:0,1,true,false',
-        ]);
+        ];
+
+        $validated = $request->validate($validationRules);
 
         if ($request->hasFile('background_image')) {
             if ($slide->background_image) {
@@ -93,11 +108,11 @@ class HeroSlideController extends Controller
     public function destroy(string $id)
     {
         $slide = HeroSlide::findOrFail($id);
-        
+
         if ($slide->background_image) {
             $this->fileUploadService->deleteFile($slide->background_image);
         }
-        
+
         $slide->delete();
         return response()->json(['message' => 'Hero slide deleted successfully'], 200);
     }

@@ -41,6 +41,11 @@ class AboutPageProjectController extends Controller
             $validated['image'] = null;
         }
 
+        // Convert string boolean to actual boolean
+        if ($request->has('is_active')) {
+            $validated['is_active'] = filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN);
+        }
+
         $project = AboutPageProject::create($validated);
         return response()->json(['message' => 'Project created successfully', 'data' => $project], 201);
     }
@@ -77,6 +82,11 @@ class AboutPageProjectController extends Controller
                 $request->file('image'),
                 'uploads/about/projects'
             );
+        }
+
+        // Convert string boolean to actual boolean
+        if ($request->has('is_active')) {
+            $validated['is_active'] = filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN);
         }
 
         $project->update($validated);

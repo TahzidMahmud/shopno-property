@@ -25,10 +25,13 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Card,
+  CardMedia,
 } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Close as CloseIcon } from '@mui/icons-material';
 import { WhyChooseUsFeature, WhyChooseUsFeatureFormData } from '../../../types/HomePage';
 import { whyChooseUsFeatureService } from '../../../services/homePageService';
+import { getYouTubeEmbedUrl, extractYouTubeVideoId } from '../../../utils/youtube';
 
 const iconOptions = [
   'CameraAlt', 'Chair', 'Description', 'AccessAlarm', 'Home', 'Business', 'LocationCity', 'Lightbulb'
@@ -43,9 +46,13 @@ const WhyChooseUsManagement: React.FC = () => {
     icon_name: 'CameraAlt',
     title: '',
     description: '',
+    video_url: '',
+    video_thumbnail: null,
     is_active: false,
     order: 0,
   });
+  const [videoThumbnailPreview, setVideoThumbnailPreview] = useState<string | null>(null);
+  const [existingVideoThumbnail, setExistingVideoThumbnail] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
@@ -72,6 +79,12 @@ const WhyChooseUsManagement: React.FC = () => {
     setNotification({ open: true, message, severity });
   };
 
+  const getImageUrl = (path: string | undefined) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `/storage/${path}`;
+  };
+
   const handleOpenDialog = (feature?: WhyChooseUsFeature) => {
     if (feature) {
       setEditingFeature(feature);
@@ -79,18 +92,26 @@ const WhyChooseUsManagement: React.FC = () => {
         icon_name: feature.icon_name,
         title: feature.title,
         description: feature.description,
+        video_url: feature.video_url || '',
+        video_thumbnail: null,
         is_active: feature.is_active,
         order: feature.order,
       });
+      setExistingVideoThumbnail(getImageUrl(feature.video_thumbnail) || null);
+      setVideoThumbnailPreview(null);
     } else {
       setEditingFeature(null);
       setFormData({
         icon_name: 'CameraAlt',
         title: '',
         description: '',
+        video_url: '',
+        video_thumbnail: null,
         is_active: false,
         order: features.length,
       });
+      setExistingVideoThumbnail(null);
+      setVideoThumbnailPreview(null);
     }
     setOpenDialog(true);
   };
@@ -98,6 +119,30 @@ const WhyChooseUsManagement: React.FC = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingFeature(null);
+    setExistingVideoThumbnail(null);
+    if (videoThumbnailPreview) {
+      URL.revokeObjectURL(videoThumbnailPreview);
+      setVideoThumbnailPreview(null);
+    }
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (file) {
+      if (videoThumbnailPreview) {
+        URL.revokeObjectURL(videoThumbnailPreview);
+      }
+      const previewUrl = URL.createObjectURL(file);
+      setVideoThumbnailPreview(previewUrl);
+      setExistingVideoThumbnail(null);
+      setFormData(prev => ({ ...prev, video_thumbnail: file }));
+    } else {
+      if (videoThumbnailPreview) {
+        URL.revokeObjectURL(videoThumbnailPreview);
+        setVideoThumbnailPreview(null);
+      }
+      setFormData(prev => ({ ...prev, video_thumbnail: null }));
+    }
   };
 
   const handleSubmit = async () => {
@@ -201,6 +246,95 @@ const WhyChooseUsManagement: React.FC = () => {
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
             />
+            <TextField
+              label="YouTube Video URL"
+              fullWidth
+              value={formData.video_url}
+              onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
+              placeholder="https://www.youtube.com/watch?v=..."
+              helperText="Enter a YouTube video URL (watch, shorts, or youtu.be format)"
+            />
+            {formData.video_url && extractYouTubeVideoId(formData.video_url) && (
+              <Box sx={{ mt: 1 }}>
+                <Card>
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      width: '100%',
+                      paddingTop: '56.25%', // 16:9 aspect ratio
+                      overflow: 'hidden',
+                      borderRadius: 1,
+                    }}
+                  >
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        border: 0,
+                      }}
+                      src={getYouTubeEmbedUrl(formData.video_url) || ''}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </Box>
+                </Card>
+              </Box>
+            )}
+            {formData.video_url && !extractYouTubeVideoId(formData.video_url) && (
+              <Alert severity="warning">
+                Please enter a valid YouTube URL
+              </Alert>
+            )}
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{ height: 56 }}
+            >
+              Upload Video Thumbnail
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleThumbnailChange}
+              />
+            </Button>
+            {(videoThumbnailPreview || existingVideoThumbnail) && (
+              <Box sx={{ mt: 2, position: 'relative' }}>
+                <Card sx={{ position: 'relative' }}>
+                  <CardMedia
+                    component="img"
+                    image={videoThumbnailPreview || existingVideoThumbnail || ''}
+                    alt="Video Thumbnail Preview"
+                    sx={{ height: 200, objectFit: 'cover' }}
+                  />
+                  <IconButton
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      bgcolor: 'rgba(0, 0, 0, 0.5)',
+                      color: 'white',
+                      '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+                    }}
+                    onClick={() => {
+                      handleThumbnailChange({ target: { files: null } } as any);
+                      setExistingVideoThumbnail(null);
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Card>
+                {formData.video_thumbnail && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                    Selected: {formData.video_thumbnail.name}
+                  </Typography>
+                )}
+              </Box>
+            )}
             <TextField
               label="Order"
               type="number"

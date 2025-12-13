@@ -9,6 +9,8 @@ import PropertyDetails from './pages/PropertyDetails';
 import Projects from './pages/Projects';
 import Contact from './pages/Contact';
 import About from './pages/About';
+import BlogListing from './pages/BlogListing';
+import BlogDetails from './pages/BlogDetails';
 import PrimaryLayout from './layouts/PrimaryLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 import Login from './pages/admin/Login';
@@ -19,6 +21,7 @@ import HomePageManagement from './pages/admin/HomePageManagement';
 import HeaderFooterManagement from './pages/admin/HeaderFooterManagement';
 import ContactPageManagement from './pages/admin/ContactPageManagement';
 import AboutPageManagement from './pages/admin/AboutPageManagement';
+import PartnerSubmissionsManagement from './pages/admin/PartnerSubmissionsManagement';
 
 export default function App() {
   return (
@@ -32,6 +35,8 @@ export default function App() {
                   <Route path="/projects" element={<Projects />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/about" element={<About />} />
+                  <Route path="/blogs" element={<BlogListing />} />
+                  <Route path="/blogs/:id" element={<BlogDetails />} />
               </Route>
               <Route path="/admin/login" element={<Login />} />
               <Route element={<DashboardLayout />}>
@@ -42,6 +47,7 @@ export default function App() {
                   <Route path='/admin/dashboard/header-footer' element={<ProtectedRoute><HeaderFooterManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/contact-page' element={<ProtectedRoute><ContactPageManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/about-page' element={<ProtectedRoute><AboutPageManagement /></ProtectedRoute>} />
+                  <Route path='/admin/dashboard/partner-submissions' element={<ProtectedRoute><PartnerSubmissionsManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/users' element={<ProtectedRoute><div>Users Management - Coming Soon</div></ProtectedRoute>} />
                   <Route path='/admin/dashboard/companies' element={<ProtectedRoute><div>Companies Management - Coming Soon</div></ProtectedRoute>} />
                   <Route path='/admin/dashboard/settings' element={<ProtectedRoute><div>Settings - Coming Soon</div></ProtectedRoute>} />

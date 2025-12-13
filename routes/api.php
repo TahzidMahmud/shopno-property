@@ -26,6 +26,7 @@ use App\Http\Controllers\AboutPageProjectController;
 use App\Http\Controllers\AboutPageTeamMemberController;
 use App\Http\Controllers\AboutPageTestimonialController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PartnerSubmissionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,7 +52,8 @@ Route::prefix('properties')->group(function () {
     Route::get('/{id}', [PropertyController::class, 'show']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [PropertyController::class, 'store']);
-        Route::put('/{id}', [PropertyController::class, 'update']);
+        Route::post('/{id}', [PropertyController::class, 'update']); // Accept POST for method spoofing
+        Route::put('/{id}', [PropertyController::class, 'update']); // Also accept PUT for direct calls
         Route::delete('/{id}', [PropertyController::class, 'destroy']);
     });
 });
@@ -72,7 +74,8 @@ Route::prefix('hero-slides')->group(function () {
     Route::get('/{id}', [HeroSlideController::class, 'show']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [HeroSlideController::class, 'store']);
-        Route::put('/{id}', [HeroSlideController::class, 'update']);
+        Route::post('/{id}', [HeroSlideController::class, 'update']); // Accept POST for method spoofing
+        Route::put('/{id}', [HeroSlideController::class, 'update']); // Also accept PUT for direct calls
         Route::delete('/{id}', [HeroSlideController::class, 'destroy']);
     });
 });
@@ -82,7 +85,8 @@ Route::prefix('why-choose-us-features')->group(function () {
     Route::get('/{id}', [WhyChooseUsFeatureController::class, 'show']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [WhyChooseUsFeatureController::class, 'store']);
-        Route::put('/{id}', [WhyChooseUsFeatureController::class, 'update']);
+        Route::post('/{id}', [WhyChooseUsFeatureController::class, 'update']); // Accept POST for method spoofing
+        Route::put('/{id}', [WhyChooseUsFeatureController::class, 'update']); // Also accept PUT for direct calls
         Route::delete('/{id}', [WhyChooseUsFeatureController::class, 'destroy']);
     });
 });
@@ -103,6 +107,7 @@ Route::prefix('blog-posts')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [BlogPostController::class, 'store']);
         Route::put('/{id}', [BlogPostController::class, 'update']);
+        Route::post('/{id}', [BlogPostController::class, 'update']); // Support method spoofing
         Route::delete('/{id}', [BlogPostController::class, 'destroy']);
     });
 });
@@ -114,6 +119,15 @@ Route::prefix('partners')->group(function () {
         Route::post('/', [PartnerController::class, 'store']);
         Route::put('/{id}', [PartnerController::class, 'update']);
         Route::delete('/{id}', [PartnerController::class, 'destroy']);
+    });
+});
+
+Route::prefix('partner-submissions')->group(function () {
+    Route::post('/', [PartnerSubmissionController::class, 'store']); // Public route for form submission
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/', [PartnerSubmissionController::class, 'index']);
+        Route::get('/{id}', [PartnerSubmissionController::class, 'show']);
+        Route::delete('/{id}', [PartnerSubmissionController::class, 'destroy']);
     });
 });
 
@@ -133,6 +147,7 @@ Route::prefix('home-page-settings')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [HomePageSettingController::class, 'store']);
         Route::put('/{key}', [HomePageSettingController::class, 'update']);
+        Route::post('/{key}', [HomePageSettingController::class, 'update']); // Support method spoofing
         Route::delete('/{key}', [HomePageSettingController::class, 'destroy']);
     });
 });
@@ -244,7 +259,8 @@ Route::prefix('about-page-projects')->group(function () {
     Route::get('/{id}', [AboutPageProjectController::class, 'show']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [AboutPageProjectController::class, 'store']);
-        Route::put('/{id}', [AboutPageProjectController::class, 'update']);
+        Route::post('/{id}', [AboutPageProjectController::class, 'update']); // Accept POST for method spoofing
+        Route::put('/{id}', [AboutPageProjectController::class, 'update']); // Also accept PUT for direct calls
         Route::delete('/{id}', [AboutPageProjectController::class, 'destroy']);
     });
 });
@@ -254,7 +270,8 @@ Route::prefix('about-page-team-members')->group(function () {
     Route::get('/{id}', [AboutPageTeamMemberController::class, 'show']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [AboutPageTeamMemberController::class, 'store']);
-        Route::put('/{id}', [AboutPageTeamMemberController::class, 'update']);
+        Route::post('/{id}', [AboutPageTeamMemberController::class, 'update']); // Accept POST for method spoofing
+        Route::put('/{id}', [AboutPageTeamMemberController::class, 'update']); // Also accept PUT for direct calls
         Route::delete('/{id}', [AboutPageTeamMemberController::class, 'destroy']);
     });
 });
@@ -264,7 +281,8 @@ Route::prefix('about-page-testimonials')->group(function () {
     Route::get('/{id}', [AboutPageTestimonialController::class, 'show']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [AboutPageTestimonialController::class, 'store']);
-        Route::put('/{id}', [AboutPageTestimonialController::class, 'update']);
+        Route::post('/{id}', [AboutPageTestimonialController::class, 'update']); // Accept POST for method spoofing
+        Route::put('/{id}', [AboutPageTestimonialController::class, 'update']); // Also accept PUT for direct calls
         Route::delete('/{id}', [AboutPageTestimonialController::class, 'destroy']);
     });
 });

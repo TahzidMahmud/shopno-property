@@ -36,32 +36,40 @@ export const heroSlideService = {
   create: async (data: HeroSlideFormData): Promise<HeroSlide> => {
     const formData = new FormData();
     if (data.background_image) formData.append('background_image', data.background_image);
-    formData.append('title', data.title);
-    formData.append('subtitle', data.subtitle);
-    formData.append('description', data.description);
-    formData.append('button_text', data.button_text);
+    formData.append('title', data.title || '');
+    formData.append('subtitle', data.subtitle || '');
+    formData.append('description', data.description || '');
+    formData.append('button_text', data.button_text || '');
     formData.append('button_link', data.button_link || '');
     formData.append('order', data.order.toString());
     formData.append('is_active', data.is_active ? '1' : '0');
     
+    // Don't set Content-Type manually - let axios set it with boundary
     const response = await axios.post(`${API_BASE_URL}/hero-slides`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: {
+        'Content-Type': undefined, // Let axios set it automatically with boundary
+      },
     });
     return response.data.data;
   },
   update: async (id: number, data: HeroSlideFormData): Promise<HeroSlide> => {
     const formData = new FormData();
+    // Use method spoofing for PUT with FormData (more reliable)
+    formData.append('_method', 'PUT');
     if (data.background_image) formData.append('background_image', data.background_image);
-    formData.append('title', data.title);
-    formData.append('subtitle', data.subtitle);
-    formData.append('description', data.description);
-    formData.append('button_text', data.button_text);
+    formData.append('title', data.title || '');
+    formData.append('subtitle', data.subtitle || '');
+    formData.append('description', data.description || '');
+    formData.append('button_text', data.button_text || '');
     formData.append('button_link', data.button_link || '');
     formData.append('order', data.order.toString());
     formData.append('is_active', data.is_active ? '1' : '0');
     
-    const response = await axios.put(`${API_BASE_URL}/hero-slides/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    // Use POST with _method=PUT and manually set Content-Type (like propertyService)
+    const response = await axios.post(`${API_BASE_URL}/hero-slides/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
     return response.data.data;
   },
@@ -81,11 +89,33 @@ export const whyChooseUsFeatureService = {
     return response.data;
   },
   create: async (data: WhyChooseUsFeatureFormData): Promise<WhyChooseUsFeature> => {
-    const response = await axios.post(`${API_BASE_URL}/why-choose-us-features`, data);
+    const formData = new FormData();
+    formData.append('icon_name', data.icon_name);
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    if (data.video_url) formData.append('video_url', data.video_url);
+    if (data.video_thumbnail) formData.append('video_thumbnail', data.video_thumbnail);
+    formData.append('is_active', data.is_active ? '1' : '0');
+    formData.append('order', data.order.toString());
+    const response = await axios.post(`${API_BASE_URL}/why-choose-us-features`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data.data;
   },
   update: async (id: number, data: WhyChooseUsFeatureFormData): Promise<WhyChooseUsFeature> => {
-    const response = await axios.put(`${API_BASE_URL}/why-choose-us-features/${id}`, data);
+    const formData = new FormData();
+    // Use method spoofing for PUT with FormData
+    formData.append('_method', 'PUT');
+    formData.append('icon_name', data.icon_name);
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    if (data.video_url) formData.append('video_url', data.video_url);
+    if (data.video_thumbnail) formData.append('video_thumbnail', data.video_thumbnail);
+    formData.append('is_active', data.is_active ? '1' : '0');
+    formData.append('order', data.order.toString());
+    const response = await axios.post(`${API_BASE_URL}/why-choose-us-features/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data.data;
   },
   delete: async (id: number): Promise<void> => {
@@ -136,23 +166,31 @@ export const blogPostService = {
     formData.append('is_published', data.is_published ? '1' : '0');
     formData.append('order', data.order.toString());
     
+    // Don't set Content-Type manually - let axios set it with boundary
     const response = await axios.post(`${API_BASE_URL}/blog-posts`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: {
+        'Content-Type': undefined, // Let axios set it automatically with boundary
+      },
     });
     return response.data.data;
   },
   update: async (id: number, data: BlogPostFormData): Promise<BlogPost> => {
     const formData = new FormData();
+    // Use method spoofing for PUT with FormData (more reliable)
+    formData.append('_method', 'PUT');
     if (data.image) formData.append('image', data.image);
-    formData.append('title', data.title);
+    formData.append('title', data.title || '');
     formData.append('content', data.content || '');
-    formData.append('published_date', data.published_date);
+    formData.append('published_date', data.published_date || '');
     formData.append('slug', data.slug || '');
     formData.append('is_published', data.is_published ? '1' : '0');
     formData.append('order', data.order.toString());
     
-    const response = await axios.put(`${API_BASE_URL}/blog-posts/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    // Use POST with _method=PUT for better FormData compatibility
+    const response = await axios.post(`${API_BASE_URL}/blog-posts/${id}`, formData, {
+      headers: {
+        'Content-Type': undefined, // Let axios set it automatically with boundary
+      },
     });
     return response.data.data;
   },
@@ -174,27 +212,31 @@ export const partnerService = {
   create: async (data: PartnerFormData): Promise<Partner> => {
     const formData = new FormData();
     if (data.logo) formData.append('logo', data.logo);
-    formData.append('name', data.name);
+    formData.append('name', data.name || '');
     formData.append('website', data.website || '');
     formData.append('order', data.order.toString());
     formData.append('is_active', data.is_active ? '1' : '0');
     
+    // Don't set Content-Type manually - let axios set it with boundary
     const response = await axios.post(`${API_BASE_URL}/partners`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: {
+        'Content-Type': undefined, // Let axios set it automatically with boundary
+      },
     });
     return response.data.data;
   },
   update: async (id: number, data: PartnerFormData): Promise<Partner> => {
     const formData = new FormData();
+    // Use method spoofing for PUT with FormData (more reliable)
+    formData.append('_method', 'PUT');
     if (data.logo) formData.append('logo', data.logo);
-    formData.append('name', data.name);
+    formData.append('name', data.name || '');
     formData.append('website', data.website || '');
     formData.append('order', data.order.toString());
     formData.append('is_active', data.is_active ? '1' : '0');
     
-    const response = await axios.put(`${API_BASE_URL}/partners/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    // Use POST with _method=PUT for better FormData compatibility
+    const response = await axios.post(`${API_BASE_URL}/partners/${id}`, formData);
     return response.data.data;
   },
   delete: async (id: number): Promise<void> => {
@@ -244,24 +286,32 @@ export const homePageSettingService = {
     if (data.file) {
       formData.append('file', data.file);
     } else {
-      formData.append('value', data.value);
+      formData.append('value', data.value || '');
     }
     
+    // Don't set Content-Type manually - let axios set it with boundary
     const response = await axios.post(`${API_BASE_URL}/home-page-settings`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: {
+        'Content-Type': undefined, // Let axios set it automatically with boundary
+      },
     });
     return response.data.data;
   },
   update: async (key: string, data: HomePageSettingFormData): Promise<HomePageSetting> => {
     const formData = new FormData();
+    // Use method spoofing for PUT with FormData (more reliable)
+    formData.append('_method', 'PUT');
     if (data.file) {
       formData.append('file', data.file);
     } else {
-      formData.append('value', data.value);
+      formData.append('value', data.value || '');
     }
     
-    const response = await axios.put(`${API_BASE_URL}/home-page-settings/${key}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    // Use POST with _method=PUT for better FormData compatibility
+    const response = await axios.post(`${API_BASE_URL}/home-page-settings/${key}`, formData, {
+      headers: {
+        'Content-Type': undefined, // Let axios set it automatically with boundary
+      },
     });
     return response.data.data;
   },

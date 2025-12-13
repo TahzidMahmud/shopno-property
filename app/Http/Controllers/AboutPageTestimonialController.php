@@ -42,6 +42,11 @@ class AboutPageTestimonialController extends Controller
             );
         }
 
+        // Convert string boolean to actual boolean
+        if ($request->has('is_active')) {
+            $validated['is_active'] = filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN);
+        }
+
         $testimonial = AboutPageTestimonial::create($validated);
         return response()->json(['message' => 'Testimonial created successfully', 'data' => $testimonial], 201);
     }
@@ -81,6 +86,11 @@ class AboutPageTestimonialController extends Controller
                 $request->file('image'),
                 'uploads/about/testimonials'
             );
+        }
+
+        // Convert string boolean to actual boolean
+        if ($request->has('is_active')) {
+            $validated['is_active'] = filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN);
         }
 
         $testimonial->update($validated);

@@ -79,13 +79,13 @@ export default function Footer() {
           {/* Column 1: Logo, Address, Follow Us */}
           <Grid item xs={12} md={4}>
             <Box component="img" src={logoUrl} alt="Shopno Property Logo" sx={{ height: 40, mb: 2 }} />
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+            <Typography variant="h6" sx={{ color:'#FFFFFF',fontWeight: 'bold', mb: 2 }}>
               Our Address
             </Typography>
             <Typography variant="body2" sx={{ mb: 3, lineHeight: 1.8, whiteSpace: 'pre-line' }}>
               {address}
             </Typography>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+            <Typography variant="h6" sx={{ color:'#FFFFFF',fontWeight: 'bold', mb: 2 }}>
               Follow Us
             </Typography>
             <Box>
@@ -107,7 +107,7 @@ export default function Footer() {
 
           {/* Column 2: Quick Links */}
           <Grid item xs={12} md={2}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+            <Typography variant="h6" sx={{ color:'#FFFFFF',fontWeight: 'bold', mb: 3 }}>
               Quick Links
             </Typography>
             {quickLinks
@@ -128,7 +128,7 @@ export default function Footer() {
 
           {/* Column 3: Discover */}
           <Grid item xs={12} md={3}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+            <Typography variant="h6" sx={{ color:'#FFFFFF',fontWeight: 'bold', mb: 3 }}>
               Discover
             </Typography>
             {discoverLinks
@@ -149,7 +149,7 @@ export default function Footer() {
 
           {/* Column 4: Contact Info */}
           <Grid item xs={12} md={3}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+            <Typography variant="h6" sx={{ color:'#FFFFFF',fontWeight: 'bold', mb: 3 }}>
               Contact Info
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>

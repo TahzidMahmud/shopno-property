@@ -13,6 +13,8 @@ class WhyChooseUsFeature extends Model
         'icon_name',
         'title',
         'description',
+        'video_url',
+        'video_thumbnail',
         'is_active',
         'order',
     ];

@@ -1,24 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper, CircularProgress } from '@mui/material';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import StorageIcon from '@mui/icons-material/Storage';
-import HubIcon from '@mui/icons-material/Hub';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import HomeIcon from '@mui/icons-material/Home';
+import { Box, Typography, Grid, CircularProgress } from '@mui/material';
 import { investmentBenefitService } from '../services/homePageService';
 import { InvestmentBenefit } from '../types/HomePage';
 
-// Icon mapping
-const iconMap: Record<string, React.ReactElement> = {
-  BarChart: <BarChartIcon sx={{ fontSize: 48, mb: 2, color: '#00bcd4' }} />,
-  Storage: <StorageIcon sx={{ fontSize: 48, mb: 2, color: '#00bcd4' }} />,
-  Hub: <HubIcon sx={{ fontSize: 48, mb: 2, color: '#00bcd4' }} />,
-  ArrowUpward: <ArrowUpwardIcon sx={{ fontSize: 48, mb: 2, color: '#00bcd4' }} />,
-  Diamond: <Box sx={{ width: 48, height: 48, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💎</Box>,
+// Icon mapping to Figma SVG files
+const iconMap: Record<string, string> = {
+  BarChart: '/assets/icons/chart.svg',
+  Storage: '/assets/icons/database.svg',
+  Hub: '/assets/icons/filters.svg',
+  ArrowUpward: '/assets/icons/arrow-up.svg',
+  Chart: '/assets/icons/chart.svg',
+  Database: '/assets/icons/database.svg',
+  Filters: '/assets/icons/filters.svg',
+  Arrow: '/assets/icons/arrow-up.svg',
 };
 
-const getIcon = (iconName: string) => {
-  return iconMap[iconName] || <BarChartIcon sx={{ fontSize: 48, mb: 2, color: '#00bcd4' }} />;
+// Icon component that renders SVG with proper styling
+const BenefitIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
+  const iconPath = iconMap[iconName] || iconMap['BarChart'];
+
+  return (
+    <Box
+      component="img"
+      src={iconPath}
+      alt={iconName}
+      sx={{
+        width: '40px',
+        height: '40px',
+        objectFit: 'contain',
+      }}
+    />
+  );
 };
 
 export default function WhyInvest() {
@@ -50,37 +62,156 @@ export default function WhyInvest() {
   }
 
   return (
-    <Box sx={{ py: '4rem', px: { xs: 2, md: 5 }, maxWidth: 'lg', mx: 'auto' }}>
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'center', md: 'flex-start' }, mb: 6 }}>
-        <Box sx={{ textAlign: { xs: 'center', md: 'left' }, mb: { xs: 4, md: 0 } }}>
-          <Typography variant="overline" sx={{ display: 'flex', alignItems: 'center', color: 'secondary.main', justifyContent: { xs: 'center', md: 'flex-start' } }}>
-            <HomeIcon sx={{ fontSize: '1rem', color: 'secondary.main', mr: 0.5 }} />
-            Reson For you
-          </Typography>
-          <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', mt: 1, fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
-            Why Should You<br />Invest In Real <Box component="span" sx={{ bgcolor: '#00bcd4', color: 'white', px: 1.5, py: 0.5, borderRadius: '4px', transform: 'rotate(-5deg)', display: 'inline-block', ml: 1 }}>Estate?</Box>
-          </Typography>
+    <Box sx={{
+      py: { xs: '3rem', md: '4rem' },
+      px: { xs: 2, md: '120px' },
+      maxWidth: 'lg',
+      mx: 'auto',
+      bgcolor: '#f8fdff'
+    }}>
+      {/* Header Section */}
+      <Box sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        justifyContent: 'space-between',
+        alignItems: { xs: 'flex-start', md: 'flex-end' },
+        mb: { xs: 3, md: 4 },
+        gap: { xs: 2, md: 0 }
+      }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '14px', flex: { xs: '1', md: '0 0 auto' }, maxWidth: { xs: '100%', md: '428px' } }}>
+          {/* Reson For you Label */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
+            <Box sx={{
+              width: '12px',
+              height: '12px',
+              clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+              bgcolor: '#411f57',
+            }} />
+            <Typography sx={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 500,
+              fontSize: '14px',
+              lineHeight: 1.2,
+              color: '#411f57'
+            }}>
+              Reson For you
+            </Typography>
+            <Box sx={{
+              width: '12px',
+              height: '12px',
+              clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+              bgcolor: '#411f57',
+            }} />
+          </Box>
+
+          {/* Title with Estate? Badge */}
+          <Box sx={{ position: 'relative', display: 'inline-block' }}>
+            <Typography sx={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 600,
+              fontSize: { xs: '30px', md: '35px' },
+              lineHeight: 1.3,
+              color: '#272222',
+              textTransform: 'capitalize',
+              display: 'inline-block',
+            }}>
+              Why should you invest in real{' '}
+            </Typography>
+            <Box sx={{
+              display: 'inline-block',
+              bgcolor: '#17badf',
+              color: '#fafafa',
+              px: '14px',
+              py: '10px',
+              borderRadius: '4px',
+              transform: 'rotate(4.4deg)',
+              ml: '4px',
+            }}>
+              <Typography sx={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontWeight: 600,
+                fontSize: { xs: '28px', md: '32px' },
+                lineHeight: 1.2,
+                color: '#fafafa',
+              }}>
+                Estate?
+              </Typography>
+            </Box>
+          </Box>
         </Box>
-        <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 300, textAlign: { xs: 'center', md: 'right' } }}>
+
+        {/* Description */}
+        <Typography sx={{
+          fontFamily: "'Inter', sans-serif",
+          fontWeight: 400,
+          fontSize: { xs: '16px', md: '18px' },
+          lineHeight: 1.5,
+          color: '#737373',
+          maxWidth: { xs: '100%', md: '300px' },
+          textAlign: { xs: 'left', md: 'right' },
+          flex: { xs: '1', md: '0 0 auto' }
+        }}>
           Get into the most profitable investment industry and turn your idle money into profits.
         </Typography>
       </Box>
 
-      <Grid container spacing={4}>
+      {/* Benefits Grid */}
+      <Box sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+        gap: { xs: 2, md: '20px' },
+      }}>
         {benefits.map((benefit) => (
-          <Grid item xs={12} sm={6} md={3} key={benefit.id}>
-            <Paper sx={{ p: 4, textAlign: 'left', border: '1px solid #e0e0e0', boxShadow: 'none', borderRadius: 2 }}>
-              {getIcon(benefit.icon_name)}
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: '#212121' }}>
+          <Box
+            key={benefit.id}
+            sx={{
+              border: '0.74px solid #d8d8d8',
+              borderRadius: '5.923px',
+              bgcolor: '#f9fbfe',
+              height: { xs: 'auto', md: '260px' },
+              p: { xs: '14px', md: '14.26px' },
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+            }}
+          >
+            {/* Icon Box */}
+            <Box sx={{
+              width: '45px',
+              height: '45px',
+              bgcolor: 'rgba(23,186,223,0.06)',
+              borderRadius: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <BenefitIcon iconName={benefit.icon_name} />
+            </Box>
+
+            {/* Content */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
+              <Typography sx={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontWeight: 600,
+                fontSize: { xs: '16px', md: '18px' },
+                lineHeight: 1.3,
+                color: '#183b56',
+              }}>
                 {benefit.title}
               </Typography>
-              <Typography variant="body2" color="#757575">
+              <Typography sx={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 400,
+                fontSize: { xs: '14px', md: '16px' },
+                lineHeight: 1.5,
+                color: '#737373',
+              }}>
                 {benefit.description}
               </Typography>
-            </Paper>
-          </Grid>
+            </Box>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Box>
   );
 }

@@ -22,6 +22,9 @@ export interface Property {
   layout_images?: string[];
   gallery_images?: string[];
   demo_video?: string;
+  demo_video_thumbnail?: string;
+  brochure?: string;
+  payment_schedule?: string;
   booking_form_background_image?: string;
   full_address?: string;
   latitude?: number;
@@ -50,7 +53,10 @@ export interface PropertyFormData {
   main_image: File | null;
   layout_images: File[];
   gallery_images: File[];
-  demo_video: File | null;
+  demo_video: string;
+  demo_video_thumbnail: File | null;
+  brochure: File | null;
+  payment_schedule: File | null;
   booking_form_background_image: File | null;
   full_address: string;
   latitude: number | '';
@@ -61,4 +67,7 @@ export interface PropertyFormData {
   bathrooms: number | '';
   company_name: string;
   facilities: number[];
+  // Arrays of existing image paths to keep (for updates)
+  existing_layout_images?: string[];
+  existing_gallery_images?: string[];
 }

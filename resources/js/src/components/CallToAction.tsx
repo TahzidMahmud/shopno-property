@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, Button, Grid, CircularProgress } from '@mui/material';
+import { Box, Typography, TextField, Button, Grid, CircularProgress, Alert } from '@mui/material';
 import { homePageSettingService } from '../services/homePageService';
+import { partnerSubmissionService } from '../services/partnerSubmissionService';
 
 export default function CallToAction() {
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     companyName: '',
@@ -35,19 +39,44 @@ export default function CallToAction() {
     return `/storage/${path}`;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission to backend
-    console.log('Form submitted:', formData);
-    alert('Thank you for your interest! We will contact you soon.');
-    setFormData({
-      fullName: '',
-      companyName: '',
-      location: '',
-      phoneNumber: '',
-      email: '',
-      projectDetails: '',
-    });
+    setSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+
+    try {
+      await partnerSubmissionService.submit({
+        full_name: formData.fullName,
+        company_name: formData.companyName || undefined,
+        location: formData.location,
+        phone_number: formData.phoneNumber,
+        email: formData.email || undefined,
+        project_details: formData.projectDetails,
+      });
+
+      setSubmitSuccess(true);
+      setFormData({
+        fullName: '',
+        companyName: '',
+        location: '',
+        phoneNumber: '',
+        email: '',
+        projectDetails: '',
+      });
+
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false);
+      }, 5000);
+    } catch (error: any) {
+      setSubmitError(
+        error.response?.data?.message || 
+        'Failed to submit your request. Please try again later.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -134,6 +163,16 @@ export default function CallToAction() {
 
         {/* Right Section - Form */}
         <Box sx={{ width: { xs: '100%', md: '60%' }, p: { xs: 2, md: 4 } }}>
+          {submitSuccess && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              Thank you for your interest! We will contact you soon.
+            </Alert>
+          )}
+          {submitError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {submitError}
+            </Alert>
+          )}
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
@@ -207,6 +246,7 @@ export default function CallToAction() {
                 <Button 
                   type="submit"
                   variant="contained" 
+                  disabled={submitting}
                   sx={{ 
                     backgroundColor: '#00bcd4', 
                     textTransform: 'none',
@@ -214,11 +254,14 @@ export default function CallToAction() {
                     fontSize: '1rem',
                     '&:hover': { 
                       backgroundColor: '#00acc1' 
-                    } 
+                    },
+                    '&:disabled': {
+                      backgroundColor: '#b0bec5'
+                    }
                   }} 
                   fullWidth
                 >
-                  Submit Request
+                  {submitting ? 'Submitting...' : 'Submit Request'}
                 </Button>
               </Grid>
             </Grid>

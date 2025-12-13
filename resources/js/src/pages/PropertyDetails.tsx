@@ -5,6 +5,7 @@ import { ArrowBack, ArrowForward, ArrowOutward, PlayArrow, Phone, Store, Account
 import Footer from '../components/Footer';
 import { propertyService } from '../services/propertyService';
 import { Property } from '../types/Property';
+import { getYouTubeEmbedUrl, extractYouTubeVideoId, getYouTubeThumbnailUrl } from '../utils/youtube';
 
 const PropertyDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +13,7 @@ const PropertyDetails: React.FC = () => {
   const [propertyData, setPropertyData] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [videoPlaying, setVideoPlaying] = useState(false);
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -43,6 +45,23 @@ const PropertyDetails: React.FC = () => {
     return `/storage/${path}`;
   };
 
+  const getFileUrl = (path: string | undefined) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `/storage/${path}`;
+  };
+
+  const handleDownload = (url: string | null, filename: string) => {
+    if (!url) return;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const property = propertyData ? {
     title: propertyData.title || 'Property',
     mainImage: getImageUrl(propertyData.main_image),
@@ -69,7 +88,14 @@ const PropertyDetails: React.FC = () => {
       ...(propertyData.layout_images?.map(img => getImageUrl(img)) || []),
       ...(propertyData.main_image ? [getImageUrl(propertyData.main_image)] : [])
     ].slice(0, 6), // Limit to 6 images
-    videoThumbnail: propertyData.demo_video ? getImageUrl(propertyData.demo_video) : '/assets/video_thumbnail.html',
+    videoUrl: propertyData.demo_video || null,
+    videoThumbnail: propertyData.demo_video_thumbnail
+      ? getImageUrl(propertyData.demo_video_thumbnail)
+      : (propertyData.demo_video && extractYouTubeVideoId(propertyData.demo_video)
+        ? getYouTubeThumbnailUrl(propertyData.demo_video, 'high')
+        : '/assets/video_thumbnail.html'),
+    brochure: getFileUrl(propertyData.brochure),
+    paymentSchedule: getFileUrl(propertyData.payment_schedule),
     keyTransports: (propertyData.key_transports && Array.isArray(propertyData.key_transports))
       ? propertyData.key_transports.filter((t: any) => t && (t.name || t.distance))
       : [],
@@ -96,7 +122,10 @@ const PropertyDetails: React.FC = () => {
     galleryImages: [],
     layoutImages: [],
     galleryImagesGrid: [],
+    videoUrl: null,
     videoThumbnail: '/assets/video_thumbnail.html',
+    brochure: null,
+    paymentSchedule: null,
     keyTransports: [],
     latitude: undefined,
     longitude: undefined,
@@ -445,7 +474,7 @@ const PropertyDetails: React.FC = () => {
             <IconButton
               sx={{
                 position: 'absolute',
-                left: { xs: 5, md: -15 },
+                left: { xs: 5, md: -0 },
                 top: '50%',
                 transform: 'translateY(-50%)',
                 bgcolor: 'white',
@@ -464,7 +493,7 @@ const PropertyDetails: React.FC = () => {
             <IconButton
               sx={{
                 position: 'absolute',
-                right: { xs: 5, md: -15 },
+                right: { xs: 5, md: -0 },
                 top: '50%',
                 transform: 'translateY(-50%)',
                 bgcolor: 'primary.main',
@@ -517,57 +546,109 @@ const PropertyDetails: React.FC = () => {
         </Box>
 
         {/* Video Tours Section */}
-        <Box sx={{ mt: { xs: 4, md: 6 }, mb: { xs: 4, md: 6 }, textAlign: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-            <Box sx={{ width: { xs: 6, md: 8 }, height: { xs: 6, md: 8 }, borderRadius: '50%', bgcolor: 'primary.main', mr: 1 }} />
-            <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>Video</Typography>
-          </Box>
-          <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', mb: { xs: 2, md: 4 }, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}>
-            Video Tours
-          </Typography>
-          <Box sx={{ position: 'relative', width: '100%', maxWidth: 800, height: { xs: 250, sm: 350, md: 450 }, mx: 'auto', borderRadius: 2, overflow: 'hidden' }}>
-            <CardMedia
-              component="img"
-              image={property.videoThumbnail}
-              alt="Video Thumbnail"
-              sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 2 }}
-            />
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: { xs: 60, md: 100 },
-                height: { xs: 60, md: 100 },
-                borderRadius: '50%',
-                bgcolor: '#3f2e5b', // Dark purple background
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                '&::before': { // Inner concentric circle
-                  content: '""',
-                  position: 'absolute',
-                  width: { xs: 80, md: 120 },
-                  height: { xs: 80, md: 120 },
-                  borderRadius: '50%',
-                  border: '2px solid rgba(255,255,255,0.3)',
-                },
-                '&::after': { // Outer concentric circle
-                  content: '""',
-                  position: 'absolute',
-                  width: { xs: 100, md: 140 },
-                  height: { xs: 100, md: 140 },
-                  borderRadius: '50%',
-                  border: '2px solid rgba(255,255,255,0.1)',
-                },
-              }}
-            >
-              <PlayArrow sx={{ fontSize: { xs: 35, md: 60 }, color: 'white', zIndex: 1 }} />
+        {property.videoUrl && extractYouTubeVideoId(property.videoUrl) && (
+          <Box sx={{ mt: { xs: 4, md: 6 }, mb: { xs: 4, md: 6 }, textAlign: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+              <Box sx={{ width: { xs: 6, md: 8 }, height: { xs: 6, md: 8 }, borderRadius: '50%', bgcolor: 'primary.main', mr: 1 }} />
+              <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>Video</Typography>
+            </Box>
+            <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', mb: { xs: 2, md: 4 }, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}>
+              Video Tours
+            </Typography>
+            <Box sx={{ position: 'relative', width: '100%', maxWidth: 800, mx: 'auto', borderRadius: 2, overflow: 'hidden', boxShadow: 3 }}>
+              {!videoPlaying ? (
+                <Box
+                  sx={{
+                    position: 'relative',
+                    width: '100%',
+                    paddingTop: '56.25%', // 16:9 aspect ratio
+                    overflow: 'hidden',
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => setVideoPlaying(true)}
+                >
+                  <CardMedia
+                    component="img"
+                    image={property.videoThumbnail || undefined}
+                    alt="Video Thumbnail"
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: { xs: 60, md: 100 },
+                      height: { xs: 60, md: 100 },
+                      borderRadius: '50%',
+                      bgcolor: '#3f2e5b', // Dark purple background
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s',
+                      '&:hover': {
+                        transform: 'translate(-50%, -50%) scale(1.1)',
+                      },
+                      '&::before': { // Inner concentric circle
+                        content: '""',
+                        position: 'absolute',
+                        width: { xs: 80, md: 120 },
+                        height: { xs: 80, md: 120 },
+                        borderRadius: '50%',
+                        border: '2px solid rgba(255,255,255,0.3)',
+                      },
+                      '&::after': { // Outer concentric circle
+                        content: '""',
+                        position: 'absolute',
+                        width: { xs: 100, md: 140 },
+                        height: { xs: 100, md: 140 },
+                        borderRadius: '50%',
+                        border: '2px solid rgba(255,255,255,0.1)',
+                      },
+                    }}
+                  >
+                    <PlayArrow sx={{ fontSize: { xs: 35, md: 60 }, color: 'white', zIndex: 1 }} />
+                  </Box>
+                </Box>
+              ) : (
+                <Box
+                  sx={{
+                    position: 'relative',
+                    width: '100%',
+                    paddingTop: '56.25%', // 16:9 aspect ratio
+                    overflow: 'hidden',
+                    borderRadius: 2,
+                  }}
+                >
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      border: 0,
+                    }}
+                    src={`${getYouTubeEmbedUrl(property.videoUrl)}?autoplay=1`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="Property Video Tour"
+                  />
+                </Box>
+              )}
             </Box>
           </Box>
-        </Box>
+        )}
 
         {/* Installment Calculation Section */}
         <Box sx={{ mt: { xs: 4, md: 6 }, mb: { xs: 4, md: 6 }, textAlign: 'center' }}>
@@ -659,8 +740,8 @@ const PropertyDetails: React.FC = () => {
                 sx={{
                   position: 'absolute',
                   top: { xs: 10, md: 20 },
-                  left: { xs: 10, md: 20 },
-                  right: { xs: 10, md: 'auto' },
+                  right: { xs: 10, md: 20 },
+
                   p: { xs: 2, md: 3 },
                   maxWidth: { xs: 'calc(100% - 20px)', md: 400 },
                   boxShadow: 3,
@@ -876,32 +957,38 @@ const PropertyDetails: React.FC = () => {
                       variant="outlined"
                     />
                     <Box sx={{ display: 'flex', gap: { xs: 1, md: 2 }, flexWrap: 'wrap', mt: 1 }}>
-                      <Button
-                        variant="outlined"
-                        sx={{
-                          flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: 1 },
-                          minWidth: { xs: '100%', sm: 150 },
-                          fontSize: { xs: '0.85rem', md: '1rem' },
-                          borderColor: '#00bcd4',
-                          color: '#00bcd4',
-                          '&:hover': { borderColor: '#00acc1', bgcolor: 'rgba(0, 188, 212, 0.04)' },
-                        }}
-                      >
-                        Download Brochure
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        sx={{
-                          flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: 1 },
-                          minWidth: { xs: '100%', sm: 150 },
-                          fontSize: { xs: '0.85rem', md: '1rem' },
-                          borderColor: '#00bcd4',
-                          color: '#00bcd4',
-                          '&:hover': { borderColor: '#00acc1', bgcolor: 'rgba(0, 188, 212, 0.04)' },
-                        }}
-                      >
-                        Payment Schedule
-                      </Button>
+                      {property.brochure && (
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleDownload(property.brochure, 'brochure.pdf')}
+                          sx={{
+                            flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: 1 },
+                            minWidth: { xs: '100%', sm: 150 },
+                            fontSize: { xs: '0.85rem', md: '1rem' },
+                            borderColor: '#00bcd4',
+                            color: '#00bcd4',
+                            '&:hover': { borderColor: '#00acc1', bgcolor: 'rgba(0, 188, 212, 0.04)' },
+                          }}
+                        >
+                          Download Brochure
+                        </Button>
+                      )}
+                      {property.paymentSchedule && (
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleDownload(property.paymentSchedule, 'payment-schedule.pdf')}
+                          sx={{
+                            flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: 1 },
+                            minWidth: { xs: '100%', sm: 150 },
+                            fontSize: { xs: '0.85rem', md: '1rem' },
+                            borderColor: '#00bcd4',
+                            color: '#00bcd4',
+                            '&:hover': { borderColor: '#00acc1', bgcolor: 'rgba(0, 188, 212, 0.04)' },
+                          }}
+                        >
+                          Payment Schedule
+                        </Button>
+                      )}
                       <Button
                         type="submit"
                         variant="contained"

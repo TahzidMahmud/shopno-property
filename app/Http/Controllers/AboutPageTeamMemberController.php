@@ -42,6 +42,11 @@ class AboutPageTeamMemberController extends Controller
             $validated['image'] = null;
         }
 
+        // Convert string boolean to actual boolean
+        if ($request->has('is_active')) {
+            $validated['is_active'] = filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN);
+        }
+
         $member = AboutPageTeamMember::create($validated);
         return response()->json(['message' => 'Team member created successfully', 'data' => $member], 201);
     }
@@ -78,6 +83,11 @@ class AboutPageTeamMemberController extends Controller
                 $request->file('image'),
                 'uploads/about/team'
             );
+        }
+
+        // Convert string boolean to actual boolean
+        if ($request->has('is_active')) {
+            $validated['is_active'] = filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN);
         }
 
         $member->update($validated);

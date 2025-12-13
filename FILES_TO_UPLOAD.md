@@ -184,3 +184,4 @@ If files still don't work after upload:
 3. Test with a new file upload through admin panel
 4. Check server error logs for any PHP errors
 
+

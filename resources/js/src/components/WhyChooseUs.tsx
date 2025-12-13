@@ -1,31 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper, Button, CircularProgress } from '@mui/material';
-import CameraAltIcon from '@mui/icons-material/CameraAlt';
-import ChairIcon from '@mui/icons-material/Chair';
-import DescriptionIcon from '@mui/icons-material/Description';
-import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
+import { useNavigate } from 'react-router-dom';
+import { Box, Typography, Grid, Button, CircularProgress, CardMedia } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
-import { whyChooseUsFeatureService, homePageSettingService } from '../services/homePageService';
+import { whyChooseUsFeatureService } from '../services/homePageService';
 import { WhyChooseUsFeature } from '../types/HomePage';
+import { getYouTubeEmbedUrl, extractYouTubeVideoId, getYouTubeThumbnailUrl } from '../utils/youtube';
 
-// Icon mapping
-const iconMap: Record<string, React.ReactElement> = {
-  CameraAlt: <CameraAltIcon sx={{ fontSize: 30 }} />,
-  Chair: <ChairIcon sx={{ fontSize: 30 }} />,
-  Description: <DescriptionIcon sx={{ fontSize: 30 }} />,
-  AccessAlarm: <AccessAlarmIcon sx={{ fontSize: 30 }} />,
+// Icon mapping to Figma SVG files
+const iconMap: Record<string, string> = {
+  CameraAlt: '/assets/icons/medical-kit.svg',
+  MedicalKit: '/assets/icons/medical-kit.svg',
+  Chair: '/assets/icons/sofa.svg',
+  Sofa: '/assets/icons/sofa.svg',
+  Description: '/assets/icons/document-add.svg',
+  DocumentAdd: '/assets/icons/document-add.svg',
+  AccessAlarm: '/assets/icons/alarm.svg',
+  Alarm: '/assets/icons/alarm.svg',
 };
 
-const getIcon = (iconName: string) => {
-  return iconMap[iconName] || <CameraAltIcon sx={{ fontSize: 30 }} />;
+// Icon component that renders SVG with proper color
+const FeatureIcon: React.FC<{ iconName: string; isActive: boolean }> = ({ iconName, isActive }) => {
+  const iconPath = iconMap[iconName] || iconMap['CameraAlt'];
+
+  return (
+    <Box
+      component="img"
+      src={iconPath}
+      alt={iconName}
+      sx={{
+        width: '32px',
+        height: '32px',
+        // Active: white icon, Inactive: #4d4d4d (dark gray)
+        filter: isActive
+          ? 'brightness(0) invert(1)' // White
+          : 'brightness(0) saturate(100%) invert(30%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%)', // #4d4d4d
+        objectFit: 'contain',
+      }}
+    />
+  );
 };
 
 export default function WhyChooseUs() {
+  const navigate = useNavigate();
   const [features, setFeatures] = useState<WhyChooseUsFeature[]>([]);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeFeature, setActiveFeature] = useState<number | null>(null);
+  const [videoPlaying, setVideoPlaying] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -33,14 +54,11 @@ export default function WhyChooseUs() {
 
   const loadData = async () => {
     try {
-      const [featuresData, settings] = await Promise.all([
-        whyChooseUsFeatureService.getAll(),
-        homePageSettingService.getAll(),
-      ]);
-      
+      const featuresData = await whyChooseUsFeatureService.getAll();
+
       const sortedFeatures = featuresData.sort((a, b) => a.order - b.order);
       setFeatures(sortedFeatures);
-      
+
       // Set first active feature or first feature if none are active
       const firstActive = sortedFeatures.find(f => f.is_active);
       if (firstActive) {
@@ -48,8 +66,6 @@ export default function WhyChooseUs() {
       } else if (sortedFeatures.length > 0) {
         setActiveFeature(sortedFeatures[0].id!);
       }
-      
-      setVideoUrl(settings['why_choose_us_video'] || null);
     } catch (error) {
       console.error('Error loading Why Choose Us data:', error);
     } finally {
@@ -57,7 +73,7 @@ export default function WhyChooseUs() {
     }
   };
 
-  const getImageUrl = (path: string) => {
+  const getImageUrl = (path: string): string => {
     if (!path) return 'https://via.placeholder.com/600x400?text=Why+Choose+Us+Image';
     if (path.startsWith('http')) return path;
     return `/storage/${path}`;
@@ -65,157 +81,390 @@ export default function WhyChooseUs() {
 
   if (loading) {
     return (
-      <Box sx={{ py: '4rem', display: 'flex', justifyContent: 'center' }}>
+      <Box sx={{ py: '4rem', display: 'flex', justifyContent: 'center', bgcolor: '#f8fdff' }}>
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ py: '4rem', px: { xs: 2, md: 8 }, maxWidth: 'lg', mx: 'auto' }}>
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={6}>
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="overline" sx={{ display: 'flex', alignItems: 'center', mb: 1, color: '#1f191fff', fontWeight: 'bold' }}>
-              <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#1f191fff', mr: 1 }} /> Our Approach <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#1f191fff', ml: 1 }} />
+    <Box sx={{ py: '4rem', px: { xs: 2, md: 5 }, maxWidth: 'lg', mx: 'auto' }}>
+      {/* Header Section */}
+      <Box sx={{
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
+        mb: { xs: 3, md: 4 },
+        flexDirection: { xs: 'column', md: 'row' },
+        gap: { xs: 2, md: 0 }
+      }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', width: { xs: '100%', md: '356px' } }}>
+          {/* Our Approach Label */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
+            <Box sx={{
+              width: '12px',
+              height: '12px',
+              clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+              bgcolor: '#411f57',
+            }} />
+            <Typography sx={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 500,
+              fontSize: '14px',
+              lineHeight: 1.2,
+              color: '#411f57'
+            }}>
+              Our Approach
             </Typography>
-            <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 'bold', fontSize: { xs: '2rem', md: '2.5rem' } }}>
-              Why Choose Us{' '}
-              <Box component="span" sx={{
-                backgroundColor: '#00bcd4',
-                color: 'white',
-                px: 2,
-                py: 0.5,
-                borderRadius: '4px',
-                transform: 'rotate(-5deg)',
-                display: 'inline-block',
-                ml: 1,
-                fontWeight: 'bold',
-              }}>Shopno Property</Box>
-            </Typography>
+            <Box sx={{
+              width: '12px',
+              height: '12px',
+              clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+              bgcolor: '#411f57',
+            }} />
           </Box>
 
-          <Box>
-            {features.map((feature) => {
-              const isActive = activeFeature === feature.id;
-              return (
-                <Box
-                  key={feature.id}
-                  onClick={() => setActiveFeature(feature.id!)}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    p: 2,
-                    mb: 2,
-                    borderRadius: '8px',
-                    backgroundColor: isActive ? '#00bcd4' : 'white',
-                    color: isActive ? 'white' : '#212121',
-                    boxShadow: isActive ? 3 : 1,
-                    transition: 'background-color 0.3s ease-in-out, color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      boxShadow: 6,
-                    },
-                  }}
-                >
-                  <Box sx={{
-                    mr: 2,
-                    p: 1.5,
-                    borderRadius: '8px',
-                    backgroundColor: isActive ? 'white' : '#f5f5f5',
-                    color: isActive ? '#00bcd4' : '#757575',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minWidth: 56,
-                    minHeight: 56,
+          {/* Title with Property Badge */}
+          <Box sx={{ position: 'relative', display: 'inline-block', width: { xs: '100%', md: '356px' } }}>
+            <Typography sx={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 600,
+              fontSize: { xs: '32px', md: '40px' },
+              lineHeight: 1.3,
+              color: '#272222',
+              textTransform: 'capitalize',
+              display: 'inline-block',
+            }}>
+              Why Choose Us Shopno
+            </Typography>
+            <Box sx={{
+              position: 'absolute',
+              left: { xs: '0px', md: '157.16px' },
+              top: { xs: '40px', md: '48.8px' },
+              bgcolor: '#17badf',
+              color: '#fafafa',
+              px: '14px',
+              py: '10px',
+              borderRadius: '4px',
+              transform: 'rotate(4.4deg)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '42px',
+              minWidth: '166.739px'
+            }}>
+              <Typography sx={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontWeight: 600,
+                fontSize: '32px',
+                lineHeight: 1.2,
+                color: '#fafafa',
+                whiteSpace: 'nowrap'
+              }}>
+                Property
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Description Text */}
+        <Typography sx={{
+          fontFamily: "'Inter', sans-serif",
+          fontWeight: 400,
+          fontSize: '18px',
+          lineHeight: 1.5,
+          color: '#737373',
+          width: { xs: '100%', md: '419px' },
+          textAlign: { xs: 'left', md: 'right' }
+        }}>
+          Explore the premier UK property hub to discover a range of houses and flats for sale or rent.
+        </Typography>
+      </Box>
+
+      {/* Main Content - Two Column Layout */}
+      <Box sx={{
+        display: 'flex',
+        gap: { xs: 3, md: '48px' },
+        alignItems: 'flex-start',
+        flexDirection: { xs: 'column', md: 'row' },
+        mb: 4
+      }}>
+        {/* Left Column - Features */}
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          flex: { xs: '1 1 100%', md: '0 0 48%' },
+          width: { xs: '100%', md: 'auto' }
+        }}>
+          {features.map((feature) => {
+            const isActive = activeFeature === feature.id;
+
+            return (
+              <Box
+                key={feature.id}
+                onClick={() => {
+                  setActiveFeature(feature.id!);
+                  setVideoPlaying(false);
+                }}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '12px',
+                  px: '20px',
+                  py: '16px',
+                  borderRadius: '4px',
+                  bgcolor: isActive ? '#17badf' : 'white',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: 2,
+                  },
+                }}
+              >
+                {/* Icon Box */}
+                <Box sx={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '2px',
+                  bgcolor: isActive ? '#0d90ad' : '#fafafa',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <FeatureIcon iconName={feature.icon_name} isActive={isActive} />
+                </Box>
+
+                {/* Text Content */}
+                <Box sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                  width: '435px',
+                  flex: 1
+                }}>
+                  <Typography sx={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 600,
+                    fontSize: '20px',
+                    lineHeight: 1.2,
+                    color: isActive ? 'white' : '#17181a'
                   }}>
-                    {React.cloneElement(getIcon(feature.icon_name), { 
-                      sx: { fontSize: 30, color: isActive ? '#00bcd4' : '#757575' } 
-                    })}
-                  </Box>
-                  <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: isActive ? 'white' : 'text.primary' }}>
-                      {feature.title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: isActive ? 'white' : 'text.secondary' }}>
-                      {feature.description}
-                    </Typography>
-                  </Box>
+                    {feature.title}
+                  </Typography>
+                  <Typography sx={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 400,
+                    fontSize: '18px',
+                    lineHeight: 1.5,
+                    color: isActive ? 'white' : '#666b6f',
+                    width: { xs: '100%', md: '435px' }
+                  }}>
+                    {feature.description}
+                  </Typography>
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+
+        {/* Right Column - Video */}
+        <Box sx={{
+            flex: { xs: '1 1 100%', md: '0 0 48%' },
+            width: { xs: '100%', md: 'auto' }
+        }}>
+          {(() => {
+            const activeFeatureData = features.find(f => f.id === activeFeature);
+            const videoUrl = activeFeatureData?.video_url || null;
+            const videoThumbnail: string = activeFeatureData?.video_thumbnail
+              ? getImageUrl(activeFeatureData.video_thumbnail)
+              : (videoUrl && extractYouTubeVideoId(videoUrl)
+                ? (getYouTubeThumbnailUrl(videoUrl, 'high') || 'https://via.placeholder.com/605x564?text=Why+Choose+Us+Image')
+                : 'https://via.placeholder.com/605x564?text=Why+Choose+Us+Image');
+
+            if (!videoUrl || !extractYouTubeVideoId(videoUrl)) {
+              return (
+                <Box sx={{
+                  position: 'relative',
+                  width: '100%',
+                  height: { xs: 300, md: '564px' },
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                  bgcolor: 'rgba(0,0,0,0.04)',
+                }}>
+                  <CardMedia
+                    component="img"
+                    image={videoThumbnail}
+                    alt="Why Choose Us"
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
                 </Box>
               );
-            })}
-          </Box>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Box sx={{ marginTop: { xs: 2, md: '5rem' }, marginBottom: { xs: 2, md: '3rem' } }}>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: { xs: 2, md: 4 }, fontSize: { xs: '0.9rem', md: '1rem' } }}>
-              Explore the premier UK property hub to discover a range of houses and flats for sale or rent.
-            </Typography>
-          </Box>
-          <Box sx={{
+            }
+
+            return (
+              <Box sx={{
+                position: 'relative',
+                width: '100%',
+                height: { xs: 300, md: '564px' },
+                borderRadius: '4px',
+                overflow: 'hidden',
+                bgcolor: 'rgba(0,0,0,0.04)',
+              }}>
+                {!videoPlaying ? (
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      width: '100%',
+                      height: '100%',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => setVideoPlaying(true)}
+                  >
+                    <CardMedia
+                      component="img"
+                      image={videoThumbnail}
+                      alt="Video Thumbnail"
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                    {/* Play Button with Concentric Circles */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1,
+                      }}
+                    >
+                      {/* Outer Circle */}
+                      <Box sx={{
+                        bgcolor: 'rgba(255,255,255,0.3)',
+                        borderRadius: '100px',
+                        p: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        {/* Middle Circle */}
+                        <Box sx={{
+                          bgcolor: 'rgba(255,255,255,0.4)',
+                          borderRadius: '100px',
+                          p: '10px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                          {/* Inner Circle with Play Icon */}
+                          <Box sx={{
+                            bgcolor: 'rgba(255,255,255,0.4)',
+                            borderRadius: '100px',
+                            width: '100px',
+                            height: '100px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}>
+                            <PlayArrowIcon sx={{
+                              fontSize: '40px',
+                              color: 'white',
+                              ml: 0.5
+                            }} />
+                          </Box>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
+                ) : (
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      width: '100%',
+                      height: '100%',
+                    }}
+                  >
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        border: 0,
+                      }}
+                      src={`${getYouTubeEmbedUrl(videoUrl)}?autoplay=1`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title="Why Choose Us Video"
+                    />
+                  </Box>
+                )}
+              </Box>
+            );
+          })()}
+        </Box>
+      </Box>
+
+      {/* Learn More Button - Centered */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Button
+          variant="outlined"
+          sx={{
+            borderColor: '#17badf',
+            borderWidth: '1px',
+            borderStyle: 'solid',
+            color: '#17badf',
+            textTransform: 'none',
+            px: '24px',
+            py: '12px',
+            fontSize: '20px',
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 500,
+            lineHeight: 1.2,
+            borderRadius: '4px',
             position: 'relative',
-            height: { xs: 250, sm: 300, md: 400 },
-            backgroundImage: videoUrl ? `url(${getImageUrl(videoUrl)})` : 'url(https://via.placeholder.com/600x400?text=Why+Choose+Us+Image)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            '&::before': {
+            '&:hover': {
+              borderColor: '#17badf',
+              bgcolor: 'transparent',
+            },
+            '&::after': {
               content: '""',
               position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.3)',
-              borderRadius: '8px',
+              bottom: '-1px',
+              left: '-1px',
+              width: '2px',
+              height: '0',
             }
-          }}>
+          }}
+          endIcon={
             <Box sx={{
-              width: { xs: 60, md: 80 },
-              height: { xs: 60, md: 80 },
-              borderRadius: '50%',
-              backgroundColor: '#9c27b0',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 1,
-              cursor: 'pointer',
-              '&:hover': {
-                backgroundColor: '#7b1fa2',
-              }
+              width: '20.714px',
+              height: '20.714px',
+              transform: 'rotate(2.085deg)'
             }}>
-              <PlayArrowIcon sx={{ fontSize: { xs: 30, md: 40 }, color: 'white', ml: 0.5 }} />
+              <ArrowOutwardIcon sx={{ fontSize: '20px', color: '#17badf' }} />
             </Box>
-          </Box>
-        </Grid>
-        <Grid item xs={12} md={12}>
-          <Box sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' }, mt: { xs: 2, md: 4 }, gap: 2 }}>
-            <Button 
-              variant="outlined" 
-              size="large" 
-              sx={{ 
-                borderColor: '#00bcd4', 
-                color: '#00bcd4',
-                textTransform: 'none',
-                padding: { xs: '10px 20px', md: '12px 24px' },
-                fontSize: { xs: '0.9rem', md: '1rem' },
-                '&:hover': {
-                  borderColor: '#00acc1',
-                  backgroundColor: 'rgba(0, 188, 212, 0.04)',
-                }
-              }}
-              endIcon={<ArrowOutwardIcon sx={{ fontSize: '1rem' }} />}
-            >
-              Learn More
-            </Button>
-          </Box>
-        </Grid>
-      </Grid>
+          }
+          onClick={() => navigate('/about')}
+        >
+          Learn More
+        </Button>
+      </Box>
     </Box>
   );
 }

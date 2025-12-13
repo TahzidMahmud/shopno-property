@@ -61,3 +61,4 @@ echo "Storage setup completed successfully!\n";
 echo "Note: You may need to run this script periodically if you upload new files via the admin panel.\n";
 echo "Alternatively, you can set up a cron job or use FTP to sync files.\n";
 
+

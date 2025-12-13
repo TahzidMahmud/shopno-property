@@ -41,7 +41,8 @@ class PropertyController extends Controller
             'main_image' => 'nullable|image|max:2048',
             'layout_images.*' => 'nullable|image|max:2048',
             'gallery_images.*' => 'nullable|image|max:2048',
-            'demo_video' => 'nullable|mimetypes:video/mp4,video/mpeg,video/quicktime|max:100000',
+            'demo_video' => 'nullable|string|url|max:500',
+            'demo_video_thumbnail' => 'nullable|image|max:2048',
             'full_address' => 'nullable|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
@@ -83,11 +84,30 @@ class PropertyController extends Controller
             );
         }
 
-        // 4. 🚨 Use the Service for video upload (handled as non-image)
-        if ($request->hasFile('demo_video')) {
-            $validated['demo_video'] = $this->fileUploadService->uploadFile(
-                $request->file('demo_video'),
-                'uploads/properties/videos'
+        // 4. Handle demo_video as YouTube URL (string)
+        // demo_video is now a string field, validated above
+        
+        // Handle demo_video_thumbnail image upload
+        if ($request->hasFile('demo_video_thumbnail')) {
+            $validated['demo_video_thumbnail'] = $this->fileUploadService->uploadFile(
+                $request->file('demo_video_thumbnail'),
+                'uploads/properties/video-thumbnails'
+            );
+        }
+
+        // Handle brochure PDF upload
+        if ($request->hasFile('brochure')) {
+            $validated['brochure'] = $this->fileUploadService->uploadFile(
+                $request->file('brochure'),
+                'uploads/properties/brochures'
+            );
+        }
+
+        // Handle payment schedule PDF upload
+        if ($request->hasFile('payment_schedule')) {
+            $validated['payment_schedule'] = $this->fileUploadService->uploadFile(
+                $request->file('payment_schedule'),
+                'uploads/properties/payment-schedules'
             );
         }
 
@@ -148,7 +168,10 @@ class PropertyController extends Controller
             'main_image' => 'nullable|image|max:2048',
             'layout_images.*' => 'nullable|image|max:2048',
             'gallery_images.*' => 'nullable|image|max:2048',
-            'demo_video' => 'nullable|mimetypes:video/mp4,video/mpeg,video/quicktime|max:100000',
+            'demo_video' => 'nullable|string|url|max:500',
+            'demo_video_thumbnail' => 'nullable|image|max:2048',
+            'brochure' => 'nullable|file|mimes:pdf|max:10240',
+            'payment_schedule' => 'nullable|file|mimes:pdf|max:10240',
             'full_address' => 'nullable|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
@@ -177,14 +200,45 @@ class PropertyController extends Controller
             );
         }
 
-        if ($request->hasFile('demo_video')) {
-            // Delete old video
-            if ($property->demo_video) $this->fileUploadService->deleteFile($property->demo_video);
+        // Handle demo_video as YouTube URL (string) - no file upload needed
+        // If demo_video is provided in request, it will be validated and updated
+        
+        // Handle demo_video_thumbnail image upload
+        if ($request->hasFile('demo_video_thumbnail')) {
+            // Delete old thumbnail
+            if ($property->demo_video_thumbnail) {
+                $this->fileUploadService->deleteFile($property->demo_video_thumbnail);
+            }
+            // Upload new thumbnail
+            $validated['demo_video_thumbnail'] = $this->fileUploadService->uploadFile(
+                $request->file('demo_video_thumbnail'),
+                'uploads/properties/video-thumbnails'
+            );
+        }
 
-            // Upload new video via service
-            $validated['demo_video'] = $this->fileUploadService->uploadFile(
-                $request->file('demo_video'),
-                'uploads/properties/videos'
+        // Handle brochure PDF upload
+        if ($request->hasFile('brochure')) {
+            // Delete old brochure
+            if ($property->brochure) {
+                $this->fileUploadService->deleteFile($property->brochure);
+            }
+            // Upload new brochure
+            $validated['brochure'] = $this->fileUploadService->uploadFile(
+                $request->file('brochure'),
+                'uploads/properties/brochures'
+            );
+        }
+
+        // Handle payment schedule PDF upload
+        if ($request->hasFile('payment_schedule')) {
+            // Delete old payment schedule
+            if ($property->payment_schedule) {
+                $this->fileUploadService->deleteFile($property->payment_schedule);
+            }
+            // Upload new payment schedule
+            $validated['payment_schedule'] = $this->fileUploadService->uploadFile(
+                $request->file('payment_schedule'),
+                'uploads/properties/payment-schedules'
             );
         }
 
@@ -199,32 +253,66 @@ class PropertyController extends Controller
             );
         }
 
-        // 6. 🚨 Update: Handle multiple file uploads (NOTE: This implementation ADDS images, it doesn't replace the whole list.)
+        // 6. 🚨 Update: Handle multiple file uploads and image removal
+        // Get existing images from database
+        $existingLayouts = is_array($property->layout_images) 
+            ? $property->layout_images 
+            : (is_string($property->layout_images) ? json_decode($property->layout_images, true) ?? [] : []);
+        $existingGallery = is_array($property->gallery_images) 
+            ? $property->gallery_images 
+            : (is_string($property->gallery_images) ? json_decode($property->gallery_images, true) ?? [] : []);
+
+        // Get images to keep from request (if provided, ensure it's an array)
+        $keptLayoutImages = $request->input('existing_layout_images', []);
+        $keptGalleryImages = $request->input('existing_gallery_images', []);
+        
+        // Ensure arrays (handle case where single value is sent)
+        if (!is_array($keptLayoutImages)) {
+            $keptLayoutImages = $keptLayoutImages ? [$keptLayoutImages] : [];
+        }
+        if (!is_array($keptGalleryImages)) {
+            $keptGalleryImages = $keptGalleryImages ? [$keptGalleryImages] : [];
+        }
+
+        // Find images to delete (existing images not in kept list)
+        $layoutImagesToDelete = array_diff($existingLayouts, $keptLayoutImages);
+        $galleryImagesToDelete = array_diff($existingGallery, $keptGalleryImages);
+
+        // Delete removed images from filesystem
+        foreach ($layoutImagesToDelete as $imagePath) {
+            if (!empty($imagePath)) {
+                $this->fileUploadService->deleteFile($imagePath);
+            }
+        }
+        foreach ($galleryImagesToDelete as $imagePath) {
+            if (!empty($imagePath)) {
+                $this->fileUploadService->deleteFile($imagePath);
+            }
+        }
+
+        // Handle new file uploads
+        $newLayoutPaths = [];
         if ($request->hasFile('layout_images')) {
             $newLayoutPaths = $this->fileUploadService->uploadMultipleFiles(
                 $request->file('layout_images'),
                 'uploads/properties/layouts'
             );
-
-            // Merge new paths with existing ones
-            // Since the model casts layout_images as 'array', it's already an array, not JSON
-            $existingLayouts = is_array($property->layout_images) 
-                ? $property->layout_images 
-                : (is_string($property->layout_images) ? json_decode($property->layout_images, true) ?? [] : []);
-            $validated['layout_images'] = array_merge($existingLayouts, $newLayoutPaths);
         }
 
+        $newGalleryPaths = [];
         if ($request->hasFile('gallery_images')) {
             $newGalleryPaths = $this->fileUploadService->uploadMultipleFiles(
                 $request->file('gallery_images'),
                 'uploads/properties/gallery'
             );
+        }
 
-            // Since the model casts gallery_images as 'array', it's already an array, not JSON
-            $existingGallery = is_array($property->gallery_images) 
-                ? $property->gallery_images 
-                : (is_string($property->gallery_images) ? json_decode($property->gallery_images, true) ?? [] : []);
-            $validated['gallery_images'] = array_merge($existingGallery, $newGalleryPaths);
+        // Combine kept images with new images (only update if there are changes or new uploads)
+        if ($request->has('existing_layout_images') || $request->hasFile('layout_images')) {
+            $validated['layout_images'] = array_merge($keptLayoutImages, $newLayoutPaths);
+        }
+        if ($request->has('existing_gallery_images') || $request->hasFile('gallery_images')) {
+            $validated['gallery_images'] = array_merge($keptGalleryImages, $newGalleryPaths);
         }
 
 
@@ -255,7 +343,10 @@ class PropertyController extends Controller
 
         // Delete single files
         if ($property->main_image) $this->fileUploadService->deleteFile($property->main_image);
-        if ($property->demo_video) $this->fileUploadService->deleteFile($property->demo_video);
+        // demo_video is now a YouTube URL string, no file to delete
+        if ($property->demo_video_thumbnail) $this->fileUploadService->deleteFile($property->demo_video_thumbnail);
+        if ($property->brochure) $this->fileUploadService->deleteFile($property->brochure);
+        if ($property->payment_schedule) $this->fileUploadService->deleteFile($property->payment_schedule);
         if ($property->booking_form_background_image) $this->fileUploadService->deleteFile($property->booking_form_background_image);
 
         // 7. 🚨 Delete: Handle array/multiple images

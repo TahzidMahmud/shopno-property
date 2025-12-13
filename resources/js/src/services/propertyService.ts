@@ -65,8 +65,21 @@ export const propertyService = {
       formData.append('main_image', data.main_image);
     }
 
+    // demo_video is now a YouTube URL string, not a file
     if (data.demo_video) {
       formData.append('demo_video', data.demo_video);
+    }
+
+    if (data.demo_video_thumbnail) {
+      formData.append('demo_video_thumbnail', data.demo_video_thumbnail);
+    }
+
+    if (data.brochure) {
+      formData.append('brochure', data.brochure);
+    }
+
+    if (data.payment_schedule) {
+      formData.append('payment_schedule', data.payment_schedule);
     }
 
     if (data.booking_form_background_image) {
@@ -133,8 +146,21 @@ export const propertyService = {
       formData.append('main_image', data.main_image);
     }
 
+    // demo_video is now a YouTube URL string, not a file
     if (data.demo_video) {
       formData.append('demo_video', data.demo_video);
+    }
+
+    if (data.demo_video_thumbnail) {
+      formData.append('demo_video_thumbnail', data.demo_video_thumbnail);
+    }
+
+    if (data.brochure) {
+      formData.append('brochure', data.brochure);
+    }
+
+    if (data.payment_schedule) {
+      formData.append('payment_schedule', data.payment_schedule);
     }
 
     if (data.booking_form_background_image) {
@@ -149,6 +175,19 @@ export const propertyService = {
     data.gallery_images.forEach((file, index) => {
       formData.append(`gallery_images[${index}]`, file);
     });
+
+    // Append existing image paths that should be kept (for image removal)
+    if (data.existing_layout_images && data.existing_layout_images.length > 0) {
+      data.existing_layout_images.forEach((path, index) => {
+        formData.append(`existing_layout_images[${index}]`, path);
+      });
+    }
+
+    if (data.existing_gallery_images && data.existing_gallery_images.length > 0) {
+      data.existing_gallery_images.forEach((path, index) => {
+        formData.append(`existing_gallery_images[${index}]`, path);
+      });
+    }
 
     const response = await axios.post(`${API_BASE_URL}/${id}`, formData, {
       headers: {

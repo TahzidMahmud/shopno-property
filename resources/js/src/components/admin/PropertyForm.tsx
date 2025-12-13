@@ -26,6 +26,7 @@ import { Close as CloseIcon } from '@mui/icons-material';
 import { Property, PropertyFormData } from '../../types/Property';
 import { Facility } from '../../types/Facility';
 import { facilityService } from '../../services/facilityService';
+import { getYouTubeEmbedUrl, extractYouTubeVideoId } from '../../utils/youtube';
 
 interface PropertyFormProps {
   property?: Property;
@@ -45,11 +46,14 @@ const initialFormData: PropertyFormData = {
   flat_size: '',
   total_parking: '',
   price_range: '',
-  main_image: null,
-  layout_images: [],
-  gallery_images: [],
-  demo_video: null,
-  booking_form_background_image: null,
+        main_image: null,
+        layout_images: [],
+        gallery_images: [],
+        demo_video: '',
+        demo_video_thumbnail: null,
+        brochure: null,
+        payment_schedule: null,
+        booking_form_background_image: null,
   full_address: '',
   latitude: '',
   longitude: '',
@@ -74,21 +78,25 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
   const [transportDistance, setTransportDistance] = useState('');
   const [availableFacilities, setAvailableFacilities] = useState<Facility[]>([]);
   const [loadingFacilities, setLoadingFacilities] = useState(false);
-  
+
   // Preview URLs for new files
   const [mainImagePreview, setMainImagePreview] = useState<string | null>(null);
-  const [demoVideoPreview, setDemoVideoPreview] = useState<string | null>(null);
+  const [demoVideoThumbnailPreview, setDemoVideoThumbnailPreview] = useState<string | null>(null);
   const [bookingFormBgPreview, setBookingFormBgPreview] = useState<string | null>(null);
   const [layoutImagesPreviews, setLayoutImagesPreviews] = useState<string[]>([]);
   const [galleryImagesPreviews, setGalleryImagesPreviews] = useState<string[]>([]);
-  
-  // Existing images from property (when editing)
+
+  // Existing images from property (when editing) - store both URLs for preview and paths for backend
   const [existingMainImage, setExistingMainImage] = useState<string | null>(null);
-  const [existingDemoVideo, setExistingDemoVideo] = useState<string | null>(null);
+  const [existingDemoVideoThumbnail, setExistingDemoVideoThumbnail] = useState<string | null>(null);
   const [existingBookingFormBg, setExistingBookingFormBg] = useState<string | null>(null);
-  const [existingLayoutImages, setExistingLayoutImages] = useState<string[]>([]);
-  const [existingGalleryImages, setExistingGalleryImages] = useState<string[]>([]);
-  
+  const [existingLayoutImages, setExistingLayoutImages] = useState<string[]>([]); // URLs for preview
+  const [existingGalleryImages, setExistingGalleryImages] = useState<string[]>([]); // URLs for preview
+  const [existingLayoutImagePaths, setExistingLayoutImagePaths] = useState<string[]>([]); // Original paths
+  const [existingGalleryImagePaths, setExistingGalleryImagePaths] = useState<string[]>([]); // Original paths
+  const [existingBrochure, setExistingBrochure] = useState<string | null>(null);
+  const [existingPaymentSchedule, setExistingPaymentSchedule] = useState<string | null>(null);
+
   // Helper function to get image URL
   const getImageUrl = (path: string | undefined) => {
     if (!path) return null;
@@ -128,7 +136,10 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
         main_image: null,
         layout_images: [],
         gallery_images: [],
-        demo_video: null,
+        demo_video: property.demo_video || '',
+        demo_video_thumbnail: null,
+        brochure: null,
+        payment_schedule: null,
         booking_form_background_image: null,
         full_address: property.full_address || '',
         latitude: property.latitude || '',
@@ -140,24 +151,34 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
         company_name: property.company_name || '',
         facilities: property.facilities?.map(f => f.id!).filter((id): id is number => id !== undefined) || [],
       });
-      
-      // Set existing images for preview
+
+      // Set existing images for preview and store original paths
       setExistingMainImage(getImageUrl(property.main_image) || null);
-      setExistingDemoVideo(getImageUrl(property.demo_video) || null);
+      setExistingDemoVideoThumbnail(getImageUrl(property.demo_video_thumbnail) || null);
       setExistingBookingFormBg(getImageUrl(property.booking_form_background_image) || null);
-      setExistingLayoutImages(
-        property.layout_images?.map(img => getImageUrl(img)).filter((url): url is string => url !== null) || []
-      );
-      setExistingGalleryImages(
-        property.gallery_images?.map(img => getImageUrl(img)).filter((url): url is string => url !== null) || []
-      );
+      setExistingBrochure(getImageUrl(property.brochure) || null);
+      setExistingPaymentSchedule(getImageUrl(property.payment_schedule) || null);
+
+      const layoutUrls = property.layout_images?.map(img => getImageUrl(img)).filter((url): url is string => url !== null) || [];
+      const layoutPaths = property.layout_images?.filter((path): path is string => path !== null && path !== undefined) || [];
+      setExistingLayoutImages(layoutUrls);
+      setExistingLayoutImagePaths(layoutPaths);
+
+      const galleryUrls = property.gallery_images?.map(img => getImageUrl(img)).filter((url): url is string => url !== null) || [];
+      const galleryPaths = property.gallery_images?.filter((path): path is string => path !== null && path !== undefined) || [];
+      setExistingGalleryImages(galleryUrls);
+      setExistingGalleryImagePaths(galleryPaths);
     } else {
       // Reset existing images when creating new property
       setExistingMainImage(null);
-      setExistingDemoVideo(null);
+      setExistingDemoVideoThumbnail(null);
       setExistingBookingFormBg(null);
       setExistingLayoutImages([]);
       setExistingGalleryImages([]);
+      setExistingLayoutImagePaths([]);
+      setExistingGalleryImagePaths([]);
+      setExistingBrochure(null);
+      setExistingPaymentSchedule(null);
     }
   }, [property]);
 
@@ -168,27 +189,27 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
     }
   };
 
-  const handleFileChange = (field: 'main_image' | 'demo_video' | 'booking_form_background_image', file: File | null) => {
+  const handleFileChange = (field: 'main_image' | 'demo_video_thumbnail' | 'booking_form_background_image' | 'brochure' | 'payment_schedule', file: File | null) => {
     setFormData(prev => ({ ...prev, [field]: file }));
-    
+
       // Create preview URL for new file
       if (file) {
         // Revoke old preview URL if exists
         if (field === 'main_image' && mainImagePreview) {
           URL.revokeObjectURL(mainImagePreview);
-        } else if (field === 'demo_video' && demoVideoPreview) {
-          URL.revokeObjectURL(demoVideoPreview);
+        } else if (field === 'demo_video_thumbnail' && demoVideoThumbnailPreview) {
+          URL.revokeObjectURL(demoVideoThumbnailPreview);
         } else if (field === 'booking_form_background_image' && bookingFormBgPreview) {
           URL.revokeObjectURL(bookingFormBgPreview);
         }
-        
+
         const previewUrl = URL.createObjectURL(file);
         if (field === 'main_image') {
           setMainImagePreview(previewUrl);
           setExistingMainImage(null); // Clear existing when new file is selected
-        } else if (field === 'demo_video') {
-          setDemoVideoPreview(previewUrl);
-          setExistingDemoVideo(null); // Clear existing when new file is selected
+        } else if (field === 'demo_video_thumbnail') {
+          setDemoVideoThumbnailPreview(previewUrl);
+          setExistingDemoVideoThumbnail(null); // Clear existing when new file is selected
         } else if (field === 'booking_form_background_image') {
           setBookingFormBgPreview(previewUrl);
           setExistingBookingFormBg(null); // Clear existing when new file is selected
@@ -197,12 +218,16 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
         if (field === 'main_image') {
           if (mainImagePreview) URL.revokeObjectURL(mainImagePreview);
           setMainImagePreview(null);
-        } else if (field === 'demo_video') {
-          if (demoVideoPreview) URL.revokeObjectURL(demoVideoPreview);
-          setDemoVideoPreview(null);
+        } else if (field === 'demo_video_thumbnail') {
+          if (demoVideoThumbnailPreview) URL.revokeObjectURL(demoVideoThumbnailPreview);
+          setDemoVideoThumbnailPreview(null);
         } else if (field === 'booking_form_background_image') {
           if (bookingFormBgPreview) URL.revokeObjectURL(bookingFormBgPreview);
           setBookingFormBgPreview(null);
+        } else if (field === 'brochure') {
+          setExistingBrochure(null);
+        } else if (field === 'payment_schedule') {
+          setExistingPaymentSchedule(null);
         }
       }
   };
@@ -211,7 +236,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
     if (files) {
       const fileArray = Array.from(files);
       setFormData(prev => ({ ...prev, [field]: fileArray }));
-      
+
       // Create preview URLs for new files
       const previewUrls = fileArray.map(file => URL.createObjectURL(file));
       if (field === 'layout_images') {
@@ -221,7 +246,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
       }
     }
   };
-  
+
   const removeLayoutImage = (index: number) => {
     setFormData(prev => ({
       ...prev,
@@ -233,7 +258,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
       return newPreviews.filter((_, i) => i !== index);
     });
   };
-  
+
   const removeGalleryImage = (index: number) => {
     setFormData(prev => ({
       ...prev,
@@ -245,25 +270,27 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
       return newPreviews.filter((_, i) => i !== index);
     });
   };
-  
+
   const removeExistingLayoutImage = (index: number) => {
     setExistingLayoutImages(prev => prev.filter((_, i) => i !== index));
+    setExistingLayoutImagePaths(prev => prev.filter((_, i) => i !== index));
   };
-  
+
   const removeExistingGalleryImage = (index: number) => {
     setExistingGalleryImages(prev => prev.filter((_, i) => i !== index));
+    setExistingGalleryImagePaths(prev => prev.filter((_, i) => i !== index));
   };
-  
+
   // Cleanup preview URLs on unmount
   useEffect(() => {
     return () => {
       if (mainImagePreview) URL.revokeObjectURL(mainImagePreview);
-      if (demoVideoPreview) URL.revokeObjectURL(demoVideoPreview);
+      if (demoVideoThumbnailPreview) URL.revokeObjectURL(demoVideoThumbnailPreview);
       if (bookingFormBgPreview) URL.revokeObjectURL(bookingFormBgPreview);
       layoutImagesPreviews.forEach(url => URL.revokeObjectURL(url));
       galleryImagesPreviews.forEach(url => URL.revokeObjectURL(url));
     };
-  }, [mainImagePreview, demoVideoPreview, bookingFormBgPreview, layoutImagesPreviews, galleryImagesPreviews]);
+  }, [mainImagePreview, demoVideoThumbnailPreview, bookingFormBgPreview, layoutImagesPreviews, galleryImagesPreviews]);
 
   const addTransport = () => {
     if (transportName.trim() && transportIcon.trim() && transportDistance.trim()) {
@@ -308,7 +335,15 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
     }
 
     try {
-      await onSubmit(formData);
+      // Include existing image paths that should be kept (only when updating)
+      const submitData = {
+        ...formData,
+        ...(property && {
+          existing_layout_images: existingLayoutImagePaths,
+          existing_gallery_images: existingGalleryImagePaths,
+        }),
+      };
+      await onSubmit(submitData);
     } catch (error: any) {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
@@ -670,36 +705,83 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
           </Grid>
 
           <Grid item xs={12} sm={6}>
+            <TextField
+              label="YouTube Video URL"
+              fullWidth
+              value={formData.demo_video}
+              onChange={(e) => handleInputChange('demo_video', e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
+              error={!!errors.demo_video}
+              helperText={errors.demo_video || 'Enter a YouTube video URL (watch, shorts, or youtu.be format)'}
+            />
+            {formData.demo_video && extractYouTubeVideoId(formData.demo_video) && (
+              <Box sx={{ mt: 2 }}>
+                <Card>
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      width: '100%',
+                      paddingTop: '56.25%', // 16:9 aspect ratio
+                      overflow: 'hidden',
+                      borderRadius: 1,
+                    }}
+                  >
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        border: 0,
+                      }}
+                      src={getYouTubeEmbedUrl(formData.demo_video) || ''}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </Box>
+                  <Box sx={{ p: 1, display: 'flex', justifyContent: 'flex-end' }}>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleInputChange('demo_video', '')}
+                    >
+                      <CloseIcon />
+                    </IconButton>
+                  </Box>
+                </Card>
+              </Box>
+            )}
+            {formData.demo_video && !extractYouTubeVideoId(formData.demo_video) && (
+              <Alert severity="warning" sx={{ mt: 1 }}>
+                Please enter a valid YouTube URL
+              </Alert>
+            )}
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
             <Button
               variant="outlined"
               component="label"
               fullWidth
               sx={{ height: 56 }}
             >
-              Upload Demo Video
+              Upload Video Thumbnail
               <input
                 type="file"
                 hidden
-                accept="video/*"
-                onChange={(e) => handleFileChange('demo_video', e.target.files?.[0] || null)}
+                accept="image/*"
+                onChange={(e) => handleFileChange('demo_video_thumbnail', e.target.files?.[0] || null)}
               />
             </Button>
-            {(demoVideoPreview || existingDemoVideo) && (
+            {(demoVideoThumbnailPreview || existingDemoVideoThumbnail) && (
               <Box sx={{ mt: 2, position: 'relative' }}>
                 <Card sx={{ position: 'relative' }}>
-                  {demoVideoPreview ? (
-                    <video
-                      src={demoVideoPreview}
-                      controls
-                      style={{ width: '100%', maxHeight: 200, objectFit: 'cover' }}
-                    />
-                  ) : existingDemoVideo ? (
-                    <video
-                      src={existingDemoVideo}
-                      controls
-                      style={{ width: '100%', maxHeight: 200, objectFit: 'cover' }}
-                    />
-                  ) : null}
+                  <CardMedia
+                    component="img"
+                    image={demoVideoThumbnailPreview || existingDemoVideoThumbnail || ''}
+                    alt="Video Thumbnail Preview"
+                    sx={{ height: 200, objectFit: 'cover' }}
+                  />
                   <IconButton
                     sx={{
                       position: 'absolute',
@@ -710,18 +792,108 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                       '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
                     }}
                     onClick={() => {
-                      handleFileChange('demo_video', null);
-                      setExistingDemoVideo(null);
+                      handleFileChange('demo_video_thumbnail', null);
+                      setExistingDemoVideoThumbnail(null);
                     }}
                   >
                     <CloseIcon />
                   </IconButton>
                 </Card>
-                {formData.demo_video && (
+                {formData.demo_video_thumbnail && (
                   <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                    Selected: {formData.demo_video.name}
+                    Selected: {formData.demo_video_thumbnail.name}
                   </Typography>
                 )}
+              </Box>
+            )}
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{ height: 56 }}
+            >
+              Upload Brochure (PDF)
+              <input
+                type="file"
+                hidden
+                accept="application/pdf"
+                onChange={(e) => handleFileChange('brochure', e.target.files?.[0] || null)}
+              />
+            </Button>
+            {(formData.brochure || existingBrochure) && (
+              <Box sx={{ mt: 2 }}>
+                <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box>
+                      {formData.brochure ? (
+                        <Typography variant="body2">
+                          Selected: {formData.brochure.name}
+                        </Typography>
+                      ) : existingBrochure ? (
+                        <Typography variant="body2">
+                          Current: <a href={existingBrochure} target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2' }}>View Brochure</a>
+                        </Typography>
+                      ) : null}
+                    </Box>
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        handleFileChange('brochure', null);
+                        setExistingBrochure(null);
+                      }}
+                    >
+                      <CloseIcon />
+                    </IconButton>
+                  </Box>
+                </Paper>
+              </Box>
+            )}
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{ height: 56 }}
+            >
+              Upload Payment Schedule (PDF)
+              <input
+                type="file"
+                hidden
+                accept="application/pdf"
+                onChange={(e) => handleFileChange('payment_schedule', e.target.files?.[0] || null)}
+              />
+            </Button>
+            {(formData.payment_schedule || existingPaymentSchedule) && (
+              <Box sx={{ mt: 2 }}>
+                <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box>
+                      {formData.payment_schedule ? (
+                        <Typography variant="body2">
+                          Selected: {formData.payment_schedule.name}
+                        </Typography>
+                      ) : existingPaymentSchedule ? (
+                        <Typography variant="body2">
+                          Current: <a href={existingPaymentSchedule} target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2' }}>View Payment Schedule</a>
+                        </Typography>
+                      ) : null}
+                    </Box>
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        handleFileChange('payment_schedule', null);
+                        setExistingPaymentSchedule(null);
+                      }}
+                    >
+                      <CloseIcon />
+                    </IconButton>
+                  </Box>
+                </Paper>
               </Box>
             )}
           </Grid>

@@ -51,3 +51,4 @@ After uploading a new file through the admin panel:
 - File paths stored in database remain the same (relative paths)
 - Frontend code unchanged (still uses `/storage/...` URLs)
 
+

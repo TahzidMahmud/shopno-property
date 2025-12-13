@@ -54,12 +54,15 @@ export const aboutPageProjectService = {
 
   update: async (id: number, data: AboutPageProjectFormData): Promise<AboutPageProject> => {
     const formData = new FormData();
+    // Use method spoofing for PUT with FormData (more reliable)
+    formData.append('_method', 'PUT');
     formData.append('title', data.title);
     if (data.subtitle) formData.append('subtitle', data.subtitle);
     if (data.image) formData.append('image', data.image);
     formData.append('order', data.order.toString());
     formData.append('is_active', data.is_active ? '1' : '0');
-    const response = await axios.put(`${API_BASE_URL}/about-page-projects/${id}`, formData, {
+    // Use POST with _method=PUT and manually set Content-Type (like propertyService)
+    const response = await axios.post(`${API_BASE_URL}/about-page-projects/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data.data;
@@ -91,12 +94,15 @@ export const aboutPageTeamMemberService = {
 
   update: async (id: number, data: AboutPageTeamMemberFormData): Promise<AboutPageTeamMember> => {
     const formData = new FormData();
+    // Use method spoofing for PUT with FormData (more reliable)
+    formData.append('_method', 'PUT');
     formData.append('name', data.name);
     formData.append('position', data.position);
     if (data.image) formData.append('image', data.image);
     formData.append('order', data.order.toString());
     formData.append('is_active', data.is_active ? '1' : '0');
-    const response = await axios.put(`${API_BASE_URL}/about-page-team-members/${id}`, formData, {
+    // Use POST with _method=PUT and manually set Content-Type (like propertyService)
+    const response = await axios.post(`${API_BASE_URL}/about-page-team-members/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data.data;
@@ -131,6 +137,8 @@ export const aboutPageTestimonialService = {
 
   update: async (id: number, data: AboutPageTestimonialFormData): Promise<AboutPageTestimonial> => {
     const formData = new FormData();
+    // Use method spoofing for PUT with FormData (more reliable)
+    formData.append('_method', 'PUT');
     formData.append('quote', data.quote);
     formData.append('author_name', data.author_name);
     formData.append('author_position', data.author_position);
@@ -139,7 +147,8 @@ export const aboutPageTestimonialService = {
     if (data.image) formData.append('image', data.image);
     formData.append('order', data.order.toString());
     formData.append('is_active', data.is_active ? '1' : '0');
-    const response = await axios.put(`${API_BASE_URL}/about-page-testimonials/${id}`, formData, {
+    // Use POST with _method=PUT and manually set Content-Type (like propertyService)
+    const response = await axios.post(`${API_BASE_URL}/about-page-testimonials/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data.data;

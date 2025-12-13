@@ -25,39 +25,247 @@ export default function PropertyCard({ property, onOpen }: Props) {
 
   return (
     <Card
-      sx={{ border: '1px solid #e0e0e0', borderRadius: 2, boxShadow: 'none', cursor: 'pointer' }}
+      sx={{ 
+        bgcolor: 'white',
+        borderRadius: '7.002px',
+        boxShadow: '0px 1.751px 11.379px 0px rgba(0,0,0,0.08)',
+        cursor: 'pointer',
+        p: { xs: '8px', md: '8.753px' },
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: '0px 4px 16px 0px rgba(0,0,0,0.12)',
+        }
+      }}
       onClick={() => property.id && onOpen(property.id)}
     >
-      <CardMedia
-        component="img"
-        height="160"
-        image={imageUrl}
-        alt={property.title}
-        sx={{ objectFit: 'cover' }}
-      />
-      <CardContent sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-          <Typography variant="h6" sx={{ color: '#212121', fontSize: '1.1rem', fontWeight: 'bold', flex: 1 }}>{property.title}</Typography>
+      {/* Image */}
+      <Box sx={{
+        width: '100%',
+        height: { xs: '200px', sm: '240px', md: '280.963px' },
+        borderRadius: '3.501px',
+        overflow: 'hidden',
+        mb: { xs: '10px', md: '10.503px' },
+        position: 'relative'
+      }}>
+        <CardMedia
+          component="img"
+          image={imageUrl}
+          alt={property.title}
+          sx={{ 
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center'
+          }}
+        />
+      </Box>
+
+      <CardContent sx={{ 
+        p: 0, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: { xs: '12px', md: '14.004px' },
+        flex: 1
+      }}>
+        {/* Title and Area Badge */}
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: { xs: '8px', md: '8.753px' }
+        }}>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            gap: { xs: '10px', md: '83.151px' }
+          }}>
+            <Typography sx={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 500,
+              fontSize: { xs: '14px', md: '16.462px' },
+              lineHeight: 1.2,
+              color: '#282424',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              flex: 1
+            }}>
+              {property.title}
+            </Typography>
+            {area && area !== 'N/A' && (
+              <Box sx={{
+                border: '0.875px solid #d7d6d6',
+                borderRadius: '1.751px',
+                px: { xs: '8px', md: '10.975px' },
+                py: { xs: '3px', md: '4.573px' },
+                height: { xs: '20px', md: '22.864px' },
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <Typography sx={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontWeight: 400,
+                  fontSize: { xs: '8px', md: '9.146px' },
+                  lineHeight: 1.2,
+                  color: '#282424',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {area}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+
+          {/* Address */}
+          <Typography sx={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: 400,
+            fontSize: { xs: '10px', md: '10.975px' },
+            lineHeight: 1.5,
+            color: '#a0a0a0'
+          }}>
+            {property.full_address || location}
+          </Typography>
         </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontSize: '0.875rem' }}>
-          {property.full_address || location}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
-          {bedrooms > 0 && (
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>{bedrooms} Bedrooms</Typography>
-          )}
-          {bathrooms > 0 && (
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>• {bathrooms} Bathroom</Typography>
-          )}
-          {property.total_parking && property.total_parking > 0 && (
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>• {property.total_parking} Garage</Typography>
-          )}
-          {property.area && (
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>• {property.area} Sqft</Typography>
-          )}
+
+        {/* Divider */}
+        <Box sx={{
+          width: '100%',
+          height: '0',
+          borderTop: '0.875px solid #e0e0e0'
+        }} />
+
+        {/* Property Details */}
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          gap: { xs: '10px', md: '12.254px' }
+        }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            gap: { xs: '12px', md: '17.505px' },
+            flexWrap: 'wrap'
+          }}>
+            <Typography sx={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 500,
+              fontSize: { xs: '9px', md: '10.503px' },
+              lineHeight: 1.2,
+              color: { xs: '#4d4d4d', md: property.status === 'Under Construction' ? '#17badf' : '#4d4d4d' },
+              whiteSpace: 'nowrap'
+            }}>
+              {status === 'Under Construction' ? 'Underdevelopment:' : 'Status:'}
+            </Typography>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              gap: { xs: '8px', md: '12.254px' },
+              flexWrap: 'wrap'
+            }}>
+              {propertyType && propertyType !== 'N/A' && (
+                <>
+                  <Typography sx={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 400,
+                    fontSize: { xs: '9px', md: '10.975px' },
+                    lineHeight: 1.2,
+                    color: '#8c8b8b',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {propertyType}
+                  </Typography>
+                  {(bedrooms > 0 || bathrooms > 0) && (
+                    <Box sx={{
+                      width: { xs: '4px', md: '5.487px' },
+                      height: { xs: '4px', md: '5.487px' },
+                      borderRadius: '50%',
+                      bgcolor: '#8c8b8b'
+                    }} />
+                  )}
+                </>
+              )}
+              {bedrooms > 0 && (
+                <>
+                  <Typography sx={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 400,
+                    fontSize: { xs: '9px', md: '10.975px' },
+                    lineHeight: 1.2,
+                    color: '#8c8b8b',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {bedrooms} Bedrooms
+                  </Typography>
+                  {bathrooms > 0 && (
+                    <Box sx={{
+                      width: { xs: '4px', md: '5.487px' },
+                      height: { xs: '4px', md: '5.487px' },
+                      borderRadius: '50%',
+                      bgcolor: '#8c8b8b'
+                    }} />
+                  )}
+                </>
+              )}
+              {bathrooms > 0 && (
+                <Typography sx={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontWeight: 400,
+                  fontSize: { xs: '9px', md: '10.975px' },
+                  lineHeight: 1.2,
+                  color: '#8c8b8b',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}>
+                  {bathrooms} Bathroom
+                </Typography>
+              )}
+            </Box>
+          </Box>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2, pt: 2, borderTop: '1px solid #e0e0e0' }}>
-          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>{companyName}</Typography>
+
+        {/* Company Name */}
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          height: { xs: '18px', md: '21.882px' },
+          mt: 'auto'
+        }}>
+          <Typography sx={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: 500,
+            fontSize: { xs: '9px', md: '10.503px' },
+            lineHeight: 1.2,
+            color: '#a0a0a0',
+            whiteSpace: 'nowrap'
+          }}>
+            Company Name:
+          </Typography>
+          <Box sx={{
+            bgcolor: '#f5f5f5',
+            px: { xs: '8px', md: '10.503px' },
+            py: { xs: '3px', md: '4.376px' },
+            borderRadius: '2px'
+          }}>
+            <Typography sx={{
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 500,
+              fontSize: { xs: '9px', md: '10.503px' },
+              lineHeight: 1.2,
+              color: '#474040',
+              whiteSpace: 'nowrap'
+            }}>
+              {companyName}
+            </Typography>
+          </Box>
         </Box>
       </CardContent>
     </Card>

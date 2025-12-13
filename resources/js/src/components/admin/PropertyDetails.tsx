@@ -20,6 +20,7 @@ import {
   Business as BusinessIcon,
 } from '@mui/icons-material';
 import { Property } from '../../types/Property';
+import { getYouTubeEmbedUrl, extractYouTubeVideoId } from '../../utils/youtube';
 
 interface PropertyDetailsProps {
   property: Property;
@@ -286,20 +287,38 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({
           )}
 
           {/* Demo Video */}
-          {property.demo_video && (
+          {property.demo_video && extractYouTubeVideoId(property.demo_video) && (
             <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom>
-                Demo Video
+                Demo Video (YouTube)
               </Typography>
-              <video
-                width="100%"
-                height="200"
-                controls
-                style={{ borderRadius: '4px' }}
+              <Box
+                sx={{
+                  position: 'relative',
+                  width: '100%',
+                  paddingTop: '56.25%', // 16:9 aspect ratio
+                  overflow: 'hidden',
+                  borderRadius: 1,
+                }}
               >
-                <source src={`/storage/${property.demo_video}`} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+                <iframe
+                  width="100%"
+                  height="100%"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    border: 0,
+                  }}
+                  src={getYouTubeEmbedUrl(property.demo_video) || ''}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Property Demo Video"
+                />
+              </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                {property.demo_video}
+              </Typography>
             </Paper>
           )}
         </Grid>
