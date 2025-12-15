@@ -4,6 +4,7 @@ import { Box, Typography, Container, Grid, Card, CardContent, CardMedia, IconBut
 import { ArrowBack, ArrowForward, ArrowOutward, PlayArrow, Phone, Store, AccountBalance, Flight, School, LocalHospital, Train } from '@mui/icons-material';
 import Footer from '../components/Footer';
 import { propertyService } from '../services/propertyService';
+import { propertyQueryService } from '../services/propertyQueryService';
 import { Property } from '../types/Property';
 import { getYouTubeEmbedUrl, extractYouTubeVideoId, getYouTubeThumbnailUrl } from '../utils/youtube';
 
@@ -65,7 +66,7 @@ const PropertyDetails: React.FC = () => {
   const property = propertyData ? {
     title: propertyData.title || 'Property',
     mainImage: getImageUrl(propertyData.main_image),
-    description: propertyData.full_address || 'Get into the most profitable investment industry and turn your sale money into profits.',
+    description: propertyData.description || propertyData.full_address || 'Get into the most profitable investment industry and turn your sale money into profits.',
     details: [
       { label: 'Status', value: propertyData.status || 'N/A' },
       { label: 'Area', value: propertyData.area || 'N/A' },
@@ -80,6 +81,11 @@ const PropertyDetails: React.FC = () => {
     galleryImages: propertyData.gallery_images && propertyData.gallery_images.length > 0
       ? propertyData.gallery_images.map(img => getImageUrl(img))
       : [getImageUrl(propertyData.main_image)],
+    featuredImages: propertyData.featured_images && propertyData.featured_images.length > 0
+      ? propertyData.featured_images.map(img => getImageUrl(img))
+      : (propertyData.gallery_images && propertyData.gallery_images.length > 0
+        ? propertyData.gallery_images.map(img => getImageUrl(img))
+        : [getImageUrl(propertyData.main_image)]),
     layoutImages: propertyData.layout_images && propertyData.layout_images.length > 0
       ? propertyData.layout_images.map(img => getImageUrl(img))
       : [getImageUrl(propertyData.main_image)],
@@ -134,6 +140,7 @@ const PropertyDetails: React.FC = () => {
   };
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentFeaturedImageIndex, setCurrentFeaturedImageIndex] = useState(0); // State for featured images slider
   const [currentLayoutImageIndex, setCurrentLayoutImageIndex] = useState(0); // New state for layout carousel
 
   // State for Installment Calculation
@@ -149,9 +156,11 @@ const PropertyDetails: React.FC = () => {
     fullName: '',
     phoneNumber: '',
     email: '',
-    projectType: '',
-    projectDetails: '',
+    query: '',
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Update property name when property data loads
   useEffect(() => {
@@ -171,6 +180,20 @@ const PropertyDetails: React.FC = () => {
     if (property.galleryImages.length === 0) return;
     setCurrentImageIndex((prevIndex) =>
       prevIndex === property.galleryImages.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const handlePreviousFeaturedImage = () => {
+    if ((property.featuredImages?.length || 0) === 0) return;
+    setCurrentFeaturedImageIndex((prevIndex) =>
+      prevIndex === 0 ? (property.featuredImages?.length || 1) - 1 : prevIndex - 1
+    );
+  };
+
+  const handleNextFeaturedImage = () => {
+    if ((property.featuredImages?.length || 0) === 0) return;
+    setCurrentFeaturedImageIndex((prevIndex) =>
+      prevIndex === (property.featuredImages?.length || 1) - 1 ? 0 : prevIndex + 1
     );
   };
 
@@ -237,22 +260,48 @@ const PropertyDetails: React.FC = () => {
     return `https://www.google.com/maps?q=Dhaka,Bangladesh&output=embed`;
   };
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement booking form submission
-    console.log('Booking form submitted:', bookingFormData);
-    alert('Thank you for your interest! We will contact you soon.');
-    setBookingFormData({
-      fullName: '',
-      phoneNumber: '',
-      email: '',
-      projectType: '',
-      projectDetails: '',
-    });
+    if (!propertyData?.id) {
+      setSubmitError('Property information is missing');
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+
+    try {
+      await propertyQueryService.submit({
+        property_id: propertyData.id,
+        full_name: bookingFormData.fullName,
+        phone_number: bookingFormData.phoneNumber,
+        email: bookingFormData.email || undefined,
+        query: bookingFormData.query,
+      });
+
+      setSubmitSuccess(true);
+      setBookingFormData({
+        fullName: '',
+        phoneNumber: '',
+        email: '',
+        query: '',
+      });
+
+      // Hide success message after 3 seconds
+      setTimeout(() => setSubmitSuccess(false), 3000);
+    } catch (error: any) {
+      setSubmitError(error.response?.data?.message || 'Failed to submit query. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const isFirstSlide = currentImageIndex === 0;
   const isLastSlide = property.galleryImages.length > 0 && currentImageIndex === property.galleryImages.length - 1;
+
+  const isFirstFeaturedSlide = currentFeaturedImageIndex === 0;
+  const isLastFeaturedSlide = (property.featuredImages?.length || 0) > 0 && currentFeaturedImageIndex === (property.featuredImages?.length || 1) - 1;
 
   const isFirstLayoutSlide = currentLayoutImageIndex === 0;
   const isLastLayoutSlide = property.layoutImages.length > 0 && currentLayoutImageIndex === property.layoutImages.length - 1;
@@ -325,8 +374,10 @@ const PropertyDetails: React.FC = () => {
               <Box sx={{ position: 'relative', width: '100%', height: { xs: '250px', sm: '300px', md: '350px' }, borderRadius: 2 }}> {/* New wrapper Box for image and arrows */}
                 <CardMedia
                   component="img"
-                  image={property.galleryImages[currentImageIndex]}
-                  alt="Property Gallery"
+                  image={(property.featuredImages && property.featuredImages.length > 0)
+                    ? property.featuredImages[currentFeaturedImageIndex]
+                    : property.galleryImages[currentImageIndex]}
+                  alt="Property Featured"
                   sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 2 }}
                 />
                 <Box
@@ -346,16 +397,16 @@ const PropertyDetails: React.FC = () => {
                     left: { xs: 5, md: -15 }, // Position inside on mobile, outside on desktop
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    bgcolor: isFirstSlide ? 'white' : 'primary.main',
-                    color: isFirstSlide ? 'black' : 'white',
-                    border: isFirstSlide ? '1px solid #e0e0e0' : 'none',
-                    boxShadow: isFirstSlide ? 1 : 'none',
+                    bgcolor: isFirstFeaturedSlide ? 'white' : 'primary.main',
+                    color: isFirstFeaturedSlide ? 'black' : 'white',
+                    border: isFirstFeaturedSlide ? '1px solid #e0e0e0' : 'none',
+                    boxShadow: isFirstFeaturedSlide ? 1 : 'none',
                     borderRadius: '8px', // Rounded rectangle
                     width: { xs: 36, md: 40 },
                     height: { xs: 36, md: 40 },
-                    '&:hover': { bgcolor: isFirstSlide ? '#f0f0f0' : 'primary.dark' },
+                    '&:hover': { bgcolor: isFirstFeaturedSlide ? '#f0f0f0' : 'primary.dark' },
                   }}
-                  onClick={handlePreviousImage}
+                  onClick={handlePreviousFeaturedImage}
                 >
                   <ArrowBack sx={{ fontSize: { xs: 20, md: 24 } }} />
                 </IconButton>
@@ -365,16 +416,16 @@ const PropertyDetails: React.FC = () => {
                     right: { xs: 5, md: -15 }, // Position inside on mobile, outside on desktop
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    bgcolor: isLastSlide ? 'white' : 'primary.main',
-                    color: isLastSlide ? 'black' : 'white',
-                    border: isLastSlide ? '1px solid #e0e0e0' : 'none',
-                    boxShadow: isLastSlide ? 1 : 'none',
+                    bgcolor: isLastFeaturedSlide ? 'white' : 'primary.main',
+                    color: isLastFeaturedSlide ? 'black' : 'white',
+                    border: isLastFeaturedSlide ? '1px solid #e0e0e0' : 'none',
+                    boxShadow: isLastFeaturedSlide ? 1 : 'none',
                     borderRadius: '8px', // Rounded rectangle
                     width: { xs: 36, md: 40 },
                     height: { xs: 36, md: 40 },
-                    '&:hover': { bgcolor: isLastSlide ? '#f0f0f0' : 'primary.dark' },
+                    '&:hover': { bgcolor: isLastFeaturedSlide ? '#f0f0f0' : 'primary.dark' },
                   }}
-                  onClick={handleNextImage}
+                  onClick={handleNextFeaturedImage}
                 >
                   <ArrowForward sx={{ fontSize: { xs: 20, md: 24 } }} />
                 </IconButton>
@@ -723,8 +774,10 @@ const PropertyDetails: React.FC = () => {
           </Grid>
         </Box>
 
-        {/* Map and Location Details Section */}
-        <Box sx={{ mt: { xs: 4, md: 6 }, mb: { xs: 4, md: 6 } }}>
+
+      </Container>
+       {/* Map and Location Details Section */}
+        <Box sx={{ mt: { xs: 4, md: 6 }}}>
           <Box sx={{ position: 'relative', width: '100%', height: { xs: '350px', sm: '400px', md: '500px' }, borderRadius: 2, overflow: 'hidden' }}>
             <iframe
               width="100%"
@@ -795,9 +848,11 @@ const PropertyDetails: React.FC = () => {
             backgroundImage: `url(${property.bookingFormBg})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            py: { xs: 4, md: 8 },
-            mt: { xs: 4, md: 6 },
-            mb: { xs: 4, md: 6 },
+            minHeight: { xs: '500px', md: '500px' },
+            py: { xs: 5, md: 7 },
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -805,244 +860,486 @@ const PropertyDetails: React.FC = () => {
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              backgroundColor: 'rgba(0, 0, 0, 0.2)',
             },
           }}
         >
-          <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 }, position: 'relative', zIndex: 1 }}>
+          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, px: { xs: 2, md: 3 } }}>
             <Paper
               sx={{
                 position: 'relative',
                 zIndex: 1,
-                borderRadius: 2,
+                borderRadius: '6px',
                 boxShadow: 6,
                 bgcolor: 'white',
-                overflow: 'hidden',
+                overflow: 'visible',
+                width: { xs: '100%', md: '946px' },
+                mx: 'auto',
+                p: { xs: 2, md: '34px 24px 24px 24px' },
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: { xs: 2, md: 0 },
+                minHeight: { xs: 'auto', md: 'auto' },
               }}
             >
-              <Grid container>
-                {/* Left Column - Image with Overlay Text */}
-                <Grid item xs={12} md={5}>
-                  <Box
-                    sx={{
-                      position: 'relative',
-                      backgroundImage: `url(${property.mainImage})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      minHeight: { xs: '300px', md: '600px' },
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'flex-start',
-                      alignItems: 'flex-start',
-                      p: { xs: 3, md: 4 },
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                        zIndex: 0,
-                      },
-                    }}
-                  >
-                    <Box sx={{ position: 'relative', zIndex: 1, color: 'white' }}>
-                      <Typography
-                        variant="h4"
-                        component="h2"
+              {/* Left Column - Image with Overlay Text */}
+              <Box
+                sx={{
+                  position: 'relative',
+                  width: { xs: '100%', md: '337px' },
+                  height: { xs: '250px', md: '294px' },
+                  flexShrink: 0,
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  backgroundImage: `url(${propertyData?.booking_form_image ? getImageUrl(propertyData.booking_form_image) : property.mainImage})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  mb: { xs: 2, md: 0 },
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                    borderRadius: '8px',
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    position: 'relative',
+                    zIndex: 1,
+                    color: 'white',
+                    p: '30px 0 0 24px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '20px',
+                    height: '118px',
+                    width: { xs: 'calc(100% - 48px)', md: '286px' },
+                  }}
+                >
+                  <Box>
+                    <Typography
+                      sx={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: { xs: '32px', md: '40px' },
+                        fontWeight: 600,
+                        lineHeight: 1.3,
+                        color: 'white',
+                        textTransform: 'capitalize',
+                        fontVariationSettings: "'opsz' 14",
+                        mb: '55px',
+                      }}
+                    >
+                      Book Your
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '166.739px',
+                        height: '54.458px',
+                        ml: '0.97px',
+                        transform: 'rotate(4.4deg)',
+                      }}
+                    >
+                      <Box
                         sx={{
-                          fontWeight: 'bold',
-                          mb: 1,
-                          fontSize: { xs: '1.5rem', md: '2rem' },
-                          color: 'white',
+                          bgcolor: '#17badf',
+                          px: '14px',
+                          py: '10px',
+                          borderRadius: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          height: '42px',
                         }}
                       >
-                        Book Your
-                      </Typography>
-                      <Typography
-                        variant="h3"
-                        component="span"
-                        sx={{
-                          fontWeight: 'bold',
-                          fontSize: { xs: '2rem', md: '3rem' },
-                          bgcolor: '#00bcd4',
-                          color: 'white',
-                          px: { xs: 1.5, md: 2 },
-                          py: { xs: 0.5, md: 0.75 },
-                          borderRadius: 1,
-                          display: 'inline-block',
-                          mb: 2,
-                        }}
-                      >
-                        Property
-                      </Typography>
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          fontSize: { xs: '0.875rem', md: '1rem' },
-                          color: 'white',
-                          mt: 2,
-                        }}
-                      >
-                        We will confirm your appointment within 2 hours
-                      </Typography>
+                        <Typography
+                          sx={{
+                            fontFamily: "'DM Sans', sans-serif",
+                            fontSize: { xs: '24px', md: '32px' },
+                            fontWeight: 600,
+                            lineHeight: 1.2,
+                            color: '#fafafa',
+                            fontVariationSettings: "'opsz' 14",
+                          }}
+                        >
+                          Property
+                        </Typography>
+                      </Box>
                     </Box>
                   </Box>
-                </Grid>
-
-                {/* Right Column - Form */}
-                <Grid item xs={12} md={7}>
-                  <Box
-                    component="form"
-                    onSubmit={handleBookingSubmit}
+                  <Typography
                     sx={{
-                      p: { xs: 3, md: 4 },
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: { xs: 2, md: 2.5 },
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: '16px',
+                      fontWeight: 500,
+                      lineHeight: 1.4,
+                      color: 'white',
+                      width: { xs: '100%', md: '256px' },
+                      whiteSpace: 'pre-wrap',
                     }}
                   >
+                    We will confirm your appointment within 2 hours
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Right Column - Form */}
+              <Box
+                component="form"
+                onSubmit={handleBookingSubmit}
+                sx={{
+                  flex: 1,
+                  width: { xs: '100%', md: '431px' },
+                  ml: { xs: 0, md: '84px' },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: { xs: 2, md: '24px' },
+                  alignItems: { xs: 'stretch', md: 'flex-end' },
+                }}
+              >
+                {/* Form Fields Container */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: '40px' }, width: '100%' }}>
+                  {/* Full Name */}
+                  <Box>
+                    <Typography
+                      sx={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: '16px',
+                        fontWeight: 600,
+                        lineHeight: 1.2,
+                        color: '#1c1c1c',
+                        mb: '5.16px',
+                        fontVariationSettings: "'opsz' 14",
+                      }}
+                    >
+                      Full Name*
+                    </Typography>
                     <TextField
                       fullWidth
-                      label="Full Name*"
                       placeholder="Enter Your Name"
                       required
                       value={bookingFormData.fullName}
                       onChange={(e) => setBookingFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                      variant="outlined"
+                      variant="standard"
+                      sx={{
+                        '& .MuiInput-underline:before': {
+                          borderBottom: '1px solid #1c1c1c',
+                        },
+                        '& .MuiInput-underline:after': {
+                          borderBottom: '1px solid #1c1c1c',
+                        },
+                        '& .MuiInput-underline:hover:before': {
+                          borderBottom: '1px solid #1c1c1c',
+                        },
+                        '& .MuiInputBase-input': {
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: '14px',
+                          fontWeight: 400,
+                          lineHeight: 1.2,
+                          color: '#1c1c1c',
+                          paddingBottom: '5px',
+                        },
+                      }}
                     />
-                    <TextField
-                      fullWidth
-                      label="Phone Number*"
-                      placeholder="Select Your Number"
-                      required
-                      type="tel"
-                      value={bookingFormData.phoneNumber}
-                      onChange={(e) => setBookingFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                      variant="outlined"
-                    />
-                    <TextField
-                      fullWidth
-                      label="Email"
-                      placeholder="Select Your Email"
-                      type="email"
-                      value={bookingFormData.email}
-                      onChange={(e) => setBookingFormData(prev => ({ ...prev, email: e.target.value }))}
-                      variant="outlined"
-                    />
-                    <FormControl fullWidth>
-                      <InputLabel>Project Type</InputLabel>
-                      <Select
-                        value={bookingFormData.projectType}
-                        onChange={(e) => setBookingFormData(prev => ({ ...prev, projectType: e.target.value }))}
-                        label="Project Type"
-                      >
-                        <MenuItem value="">Select Your Project</MenuItem>
-                        <MenuItem value="apartment">Apartment</MenuItem>
-                        <MenuItem value="villa">Villa</MenuItem>
-                        <MenuItem value="penthouse">Penthouse</MenuItem>
-                        <MenuItem value="commercial">Commercial</MenuItem>
-                      </Select>
-                    </FormControl>
-                    <TextField
-                      fullWidth
-                      label="Project details*"
-                      placeholder="Tell us more about your idea"
-                      required
-                      multiline
-                      rows={4}
-                      value={bookingFormData.projectDetails}
-                      onChange={(e) => setBookingFormData(prev => ({ ...prev, projectDetails: e.target.value }))}
-                      variant="outlined"
-                    />
-                    <Box sx={{ display: 'flex', gap: { xs: 1, md: 2 }, flexWrap: 'wrap', mt: 1 }}>
-                      {property.brochure && (
-                        <Button
-                          variant="outlined"
-                          onClick={() => handleDownload(property.brochure, 'brochure.pdf')}
-                          sx={{
-                            flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: 1 },
-                            minWidth: { xs: '100%', sm: 150 },
-                            fontSize: { xs: '0.85rem', md: '1rem' },
-                            borderColor: '#00bcd4',
-                            color: '#00bcd4',
-                            '&:hover': { borderColor: '#00acc1', bgcolor: 'rgba(0, 188, 212, 0.04)' },
-                          }}
-                        >
-                          Download Brochure
-                        </Button>
-                      )}
-                      {property.paymentSchedule && (
-                        <Button
-                          variant="outlined"
-                          onClick={() => handleDownload(property.paymentSchedule, 'payment-schedule.pdf')}
-                          sx={{
-                            flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: 1 },
-                            minWidth: { xs: '100%', sm: 150 },
-                            fontSize: { xs: '0.85rem', md: '1rem' },
-                            borderColor: '#00bcd4',
-                            color: '#00bcd4',
-                            '&:hover': { borderColor: '#00acc1', bgcolor: 'rgba(0, 188, 212, 0.04)' },
-                          }}
-                        >
-                          Payment Schedule
-                        </Button>
-                      )}
-                      <Button
-                        type="submit"
-                        variant="contained"
+                  </Box>
+
+                  {/* Phone Number and Email - Side by Side */}
+                  <Box sx={{ display: 'flex', gap: { xs: 2, md: '24px' } }}>
+                    {/* Phone Number */}
+                    <Box sx={{ flex: 1 }}>
+                      <Typography
                         sx={{
-                          flex: { xs: '1 1 100%', md: 1 },
-                          minWidth: { xs: '100%', md: 150 },
-                          backgroundColor: '#00bcd4',
-                          fontSize: { xs: '0.85rem', md: '1rem' },
-                          '&:hover': { backgroundColor: '#00acc1' },
+                          fontFamily: "'DM Sans', sans-serif",
+                          fontSize: '16px',
+                          fontWeight: 600,
+                          lineHeight: 1.2,
+                          color: '#1c1c1c',
+                          mb: '15.578px',
+                          fontVariationSettings: "'opsz' 14",
                         }}
                       >
-                        Submit Request
-                      </Button>
+                        Phone Number*
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        placeholder="Select Your Number"
+                        required
+                        type="tel"
+                        value={bookingFormData.phoneNumber}
+                        onChange={(e) => setBookingFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                        variant="standard"
+                        sx={{
+                          '& .MuiInput-underline:before': {
+                            borderBottom: '1px solid #1c1c1c',
+                          },
+                          '& .MuiInput-underline:after': {
+                            borderBottom: '1px solid #1c1c1c',
+                          },
+                          '& .MuiInput-underline:hover:before': {
+                            borderBottom: '1px solid #1c1c1c',
+                          },
+                          '& .MuiInputBase-input': {
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '14px',
+                            fontWeight: 400,
+                            lineHeight: 1.2,
+                            color: '#1c1c1c',
+                            paddingBottom: '5.193px',
+                          },
+                        }}
+                      />
+                    </Box>
+
+                    {/* Email */}
+                    <Box sx={{ flex: 1 }}>
+                      <Typography
+                        sx={{
+                          fontFamily: "'DM Sans', sans-serif",
+                          fontSize: '16px',
+                          fontWeight: 600,
+                          lineHeight: 1.2,
+                          color: '#1c1c1c',
+                          mb: '15.578px',
+                          fontVariationSettings: "'opsz' 14",
+                        }}
+                      >
+                        Email
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        placeholder="Select Your Email"
+                        type="email"
+                        value={bookingFormData.email}
+                        onChange={(e) => setBookingFormData(prev => ({ ...prev, email: e.target.value }))}
+                        variant="standard"
+                        sx={{
+                          '& .MuiInput-underline:before': {
+                            borderBottom: '1px solid #1c1c1c',
+                          },
+                          '& .MuiInput-underline:after': {
+                            borderBottom: '1px solid #1c1c1c',
+                          },
+                          '& .MuiInput-underline:hover:before': {
+                            borderBottom: '1px solid #1c1c1c',
+                          },
+                          '& .MuiInputBase-input': {
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '14px',
+                            fontWeight: 400,
+                            lineHeight: 1.2,
+                            color: '#1c1c1c',
+                            paddingBottom: '5.193px',
+                          },
+                        }}
+                      />
                     </Box>
                   </Box>
-                </Grid>
-              </Grid>
+
+                  {/* Property Name (Non-editable) */}
+                  <Box>
+                    <Typography
+                      sx={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: '16px',
+                        fontWeight: 600,
+                        lineHeight: 1.2,
+                        color: '#1c1c1c',
+                        mb: '5px',
+                        fontVariationSettings: "'opsz' 14",
+                      }}
+                    >
+                      Property Name
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      value={propertyData?.title || ''}
+                      disabled
+                      variant="standard"
+                      sx={{
+                        '& .MuiInput-underline:before': {
+                          borderBottom: '1px solid #1c1c1c',
+                        },
+                        '& .MuiInput-underline:after': {
+                          borderBottom: '1px solid #1c1c1c',
+                        },
+                        '& .MuiInput-underline:hover:before': {
+                          borderBottom: '1px solid #1c1c1c',
+                        },
+                        '& .MuiInputBase-input': {
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: '14px',
+                          fontWeight: 400,
+                          lineHeight: 1.2,
+                          color: '#1c1c1c',
+                          paddingBottom: '5px',
+                        },
+                        '& .MuiInputBase-input.Mui-disabled': {
+                          WebkitTextFillColor: '#1c1c1c',
+                          opacity: 1,
+                        },
+                      }}
+                    />
+                  </Box>
+
+                  {/* Project Details */}
+                  <Box>
+                    <Typography
+                      sx={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: '16px',
+                        fontWeight: 600,
+                        lineHeight: 1.2,
+                        color: '#1c1c1c',
+                        mb: '5px',
+                        fontVariationSettings: "'opsz' 14",
+                      }}
+                    >
+                      Your Query*
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="Enter your query"
+                      required
+                      multiline
+                      rows={2}
+                      value={bookingFormData.query}
+                      onChange={(e) => setBookingFormData(prev => ({ ...prev, query: e.target.value }))}
+                      variant="standard"
+                      sx={{
+                        '& .MuiInput-underline:before': {
+                          borderBottom: '1px solid #1c1c1c',
+                        },
+                        '& .MuiInput-underline:after': {
+                          borderBottom: '1px solid #1c1c1c',
+                        },
+                        '& .MuiInput-underline:hover:before': {
+                          borderBottom: '1px solid #1c1c1c',
+                        },
+                        '& .MuiInputBase-input': {
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: '14px',
+                          fontWeight: 400,
+                          lineHeight: 1.2,
+                          color: '#1c1c1c',
+                          paddingBottom: '5px',
+                        },
+                      }}
+                    />
+                  </Box>
+                </Box>
+
+                {/* Success/Error Messages */}
+                {submitSuccess && (
+                  <Alert severity="success" sx={{ width: '100%' }}>
+                    Thank you for your query! We will contact you soon.
+                  </Alert>
+                )}
+                {submitError && (
+                  <Alert severity="error" sx={{ width: '100%' }}>
+                    {submitError}
+                  </Alert>
+                )}
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={submitting}
+                  sx={{
+                    bgcolor: '#17badf',
+                    color: 'white',
+                    height: '45px',
+                    px: '24px',
+                    py: '12px',
+                    borderRadius: '4px',
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    lineHeight: 1.2,
+                    textTransform: 'capitalize',
+                    fontVariationSettings: "'opsz' 14",
+                    '&:hover': {
+                      bgcolor: '#00acc1',
+                    },
+                  }}
+                >
+                  {submitting ? 'Submitting...' : 'Submit Request'}
+                </Button>
+              </Box>
+
+              {/* Download Buttons - Bottom Left */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: '24px',
+                  bottom: '24px',
+                  display: 'flex',
+                  gap: '20px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                {property.brochure && (
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleDownload(property.brochure, 'brochure.pdf')}
+                    sx={{
+                      borderColor: '#17badf',
+                      color: '#17badf',
+                      height: '45px',
+                      px: '24px',
+                      py: '12px',
+                      borderRadius: '4px',
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      lineHeight: 1.2,
+                      textTransform: 'capitalize',
+                      fontVariationSettings: "'opsz' 14",
+                      '&:hover': {
+                        borderColor: '#00acc1',
+                        bgcolor: 'rgba(23, 186, 223, 0.04)',
+                      },
+                    }}
+                  >
+                    Download Broucher
+                  </Button>
+                )}
+                {property.paymentSchedule && (
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleDownload(property.paymentSchedule, 'payment-schedule.pdf')}
+                    sx={{
+                      borderColor: '#17badf',
+                      color: '#17badf',
+                      height: '45px',
+                      px: '24px',
+                      py: '12px',
+                      borderRadius: '4px',
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      lineHeight: 1.2,
+                      textTransform: 'capitalize',
+                      fontVariationSettings: "'opsz' 14",
+                      '&:hover': {
+                        borderColor: '#00acc1',
+                        bgcolor: 'rgba(23, 186, 223, 0.04)',
+                      },
+                    }}
+                  >
+                    Payment Schedule
+                  </Button>
+                )}
+              </Box>
             </Paper>
           </Container>
         </Box>
-      </Container>
-
-      {/* Sticky Footer/Call-to-Action Bar */}
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: '#00bcd4',
-          color: 'white',
-          py: { xs: 1, md: 1.5 },
-          px: { xs: 1, md: 2 },
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: { xs: 0.5, sm: 1 },
-          boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
-          <Phone sx={{ fontSize: { xs: 18, md: 20 } }} />
-          <Typography variant="body1" sx={{ fontWeight: 'bold', fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }, textAlign: 'center' }}>
-            Need help? Call us on (+88) 01844-733303
-          </Typography>
-        </Box>
-        <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' }, textAlign: 'center' }}>
-          Manager: Firoz Khan - CEO
-        </Typography>
-      </Box>
-      <Box sx={{ height: { xs: '80px', sm: '60px' } }} /> {/* Spacer for sticky footer */}
-
     </Box>
   );
 };

@@ -20,7 +20,7 @@ export default function PropertyCard({ property, onOpen }: Props) {
   const propertyType = property.type || 'N/A';
   const bedrooms = property.bedrooms || 0;
   const bathrooms = property.bathrooms || 0;
-  const companyName = property.company_name || 'N/A';
+  const companyName = property.company?.name || 'N/A';
   const status = property.status || 'N/A';
 
   return (

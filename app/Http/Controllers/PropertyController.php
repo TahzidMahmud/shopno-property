@@ -20,7 +20,7 @@ class PropertyController extends Controller
     // 🟢 List all properties
     public function index()
     {
-        return response()->json(Property::with('facilities')->get(), 200);
+        return response()->json(Property::with(['facilities', 'company'])->get(), 200);
     }
 
     // 🟢 Create a new property
@@ -29,6 +29,7 @@ class PropertyController extends Controller
         // Validation remains the same, but the max size rules are now enforced here.
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'status' => 'nullable|string',
             'area' => 'nullable|string',
             'location' => 'nullable|string',
@@ -41,6 +42,7 @@ class PropertyController extends Controller
             'main_image' => 'nullable|image|max:2048',
             'layout_images.*' => 'nullable|image|max:2048',
             'gallery_images.*' => 'nullable|image|max:2048',
+            'featured_images.*' => 'nullable|image|max:2048',
             'demo_video' => 'nullable|string|url|max:500',
             'demo_video_thumbnail' => 'nullable|image|max:2048',
             'full_address' => 'nullable|string',
@@ -54,7 +56,7 @@ class PropertyController extends Controller
             'under_development' => 'nullable|string',
             'bedrooms' => 'nullable|integer',
             'bathrooms' => 'nullable|integer',
-            'company_name' => 'nullable|string|max:255',
+            'company_id' => 'nullable|exists:companies,id',
             'facilities' => 'nullable|array',
             'facilities.*' => 'exists:facilities,id',
         ]);
@@ -84,9 +86,18 @@ class PropertyController extends Controller
             );
         }
 
+        // Handle featured images - check if files exist in the array
+        $featuredFiles = $request->file('featured_images');
+        if ($featuredFiles && is_array($featuredFiles) && count(array_filter($featuredFiles, function($file) { return $file !== null; })) > 0) {
+            $validated['featured_images'] = $this->fileUploadService->uploadMultipleFiles(
+                array_filter($featuredFiles, function($file) { return $file !== null; }),
+                'uploads/properties/featured'
+            );
+        }
+
         // 4. Handle demo_video as YouTube URL (string)
         // demo_video is now a string field, validated above
-        
+
         // Handle demo_video_thumbnail image upload
         if ($request->hasFile('demo_video_thumbnail')) {
             $validated['demo_video_thumbnail'] = $this->fileUploadService->uploadFile(
@@ -119,6 +130,14 @@ class PropertyController extends Controller
             );
         }
 
+        // Handle booking form image (left column)
+        if ($request->hasFile('booking_form_image')) {
+            $validated['booking_form_image'] = $this->fileUploadService->uploadFile(
+                $request->file('booking_form_image'),
+                'uploads/properties/booking-form'
+            );
+        }
+
         // Extract facilities from validated data
         $facilities = $validated['facilities'] ?? [];
         unset($validated['facilities']);
@@ -139,7 +158,7 @@ class PropertyController extends Controller
     // 🟢 Show single property
     public function show($id)
     {
-        $property = Property::with('facilities')->find($id);
+        $property = Property::with(['facilities', 'company'])->find($id);
         if (!$property) {
             return response()->json(['message' => 'Property not found'], 404);
         }
@@ -156,6 +175,7 @@ class PropertyController extends Controller
 
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
             'status' => 'nullable|string',
             'area' => 'nullable|string',
             'location' => 'nullable|string',
@@ -168,6 +188,7 @@ class PropertyController extends Controller
             'main_image' => 'nullable|image|max:2048',
             'layout_images.*' => 'nullable|image|max:2048',
             'gallery_images.*' => 'nullable|image|max:2048',
+            'featured_images.*' => 'nullable|image|max:2048',
             'demo_video' => 'nullable|string|url|max:500',
             'demo_video_thumbnail' => 'nullable|image|max:2048',
             'brochure' => 'nullable|file|mimes:pdf|max:10240',
@@ -180,10 +201,11 @@ class PropertyController extends Controller
             'key_transports.*.icon' => 'required_with:key_transports|string',
             'key_transports.*.distance' => 'required_with:key_transports|string',
             'booking_form_background_image' => 'nullable|image|max:2048',
+            'booking_form_image' => 'nullable|image|max:2048',
             'under_development' => 'nullable|string',
             'bedrooms' => 'nullable|integer',
             'bathrooms' => 'nullable|integer',
-            'company_name' => 'nullable|string|max:255',
+            'company_id' => 'nullable|exists:companies,id',
             'facilities' => 'nullable|array',
             'facilities.*' => 'exists:facilities,id',
         ]);
@@ -202,7 +224,7 @@ class PropertyController extends Controller
 
         // Handle demo_video as YouTube URL (string) - no file upload needed
         // If demo_video is provided in request, it will be validated and updated
-        
+
         // Handle demo_video_thumbnail image upload
         if ($request->hasFile('demo_video_thumbnail')) {
             // Delete old thumbnail
@@ -253,19 +275,36 @@ class PropertyController extends Controller
             );
         }
 
+        // Handle booking form image (left column)
+        if ($request->hasFile('booking_form_image')) {
+            // Delete old booking form image
+            if ($property->booking_form_image) {
+                $this->fileUploadService->deleteFile($property->booking_form_image);
+            }
+            // Upload new booking form image
+            $validated['booking_form_image'] = $this->fileUploadService->uploadFile(
+                $request->file('booking_form_image'),
+                'uploads/properties/booking-form'
+            );
+        }
+
         // 6. 🚨 Update: Handle multiple file uploads and image removal
         // Get existing images from database
-        $existingLayouts = is_array($property->layout_images) 
-            ? $property->layout_images 
+        $existingLayouts = is_array($property->layout_images)
+            ? $property->layout_images
             : (is_string($property->layout_images) ? json_decode($property->layout_images, true) ?? [] : []);
-        $existingGallery = is_array($property->gallery_images) 
-            ? $property->gallery_images 
+        $existingGallery = is_array($property->gallery_images)
+            ? $property->gallery_images
             : (is_string($property->gallery_images) ? json_decode($property->gallery_images, true) ?? [] : []);
+        $existingFeatured = is_array($property->featured_images)
+            ? $property->featured_images
+            : (is_string($property->featured_images) ? json_decode($property->featured_images, true) ?? [] : []);
 
         // Get images to keep from request (if provided, ensure it's an array)
         $keptLayoutImages = $request->input('existing_layout_images', []);
         $keptGalleryImages = $request->input('existing_gallery_images', []);
-        
+        $keptFeaturedImages = $request->input('existing_featured_images', []);
+
         // Ensure arrays (handle case where single value is sent)
         if (!is_array($keptLayoutImages)) {
             $keptLayoutImages = $keptLayoutImages ? [$keptLayoutImages] : [];
@@ -273,10 +312,14 @@ class PropertyController extends Controller
         if (!is_array($keptGalleryImages)) {
             $keptGalleryImages = $keptGalleryImages ? [$keptGalleryImages] : [];
         }
+        if (!is_array($keptFeaturedImages)) {
+            $keptFeaturedImages = $keptFeaturedImages ? [$keptFeaturedImages] : [];
+        }
 
         // Find images to delete (existing images not in kept list)
         $layoutImagesToDelete = array_diff($existingLayouts, $keptLayoutImages);
         $galleryImagesToDelete = array_diff($existingGallery, $keptGalleryImages);
+        $featuredImagesToDelete = array_diff($existingFeatured, $keptFeaturedImages);
 
         // Delete removed images from filesystem
         foreach ($layoutImagesToDelete as $imagePath) {
@@ -285,6 +328,11 @@ class PropertyController extends Controller
             }
         }
         foreach ($galleryImagesToDelete as $imagePath) {
+            if (!empty($imagePath)) {
+                $this->fileUploadService->deleteFile($imagePath);
+            }
+        }
+        foreach ($featuredImagesToDelete as $imagePath) {
             if (!empty($imagePath)) {
                 $this->fileUploadService->deleteFile($imagePath);
             }
@@ -307,6 +355,14 @@ class PropertyController extends Controller
             );
         }
 
+        $newFeaturedPaths = [];
+        if ($request->hasFile('featured_images')) {
+            $newFeaturedPaths = $this->fileUploadService->uploadMultipleFiles(
+                $request->file('featured_images'),
+                'uploads/properties/featured'
+            );
+        }
+
         // Combine kept images with new images (only update if there are changes or new uploads)
         if ($request->has('existing_layout_images') || $request->hasFile('layout_images')) {
             $validated['layout_images'] = array_merge($keptLayoutImages, $newLayoutPaths);
@@ -314,7 +370,9 @@ class PropertyController extends Controller
         if ($request->has('existing_gallery_images') || $request->hasFile('gallery_images')) {
             $validated['gallery_images'] = array_merge($keptGalleryImages, $newGalleryPaths);
         }
-
+        if ($request->has('existing_featured_images') || $request->hasFile('featured_images')) {
+            $validated['featured_images'] = array_merge($keptFeaturedImages, $newFeaturedPaths);
+        }
 
         // Extract facilities from validated data
         $facilities = $validated['facilities'] ?? null;
@@ -351,15 +409,15 @@ class PropertyController extends Controller
 
         // 7. 🚨 Delete: Handle array/multiple images
         // Since the model casts these as 'array', they're already arrays
-        $layoutImages = is_array($property->layout_images) 
-            ? $property->layout_images 
+        $layoutImages = is_array($property->layout_images)
+            ? $property->layout_images
             : (is_string($property->layout_images) ? json_decode($property->layout_images, true) ?? [] : []);
         foreach ($layoutImages as $path) {
             if ($path) $this->fileUploadService->deleteFile($path);
         }
 
-        $galleryImages = is_array($property->gallery_images) 
-            ? $property->gallery_images 
+        $galleryImages = is_array($property->gallery_images)
+            ? $property->gallery_images
             : (is_string($property->gallery_images) ? json_decode($property->gallery_images, true) ?? [] : []);
         foreach ($galleryImages as $path) {
             if ($path) $this->fileUploadService->deleteFile($path);

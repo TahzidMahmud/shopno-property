@@ -86,6 +86,7 @@ const menuItems = [
   { text: 'Contact Page', icon: <WebIcon />, path: '/admin/dashboard/contact-page' },
   { text: 'About Page', icon: <WebIcon />, path: '/admin/dashboard/about-page' },
   { text: 'Partner Submissions', icon: <AssignmentIcon />, path: '/admin/dashboard/partner-submissions' },
+  { text: 'Property Queries', icon: <AssignmentIcon />, path: '/admin/dashboard/property-queries' },
   { text: 'Users', icon: <PeopleIcon />, path: '/admin/dashboard/users' },
   { text: 'Companies', icon: <BusinessIcon />, path: '/admin/dashboard/companies' },
   { text: 'Settings', icon: <SettingsIcon />, path: '/admin/dashboard/settings' },

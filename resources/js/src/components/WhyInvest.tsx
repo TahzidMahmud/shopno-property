@@ -105,7 +105,7 @@ export default function WhyInvest() {
           </Box>
 
           {/* Title with Estate? Badge */}
-          <Box sx={{ position: 'relative', display: 'inline-block' }}>
+          <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
             <Typography sx={{
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 600,
@@ -113,7 +113,8 @@ export default function WhyInvest() {
               lineHeight: 1.3,
               color: '#272222',
               textTransform: 'capitalize',
-              display: 'inline-block',
+              display: 'inline',
+              whiteSpace: 'nowrap',
             }}>
               Why should you invest in real{' '}
             </Typography>
@@ -126,6 +127,7 @@ export default function WhyInvest() {
               borderRadius: '4px',
               transform: 'rotate(4.4deg)',
               ml: '4px',
+              flexShrink: 0,
             }}>
               <Typography sx={{
                 fontFamily: "'DM Sans', sans-serif",
@@ -133,6 +135,7 @@ export default function WhyInvest() {
                 fontSize: { xs: '28px', md: '32px' },
                 lineHeight: 1.2,
                 color: '#fafafa',
+                whiteSpace: 'nowrap',
               }}>
                 Estate?
               </Typography>

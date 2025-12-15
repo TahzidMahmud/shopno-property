@@ -39,10 +39,12 @@ const PropertiesManagement: React.FC = () => {
     setLoading(true);
     try {
       const data = await propertyService.getAll();
-      setProperties(data);
+      setProperties(data || []);
     } catch (error: any) {
-      showNotification('Failed to load properties', 'error');
       console.error('Error loading properties:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to load properties';
+      showNotification(errorMessage, 'error');
+      setProperties([]); // Set empty array on error
     } finally {
       setLoading(false);
     }

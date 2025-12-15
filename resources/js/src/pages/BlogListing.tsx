@@ -226,11 +226,31 @@ export default function BlogListing() {
                     fontSize: { xs: '18px', md: '24px' },
                     lineHeight: 1.3,
                     color: '#183b56',
-                    mb: { xs: 2, md: '20px' },
+                    mb: { xs: 1.5, md: '14px' },
                     whiteSpace: 'pre-wrap',
                   }}>
                     {post.title}
                   </Typography>
+
+                  {/* Content/Description */}
+                  {post.content && (
+                    <Typography sx={{
+                      fontFamily: "'Inter', sans-serif",
+                      fontWeight: 400,
+                      fontSize: { xs: '14px', md: '16px' },
+                      lineHeight: 1.5,
+                      color: '#737373',
+                      mb: { xs: 2, md: '20px' },
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}>
+                      {post.content.replace(/<[^>]*>/g, '').substring(0, 150)}
+                      {post.content.replace(/<[^>]*>/g, '').length > 150 ? '...' : ''}
+                    </Typography>
+                  )}
                 </Box>
 
                 {/* Read More Link */}

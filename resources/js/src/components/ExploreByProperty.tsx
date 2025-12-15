@@ -141,7 +141,7 @@ export default function ExploreByProperty() {
           </Box>
 
           {/* Title with Type Badge */}
-          <Box sx={{ position: 'relative', display: 'inline-block' }}>
+          <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
             <Typography sx={{
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 600,
@@ -149,7 +149,8 @@ export default function ExploreByProperty() {
               lineHeight: 1.3,
               color: '#272222',
               textTransform: 'capitalize',
-              display: 'inline-block',
+              display: 'inline',
+              whiteSpace: 'nowrap',
             }}>
               Explore By Property{' '}
             </Typography>
@@ -162,6 +163,7 @@ export default function ExploreByProperty() {
               borderRadius: '4px',
               transform: 'rotate(4.4deg)',
               ml: '4px',
+              flexShrink: 0,
             }}>
               <Typography sx={{
                 fontFamily: "'DM Sans', sans-serif",
@@ -169,6 +171,7 @@ export default function ExploreByProperty() {
                 fontSize: { xs: '28px', md: '32px' },
                 lineHeight: 1.2,
                 color: '#fafafa',
+                whiteSpace: 'nowrap',
               }}>
                 Type
               </Typography>

@@ -15,13 +15,17 @@ if (token) {
 export const propertyService = {
   // Get all properties
   getAll: async (): Promise<Property[]> => {
-    const response = await axios.get(API_BASE_URL);
+    const response = await axios.get(API_BASE_URL, {
+      withCredentials: true,
+    });
     return response.data;
   },
 
   // Get single property
   getById: async (id: number): Promise<Property> => {
-    const response = await axios.get(`${API_BASE_URL}/${id}`);
+    const response = await axios.get(`${API_BASE_URL}/${id}`, {
+      withCredentials: true,
+    });
     return response.data;
   },
 
@@ -31,6 +35,7 @@ export const propertyService = {
 
     // Append text fields
     formData.append('title', data.title);
+    formData.append('description', data.description);
     formData.append('status', data.status);
     formData.append('area', data.area);
     formData.append('location', data.location);
@@ -46,7 +51,9 @@ export const propertyService = {
     formData.append('under_development', data.under_development);
     formData.append('bedrooms', data.bedrooms.toString());
     formData.append('bathrooms', data.bathrooms.toString());
-    formData.append('company_name', data.company_name);
+    if (data.company_id !== '') {
+      formData.append('company_id', data.company_id.toString());
+    }
 
     // Append key_transports array as objects
     data.key_transports.forEach((transport, index) => {
@@ -85,15 +92,28 @@ export const propertyService = {
     if (data.booking_form_background_image) {
       formData.append('booking_form_background_image', data.booking_form_background_image);
     }
+    if (data.booking_form_image) {
+      formData.append('booking_form_image', data.booking_form_image);
+    }
 
     // Append multiple files
-    data.layout_images.forEach((file, index) => {
-      formData.append(`layout_images[${index}]`, file);
-    });
+    if (data.layout_images && data.layout_images.length > 0) {
+      data.layout_images.forEach((file, index) => {
+        formData.append(`layout_images[${index}]`, file);
+      });
+    }
 
-    data.gallery_images.forEach((file, index) => {
-      formData.append(`gallery_images[${index}]`, file);
-    });
+    if (data.gallery_images && data.gallery_images.length > 0) {
+      data.gallery_images.forEach((file, index) => {
+        formData.append(`gallery_images[${index}]`, file);
+      });
+    }
+
+    if (data.featured_images && data.featured_images.length > 0) {
+      data.featured_images.forEach((file, index) => {
+        formData.append(`featured_images[${index}]`, file);
+      });
+    }
 
     const response = await axios.post(API_BASE_URL, formData, {
       headers: {
@@ -112,6 +132,7 @@ export const propertyService = {
 
     // Append text fields
     formData.append('title', data.title);
+    formData.append('description', data.description);
     formData.append('status', data.status);
     formData.append('area', data.area);
     formData.append('location', data.location);
@@ -127,7 +148,9 @@ export const propertyService = {
     formData.append('under_development', data.under_development);
     formData.append('bedrooms', data.bedrooms.toString());
     formData.append('bathrooms', data.bathrooms.toString());
-    formData.append('company_name', data.company_name);
+    if (data.company_id !== '') {
+      formData.append('company_id', data.company_id.toString());
+    }
 
     // Append key_transports array as objects
     data.key_transports.forEach((transport, index) => {
@@ -166,15 +189,28 @@ export const propertyService = {
     if (data.booking_form_background_image) {
       formData.append('booking_form_background_image', data.booking_form_background_image);
     }
+    if (data.booking_form_image) {
+      formData.append('booking_form_image', data.booking_form_image);
+    }
 
     // Append multiple files
-    data.layout_images.forEach((file, index) => {
-      formData.append(`layout_images[${index}]`, file);
-    });
+    if (data.layout_images && data.layout_images.length > 0) {
+      data.layout_images.forEach((file, index) => {
+        formData.append(`layout_images[${index}]`, file);
+      });
+    }
 
-    data.gallery_images.forEach((file, index) => {
-      formData.append(`gallery_images[${index}]`, file);
-    });
+    if (data.gallery_images && data.gallery_images.length > 0) {
+      data.gallery_images.forEach((file, index) => {
+        formData.append(`gallery_images[${index}]`, file);
+      });
+    }
+
+    if (data.featured_images && data.featured_images.length > 0) {
+      data.featured_images.forEach((file, index) => {
+        formData.append(`featured_images[${index}]`, file);
+      });
+    }
 
     // Append existing image paths that should be kept (for image removal)
     if (data.existing_layout_images && data.existing_layout_images.length > 0) {

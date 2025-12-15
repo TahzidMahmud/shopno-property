@@ -22,6 +22,8 @@ import HeaderFooterManagement from './pages/admin/HeaderFooterManagement';
 import ContactPageManagement from './pages/admin/ContactPageManagement';
 import AboutPageManagement from './pages/admin/AboutPageManagement';
 import PartnerSubmissionsManagement from './pages/admin/PartnerSubmissionsManagement';
+import PropertyQueriesManagement from './pages/admin/PropertyQueriesManagement';
+import CompaniesManagement from './pages/admin/CompaniesManagement';
 
 export default function App() {
   return (
@@ -48,8 +50,9 @@ export default function App() {
                   <Route path='/admin/dashboard/contact-page' element={<ProtectedRoute><ContactPageManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/about-page' element={<ProtectedRoute><AboutPageManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/partner-submissions' element={<ProtectedRoute><PartnerSubmissionsManagement /></ProtectedRoute>} />
+                  <Route path='/admin/dashboard/property-queries' element={<ProtectedRoute><PropertyQueriesManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/users' element={<ProtectedRoute><div>Users Management - Coming Soon</div></ProtectedRoute>} />
-                  <Route path='/admin/dashboard/companies' element={<ProtectedRoute><div>Companies Management - Coming Soon</div></ProtectedRoute>} />
+                  <Route path='/admin/dashboard/companies' element={<ProtectedRoute><CompaniesManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/settings' element={<ProtectedRoute><div>Settings - Coming Soon</div></ProtectedRoute>} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />

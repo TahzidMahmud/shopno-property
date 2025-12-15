@@ -58,7 +58,7 @@ const PropertyList: React.FC<PropertyListProps> = ({
   const filteredProperties = properties.filter(property =>
     property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     property.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    property.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    property.company?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Paginate filtered properties
@@ -199,7 +199,7 @@ const PropertyList: React.FC<PropertyListProps> = ({
                   <TableCell>{property.bathrooms || 'N/A'}</TableCell>
                   <TableCell>
                     <Typography variant="body2" noWrap sx={{ maxWidth: 120 }}>
-                      {property.company_name || 'N/A'}
+                      {property.company?.name || 'N/A'}
                     </Typography>
                   </TableCell>
                   <TableCell align="center">

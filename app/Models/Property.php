@@ -11,6 +11,7 @@ class Property extends Model
 
     protected $fillable = [
         'title',
+        'description',
         'status',
         'area',
         'location',
@@ -23,11 +24,13 @@ class Property extends Model
         'main_image',
         'layout_images',
         'gallery_images',
+        'featured_images',
         'demo_video',
         'demo_video_thumbnail',
         'brochure',
         'payment_schedule',
         'booking_form_background_image',
+        'booking_form_image',
         'full_address',
         'latitude',
         'longitude',
@@ -35,12 +38,13 @@ class Property extends Model
         'under_development',
         'bedrooms',
         'bathrooms',
-        'company_name',
+        'company_id',
     ];
 
     protected $casts = [
         'layout_images' => 'array',
         'gallery_images' => 'array',
+        'featured_images' => 'array',
         'key_transports' => 'array',
     ];
 
@@ -50,5 +54,13 @@ class Property extends Model
     public function facilities()
     {
         return $this->belongsToMany(Facility::class, 'property_facility');
+    }
+
+    /**
+     * Get the company that owns the property.
+     */
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

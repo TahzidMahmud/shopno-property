@@ -143,7 +143,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({
                   </Typography>
                 </Box>
                 <Typography variant="body1" sx={{ mb: 2 }}>
-                  {property.company_name || 'N/A'}
+                  {property.company?.name || 'N/A'}
                 </Typography>
               </Grid>
             </Grid>

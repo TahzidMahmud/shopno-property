@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\FacilityController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\HeroSlideController;
 use App\Http\Controllers\WhyChooseUsFeatureController;
 use App\Http\Controllers\InvestmentBenefitController;
@@ -27,6 +28,7 @@ use App\Http\Controllers\AboutPageTeamMemberController;
 use App\Http\Controllers\AboutPageTestimonialController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PartnerSubmissionController;
+use App\Http\Controllers\PropertyQueryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +67,17 @@ Route::prefix('facilities')->group(function () {
         Route::post('/', [FacilityController::class, 'store']);
         Route::put('/{id}', [FacilityController::class, 'update']);
         Route::delete('/{id}', [FacilityController::class, 'destroy']);
+    });
+});
+
+Route::prefix('companies')->group(function () {
+    Route::get('/', [CompanyController::class, 'index']);
+    Route::get('/{id}', [CompanyController::class, 'show']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/', [CompanyController::class, 'store']);
+        Route::post('/{id}', [CompanyController::class, 'update']); // Accept POST for method spoofing
+        Route::put('/{id}', [CompanyController::class, 'update']); // Also accept PUT for direct calls
+        Route::delete('/{id}', [CompanyController::class, 'destroy']);
     });
 });
 
@@ -128,6 +141,15 @@ Route::prefix('partner-submissions')->group(function () {
         Route::get('/', [PartnerSubmissionController::class, 'index']);
         Route::get('/{id}', [PartnerSubmissionController::class, 'show']);
         Route::delete('/{id}', [PartnerSubmissionController::class, 'destroy']);
+    });
+});
+
+Route::prefix('property-queries')->group(function () {
+    Route::post('/', [PropertyQueryController::class, 'store']); // Public route for form submission
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/', [PropertyQueryController::class, 'index']);
+        Route::get('/{id}', [PropertyQueryController::class, 'show']);
+        Route::delete('/{id}', [PropertyQueryController::class, 'destroy']);
     });
 });
 

@@ -9,6 +9,7 @@ export interface KeyTransport {
 export interface Property {
   id?: number;
   title: string;
+  description?: string;
   status?: string;
   area?: string;
   location?: string;
@@ -21,11 +22,13 @@ export interface Property {
   main_image?: string;
   layout_images?: string[];
   gallery_images?: string[];
+  featured_images?: string[];
   demo_video?: string;
   demo_video_thumbnail?: string;
   brochure?: string;
   payment_schedule?: string;
   booking_form_background_image?: string;
+  booking_form_image?: string;
   full_address?: string;
   latitude?: number;
   longitude?: number;
@@ -33,7 +36,13 @@ export interface Property {
   under_development?: string;
   bedrooms?: number;
   bathrooms?: number;
-  company_name?: string;
+  company_id?: number;
+  company?: {
+    id: number;
+    name: string;
+    logo?: string;
+    owner_name: string;
+  };
   facilities?: Facility[];
   created_at?: string;
   updated_at?: string;
@@ -41,6 +50,7 @@ export interface Property {
 
 export interface PropertyFormData {
   title: string;
+  description: string;
   status: string;
   area: string;
   location: string;
@@ -53,11 +63,13 @@ export interface PropertyFormData {
   main_image: File | null;
   layout_images: File[];
   gallery_images: File[];
+  featured_images: File[];
   demo_video: string;
   demo_video_thumbnail: File | null;
   brochure: File | null;
   payment_schedule: File | null;
   booking_form_background_image: File | null;
+  booking_form_image: File | null;
   full_address: string;
   latitude: number | '';
   longitude: number | '';
@@ -65,7 +77,7 @@ export interface PropertyFormData {
   under_development: string;
   bedrooms: number | '';
   bathrooms: number | '';
-  company_name: string;
+  company_id: number | '';
   facilities: number[];
   // Arrays of existing image paths to keep (for updates)
   existing_layout_images?: string[];

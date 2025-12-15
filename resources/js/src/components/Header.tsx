@@ -8,6 +8,14 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { headerService } from '../services/headerFooterService';
 import { HeaderNavigationLink } from '../types/HeaderFooter';
 
+// Figma Asset URLs (valid for 7 days)
+const FIGMA_ASSETS = {
+  logo: 'https://www.figma.com/api/mcp/asset/f1af6f70-cb82-4afe-bb66-c0e0c840f9ee',
+  navLine: 'https://www.figma.com/api/mcp/asset/ea6bb0a2-7c80-455a-86c4-61bd7d84b06b',
+  arrowDown: 'https://www.figma.com/api/mcp/asset/f0fcbc97-ce5a-48c1-a645-bda0752722a8',
+  buttonLine: 'https://www.figma.com/api/mcp/asset/8941595d-3cd0-4911-981f-f6c6868f961f',
+};
+
 export default function Header() {
   const location = useLocation();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -70,10 +78,9 @@ export default function Header() {
 
   if (loading) {
     return (
-      <Box sx={{ width: '100%', bgcolor: 'white' }}>
-        <Box sx={{ width: '100%', height: '4px', bgcolor: '#2c2c2c' }} />
-        <Toolbar sx={{ justifyContent: 'center' }}>
-          <CircularProgress size={24} sx={{ color: '#00bcd4' }} />
+      <Box sx={{ width: '100%', bgcolor: 'white', borderBottom: '1px solid #e8e7e7' }}>
+        <Toolbar sx={{ justifyContent: 'center', minHeight: '80px !important' }}>
+          <CircularProgress size={24} sx={{ color: '#17badf' }} />
         </Toolbar>
       </Box>
     );
@@ -81,79 +88,217 @@ export default function Header() {
 
   return (
     <>
-      {/* Dark Grey Top Bar */}
-      <Box sx={{ width: '100%', height: '4px', bgcolor: '#2c2c2c' }} />
-
       {/* Main Navigation Bar */}
       <Box sx={{
         width: '100%',
         bgcolor: 'white',
-        boxShadow: 'none'
+        borderBottom: '1px solid #e8e7e7',
+        position: 'relative',
+        height: '80px',
+        maxWidth: '1440px',
+        mx: 'auto'
       }}>
-        <Toolbar sx={{
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          px: { xs: 2, sm: 3, md: 4, lg: 6 },
-          py: 2,
-          minHeight: '80px !important',
-          maxWidth: '1400px',
-          mx: 'auto'
-        }}>
+        {/* Logo Section - Positioned at left=120px, vertically centered */}
           {/* Logo Section */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: { xs: '0 0 auto' } }}>
-            <img src={logoUrl} alt="Shopno Property Logo" style={{ height: 45 }} />
-
+          <Box 
+            component={Link}
+            to="/"
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'start', 
+              position: 'absolute',
+              left: '10%', 
+              transform: 'translateX(-50%)',
+              textDecoration: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            <img src={logoUrl} alt="Shopno Property Logo" style={{ height: '4.5rem' }} />
           </Box>
 
-          {/* Navigation Links - Always visible on desktop, hidden on mobile */}
-          <Box sx={{
-            display: { xs: 'none', md: 'flex' },
-            alignItems: 'center',
-            gap: { md: 3, lg: 4 },
-            flex: { md: '1 1 auto' },
-            justifyContent: 'center',
-            mx: { md: 2, lg: 3 }
-          }}>
+        {/* Mobile Logo */}
+        <Box 
+          component={Link}
+          to="/"
+          sx={{
+            position: 'absolute',
+            left: '16px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            height: '47.833px',
+            width: '140px',
+            overflow: 'hidden',
+            display: { xs: 'block', md: 'none' },
+            textDecoration: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          <Box
+            component="img"
+            src={logoUrl || FIGMA_ASSETS.logo}
+            alt="Shopno Property Logo"
+            sx={{
+              height: '431.61%',
+              width: '148.08%',
+              position: 'absolute',
+              left: '-24.62%',
+              top: '-161.43%',
+              maxWidth: 'none'
+            }}
+          />
+        </Box>
+
+        {/* Navigation Links - Centered horizontally and vertically */}
+        <Box sx={{
+          display: { xs: 'none', md: 'flex' },
+          alignItems: 'center',
+          gap: '40px',
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          height: '40px'
+        }}>
             {regularLinks.length > 0 ? (
               <>
                 {regularLinks.map((link) => {
                   const active = isActiveLink(link.url);
                   return (
-                    <Link
+                    <Box
                       key={link.id}
+                      component={Link}
                       to={link.url}
-                      style={{
+                      sx={{
+                        display: 'flex',
+                        gap: '10px',
+                        height: '40px',
+                        paddingTop: '10px',
+                        position: 'relative',
                         textDecoration: 'none',
-                        fontSize: '1rem',
-                        whiteSpace: 'nowrap',
-                        fontWeight: active ? 500 : 400,
-                        color: active ? '#00bcd4' : '#666666', // Light blue for active, grey for inactive
-                        transition: 'color 0.2s ease'
+                        alignItems: 'flex-start',
+                        overflow: 'hidden'
                       }}
                     >
-                      {link.label}
-                    </Link>
+                      <Typography
+                        sx={{
+                          fontFamily: "'DM Sans', sans-serif",
+                          fontSize: '18px',
+                          lineHeight: 1.2,
+                          fontWeight: active ? 600 : 400,
+                          fontStyle: 'normal',
+                          color: active ? '#66d1e9' : '#737373',
+                          whiteSpace: 'nowrap',
+                          fontVariationSettings: "'opsz' 14"
+                        }}
+                      >
+                        {link.label}
+                      </Typography>
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          width: '2px',
+                          height: '1px',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        <Box
+                          component="img"
+                          src={FIGMA_ASSETS.navLine}
+                          alt=""
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'block',
+                            maxWidth: 'none'
+                          }}
+                        />
+                      </Box>
+                    </Box>
                   );
                 })}
                 {dropdownLink && dropdownLink.dropdown_items && dropdownLink.dropdown_items.length > 0 && (
                   <>
-                    <Button
+                    <Box
                       onClick={handleMenuOpen}
-                      endIcon={<KeyboardArrowDownIcon sx={{ fontSize: '1rem' }} />}
                       sx={{
-                        textTransform: 'none',
-                        fontSize: '1rem',
-                        whiteSpace: 'nowrap',
-                        color: '#666666',
-                        fontWeight: 400,
-                        '&:hover': {
-                          bgcolor: 'transparent',
-                          color: '#00bcd4'
-                        }
+                        display: 'flex',
+                        gap: '10px',
+                        height: '40px',
+                        paddingTop: '10px',
+                        position: 'relative',
+                        cursor: 'pointer',
+                        alignItems: 'flex-start',
+                        overflow: 'hidden'
                       }}
                     >
-                      {dropdownLink.label}
-                    </Button>
+                      <Typography
+                        sx={{
+                          fontFamily: "'DM Sans', sans-serif",
+                          fontSize: '18px',
+                          lineHeight: 1.2,
+                          fontWeight: 400,
+                          fontStyle: 'normal',
+                          color: '#737373',
+                          whiteSpace: 'nowrap',
+                          fontVariationSettings: "'opsz' 14"
+                        }}
+                      >
+                        {dropdownLink.label}
+                      </Typography>
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          width: '2px',
+                          height: '1px',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        <Box
+                          component="img"
+                          src={FIGMA_ASSETS.navLine}
+                          alt=""
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'block',
+                            maxWidth: 'none'
+                          }}
+                        />
+                      </Box>
+                      <Box
+                        sx={{
+                          width: '18px',
+                          height: '18px',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          flexShrink: 0
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            inset: '34.37% 17.71% 34.38% 17.71%'
+                          }}
+                        >
+                          <Box
+                            component="img"
+                            src={FIGMA_ASSETS.arrowDown}
+                            alt=""
+                            sx={{
+                              width: '100%',
+                              height: '100%',
+                              display: 'block',
+                              maxWidth: 'none'
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                    </Box>
                     <Menu
                       anchorEl={anchorEl}
                       open={Boolean(anchorEl)}
@@ -182,103 +327,342 @@ export default function Header() {
             ) : (
               // Fallback navigation links if none are configured
               <>
-                <Link
+                <Box
+                  component={Link}
                   to="/"
-                  style={{
+                  sx={{
+                    display: 'flex',
+                    gap: '10px',
+                    height: '40px',
+                    paddingTop: '10px',
+                    position: 'relative',
                     textDecoration: 'none',
-                    fontSize: '1rem',
-                    whiteSpace: 'nowrap',
-                    color: isActiveLink('/') ? '#00bcd4' : '#666666',
-                    fontWeight: isActiveLink('/') ? 500 : 400
+                    alignItems: 'flex-start',
+                    overflow: 'hidden'
                   }}
                 >
-                  Home
-                </Link>
-                <Link
-                  to="/projects"
-                  style={{
-                    textDecoration: 'none',
-                    fontSize: '1rem',
-                    whiteSpace: 'nowrap',
-                    color: isActiveLink('/projects') ? '#00bcd4' : '#666666',
-                    fontWeight: isActiveLink('/projects') ? 500 : 400
-                  }}
-                >
-                  Projects
-                </Link>
-                <Link
+                  <Typography
+                    sx={{
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: '18px',
+                      lineHeight: 1.2,
+                      fontWeight: isActiveLink('/') ? 600 : 400,
+                      fontStyle: 'normal',
+                      color: isActiveLink('/') ? '#66d1e9' : '#737373',
+                      whiteSpace: 'nowrap',
+                      fontVariationSettings: "'opsz' 14"
+                    }}
+                  >
+                    Home
+                  </Typography>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      width: '2px',
+                      height: '1px',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={FIGMA_ASSETS.navLine}
+                      alt=""
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'block'
+                      }}
+                    />
+                  </Box>
+                </Box>
+                <Box
+                  component={Link}
                   to="/about"
-                  style={{
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    height: '40px',
+                    paddingTop: '10px',
+                    position: 'relative',
                     textDecoration: 'none',
-                    fontSize: '1rem',
-                    whiteSpace: 'nowrap',
-                    color: isActiveLink('/about') ? '#00bcd4' : '#666666',
-                    fontWeight: isActiveLink('/about') ? 500 : 400
+                    alignItems: 'flex-start'
                   }}
                 >
-                  About
-                </Link>
-                <Link
+                  <Typography
+                    sx={{
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: '18px',
+                      lineHeight: 1.2,
+                      fontWeight: 400,
+                      fontStyle: 'normal',
+                      color: '#737373',
+                      whiteSpace: 'nowrap',
+                      fontVariationSettings: "'opsz' 14"
+                    }}
+                  >
+                    About Us
+                  </Typography>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      width: '2px',
+                      height: '1px',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={FIGMA_ASSETS.navLine}
+                      alt=""
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'block'
+                      }}
+                    />
+                  </Box>
+                </Box>
+                <Box
+                  component={Link}
+                  to="/properties"
+                  sx={{
+                    display: 'flex',
+                    gap: '10px',
+                    height: '40px',
+                    paddingTop: '10px',
+                    position: 'relative',
+                    textDecoration: 'none',
+                    alignItems: 'flex-start',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: '18px',
+                      lineHeight: 1.2,
+                      fontWeight: 400,
+                      fontStyle: 'normal',
+                      color: '#737373',
+                      whiteSpace: 'nowrap',
+                      fontVariationSettings: "'opsz' 14"
+                    }}
+                  >
+                    Properties
+                  </Typography>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      width: '2px',
+                      height: '1px',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={FIGMA_ASSETS.navLine}
+                      alt=""
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'block'
+                      }}
+                    />
+                  </Box>
+                </Box>
+                <Box
+                  component={Link}
                   to="/contact"
-                  style={{
+                  sx={{
+                    display: 'flex',
+                    gap: '10px',
+                    height: '40px',
+                    paddingTop: '10px',
+                    position: 'relative',
                     textDecoration: 'none',
-                    fontSize: '1rem',
-                    whiteSpace: 'nowrap',
-                    color: isActiveLink('/contact') ? '#00bcd4' : '#666666',
-                    fontWeight: isActiveLink('/contact') ? 500 : 400
+                    alignItems: 'flex-start',
+                    overflow: 'hidden'
                   }}
                 >
-                  Contact
-                </Link>
+                  <Typography
+                    sx={{
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: '18px',
+                      lineHeight: 1.2,
+                      fontWeight: 400,
+                      fontStyle: 'normal',
+                      color: '#737373',
+                      whiteSpace: 'nowrap',
+                      fontVariationSettings: "'opsz' 14"
+                    }}
+                  >
+                    Contact Us
+                  </Typography>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      width: '2px',
+                      height: '1px',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={FIGMA_ASSETS.navLine}
+                      alt=""
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'block'
+                      }}
+                    />
+                  </Box>
+                </Box>
               </>
             )}
           </Box>
 
-          {/* Desktop Buttons */}
+          {/* Desktop Buttons - Positioned at x=1059, y=18, width=261, height=45 */}
           <Box sx={{
-            display: { xs: 'none', sm: 'flex' },
+            display: { xs: 'none', md: 'flex' },
             alignItems: 'center',
-            gap: 2,
-            flex: { xs: '0 0 auto' }
+            gap: '20px',
+            position: 'absolute',
+            left: { md: '1059px' },
+            top: '18px',
+            width: '261px',
+            height: '45px'
           }}>
-            <Button
-              variant="outlined"
+            {/* List Property Button */}
+            <Box
+              component={Link}
+              to="/list-property"
               sx={{
-                fontSize: '1rem',
-                textTransform: 'none',
-                color: '#00bcd4',
-                borderColor: '#00bcd4',
+                border: '0.896px solid #17badf',
+                borderRadius: '4px',
+                height: '40px',
+                paddingX: '2rem',
+                paddingY: '5px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                position: 'relative',
+                textDecoration: 'none',
+                cursor: 'pointer',
                 bgcolor: 'white',
-                px: 2.5,
-                py: 1,
-                borderRadius: 1,
+                overflow: 'hidden',
                 '&:hover': {
-                  borderColor: '#00bcd4',
-                  bgcolor: '#f0f9fa'
+                  opacity: 0.9
                 }
               }}
             >
-              {listPropertyText}
-            </Button>
-            <Button
-              variant="contained"
+              <Typography
+                sx={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '16px',
+                  lineHeight: 1.2,
+                  fontWeight: 550,
+                  fontStyle: 'normal',
+                  color: '#17badf',
+                  textAlign: 'left',
+                  whiteSpace: 'nowrap',
+                  fontVariationSettings: "'opsz' 14"
+                }}
+              >
+                {listPropertyText}
+              </Typography>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: '-0.7px',
+                  left: '-0.9px',
+                  width: '1.792px',
+                  height: '1px',
+                  overflow: 'hidden'
+                }}
+              >
+                <Box
+                  component="img"
+                  src={FIGMA_ASSETS.buttonLine}
+                  alt=""
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'block'
+                  }}
+                />
+              </Box>
+            </Box>
+            {/* Log In Button - width=93 */}
+            <Box
+              component={Link}
+              to="/login"
               sx={{
-                fontSize: '1rem',
-                textTransform: 'none',
-                bgcolor: '#00bcd4',
-                color: 'white',
-                px: 2.5,
-                py: 1,
-                borderRadius: 1,
-                boxShadow: 'none',
+                bgcolor: '#17badf',
+                border: '0.896px solid #17badf',
+                borderRadius: '4px',
+                height: '40px',
+                paddingX: '2rem',
+                paddingY: '5px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                position: 'relative',
+                textDecoration: 'none',
+                cursor: 'pointer',
                 '&:hover': {
-                  bgcolor: '#00acc1',
-                  boxShadow: 'none'
+                  opacity: 0.9
                 }
               }}
             >
-              {loginText}
-            </Button>
+              <Typography
+                sx={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '16px',
+                  lineHeight: 1.2,
+                  fontWeight: 650,
+                  fontStyle: 'normal',
+                  color: '#FFFFFF',
+                  textAlign: 'left',
+                  whiteSpace: 'nowrap',
+                  fontVariationSettings: "'opsz' 14"
+                }}
+              >
+                {loginText}
+              </Typography>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: '-0.7px',
+                  left: '-0.9px',
+                  width: '1.792px',
+                  height: '1px',
+                  overflow: 'hidden'
+                }}
+              >
+                <Box
+                  component="img"
+                  src={FIGMA_ASSETS.buttonLine}
+                  alt=""
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'block'
+                  }}
+                />
+              </Box>
+            </Box>
           </Box>
 
           {/* Mobile Menu Button */}
@@ -288,13 +672,15 @@ export default function Header() {
             onClick={handleMobileMenuOpen}
             sx={{
               display: { xs: 'block', md: 'none' },
-              flex: { xs: '0 0 auto' },
+              position: 'absolute',
+              right: '16px',
+              top: '50%',
+              transform: 'translateY(-50%)',
               color: '#666666'
             }}
           >
             <MenuIcon />
           </IconButton>
-        </Toolbar>
       </Box>
 
       {/* Mobile Drawer */}

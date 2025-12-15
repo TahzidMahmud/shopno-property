@@ -26,6 +26,7 @@ import { Close as CloseIcon } from '@mui/icons-material';
 import { Property, PropertyFormData } from '../../types/Property';
 import { Facility } from '../../types/Facility';
 import { facilityService } from '../../services/facilityService';
+import { companyService, Company } from '../../services/companyService';
 import { getYouTubeEmbedUrl, extractYouTubeVideoId } from '../../utils/youtube';
 
 interface PropertyFormProps {
@@ -37,6 +38,7 @@ interface PropertyFormProps {
 
 const initialFormData: PropertyFormData = {
   title: '',
+  description: '',
   status: '',
   area: '',
   location: '',
@@ -49,11 +51,13 @@ const initialFormData: PropertyFormData = {
         main_image: null,
         layout_images: [],
         gallery_images: [],
+        featured_images: [],
         demo_video: '',
         demo_video_thumbnail: null,
         brochure: null,
         payment_schedule: null,
         booking_form_background_image: null,
+        booking_form_image: null,
   full_address: '',
   latitude: '',
   longitude: '',
@@ -61,7 +65,7 @@ const initialFormData: PropertyFormData = {
   under_development: '',
   bedrooms: '',
   bathrooms: '',
-  company_name: '',
+  company_id: '',
   facilities: [],
 };
 
@@ -78,22 +82,28 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
   const [transportDistance, setTransportDistance] = useState('');
   const [availableFacilities, setAvailableFacilities] = useState<Facility[]>([]);
   const [loadingFacilities, setLoadingFacilities] = useState(false);
+  const [companies, setCompanies] = useState<Company[]>([]);
 
   // Preview URLs for new files
   const [mainImagePreview, setMainImagePreview] = useState<string | null>(null);
   const [demoVideoThumbnailPreview, setDemoVideoThumbnailPreview] = useState<string | null>(null);
   const [bookingFormBgPreview, setBookingFormBgPreview] = useState<string | null>(null);
+  const [bookingFormImagePreview, setBookingFormImagePreview] = useState<string | null>(null);
   const [layoutImagesPreviews, setLayoutImagesPreviews] = useState<string[]>([]);
   const [galleryImagesPreviews, setGalleryImagesPreviews] = useState<string[]>([]);
+  const [featuredImagesPreviews, setFeaturedImagesPreviews] = useState<string[]>([]);
 
   // Existing images from property (when editing) - store both URLs for preview and paths for backend
   const [existingMainImage, setExistingMainImage] = useState<string | null>(null);
   const [existingDemoVideoThumbnail, setExistingDemoVideoThumbnail] = useState<string | null>(null);
   const [existingBookingFormBg, setExistingBookingFormBg] = useState<string | null>(null);
+  const [existingBookingFormImage, setExistingBookingFormImage] = useState<string | null>(null);
   const [existingLayoutImages, setExistingLayoutImages] = useState<string[]>([]); // URLs for preview
   const [existingGalleryImages, setExistingGalleryImages] = useState<string[]>([]); // URLs for preview
+  const [existingFeaturedImages, setExistingFeaturedImages] = useState<string[]>([]); // URLs for preview
   const [existingLayoutImagePaths, setExistingLayoutImagePaths] = useState<string[]>([]); // Original paths
   const [existingGalleryImagePaths, setExistingGalleryImagePaths] = useState<string[]>([]); // Original paths
+  const [existingFeaturedImagePaths, setExistingFeaturedImagePaths] = useState<string[]>([]); // Original paths
   const [existingBrochure, setExistingBrochure] = useState<string | null>(null);
   const [existingPaymentSchedule, setExistingPaymentSchedule] = useState<string | null>(null);
 
@@ -118,12 +128,23 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
       }
     };
     loadFacilities();
+    loadCompanies();
   }, []);
+
+  const loadCompanies = async () => {
+    try {
+      const data = await companyService.getAll();
+      setCompanies(data);
+    } catch (error) {
+      console.error('Error loading companies:', error);
+    }
+  };
 
   useEffect(() => {
     if (property) {
       setFormData({
         title: property.title || '',
+        description: property.description || '',
         status: property.status || '',
         area: property.area || '',
         location: property.location || '',
@@ -136,11 +157,13 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
         main_image: null,
         layout_images: [],
         gallery_images: [],
+        featured_images: [],
         demo_video: property.demo_video || '',
         demo_video_thumbnail: null,
         brochure: null,
         payment_schedule: null,
         booking_form_background_image: null,
+        booking_form_image: null,
         full_address: property.full_address || '',
         latitude: property.latitude || '',
         longitude: property.longitude || '',
@@ -148,7 +171,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
         under_development: property.under_development || '',
         bedrooms: property.bedrooms || '',
         bathrooms: property.bathrooms || '',
-        company_name: property.company_name || '',
+        company_id: property.company_id || '',
         facilities: property.facilities?.map(f => f.id!).filter((id): id is number => id !== undefined) || [],
       });
 
@@ -156,6 +179,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
       setExistingMainImage(getImageUrl(property.main_image) || null);
       setExistingDemoVideoThumbnail(getImageUrl(property.demo_video_thumbnail) || null);
       setExistingBookingFormBg(getImageUrl(property.booking_form_background_image) || null);
+      setExistingBookingFormImage(getImageUrl(property.booking_form_image) || null);
       setExistingBrochure(getImageUrl(property.brochure) || null);
       setExistingPaymentSchedule(getImageUrl(property.payment_schedule) || null);
 
@@ -173,10 +197,13 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
       setExistingMainImage(null);
       setExistingDemoVideoThumbnail(null);
       setExistingBookingFormBg(null);
+      setExistingBookingFormImage(null);
       setExistingLayoutImages([]);
       setExistingGalleryImages([]);
+      setExistingFeaturedImages([]);
       setExistingLayoutImagePaths([]);
       setExistingGalleryImagePaths([]);
+      setExistingFeaturedImagePaths([]);
       setExistingBrochure(null);
       setExistingPaymentSchedule(null);
     }
@@ -189,7 +216,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
     }
   };
 
-  const handleFileChange = (field: 'main_image' | 'demo_video_thumbnail' | 'booking_form_background_image' | 'brochure' | 'payment_schedule', file: File | null) => {
+  const handleFileChange = (field: 'main_image' | 'demo_video_thumbnail' | 'booking_form_background_image' | 'booking_form_image' | 'brochure' | 'payment_schedule', file: File | null) => {
     setFormData(prev => ({ ...prev, [field]: file }));
 
       // Create preview URL for new file
@@ -201,6 +228,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
           URL.revokeObjectURL(demoVideoThumbnailPreview);
         } else if (field === 'booking_form_background_image' && bookingFormBgPreview) {
           URL.revokeObjectURL(bookingFormBgPreview);
+        } else if (field === 'booking_form_image' && bookingFormImagePreview) {
+          URL.revokeObjectURL(bookingFormImagePreview);
         }
 
         const previewUrl = URL.createObjectURL(file);
@@ -213,6 +242,9 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
         } else if (field === 'booking_form_background_image') {
           setBookingFormBgPreview(previewUrl);
           setExistingBookingFormBg(null); // Clear existing when new file is selected
+        } else if (field === 'booking_form_image') {
+          setBookingFormImagePreview(previewUrl);
+          setExistingBookingFormImage(null); // Clear existing when new file is selected
         }
       } else {
         if (field === 'main_image') {
@@ -224,6 +256,10 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
         } else if (field === 'booking_form_background_image') {
           if (bookingFormBgPreview) URL.revokeObjectURL(bookingFormBgPreview);
           setBookingFormBgPreview(null);
+        } else if (field === 'booking_form_image') {
+          if (bookingFormImagePreview) URL.revokeObjectURL(bookingFormImagePreview);
+          setBookingFormImagePreview(null);
+          setExistingBookingFormImage(null);
         } else if (field === 'brochure') {
           setExistingBrochure(null);
         } else if (field === 'payment_schedule') {
@@ -232,7 +268,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
       }
   };
 
-  const handleMultipleFileChange = (field: 'layout_images' | 'gallery_images', files: FileList | null) => {
+  const handleMultipleFileChange = (field: 'layout_images' | 'gallery_images' | 'featured_images', files: FileList | null) => {
     if (files) {
       const fileArray = Array.from(files);
       setFormData(prev => ({ ...prev, [field]: fileArray }));
@@ -243,6 +279,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
         setLayoutImagesPreviews(prev => [...prev, ...previewUrls]);
       } else if (field === 'gallery_images') {
         setGalleryImagesPreviews(prev => [...prev, ...previewUrls]);
+      } else if (field === 'featured_images') {
+        setFeaturedImagesPreviews(prev => [...prev, ...previewUrls]);
       }
     }
   };
@@ -271,6 +309,18 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
     });
   };
 
+  const removeFeaturedImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      featured_images: prev.featured_images.filter((_, i) => i !== index)
+    }));
+    setFeaturedImagesPreviews(prev => {
+      const newPreviews = [...prev];
+      URL.revokeObjectURL(newPreviews[index]);
+      return newPreviews.filter((_, i) => i !== index);
+    });
+  };
+
   const removeExistingLayoutImage = (index: number) => {
     setExistingLayoutImages(prev => prev.filter((_, i) => i !== index));
     setExistingLayoutImagePaths(prev => prev.filter((_, i) => i !== index));
@@ -281,16 +331,23 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
     setExistingGalleryImagePaths(prev => prev.filter((_, i) => i !== index));
   };
 
+  const removeExistingFeaturedImage = (index: number) => {
+    setExistingFeaturedImages(prev => prev.filter((_, i) => i !== index));
+    setExistingFeaturedImagePaths(prev => prev.filter((_, i) => i !== index));
+  };
+
   // Cleanup preview URLs on unmount
   useEffect(() => {
     return () => {
       if (mainImagePreview) URL.revokeObjectURL(mainImagePreview);
       if (demoVideoThumbnailPreview) URL.revokeObjectURL(demoVideoThumbnailPreview);
       if (bookingFormBgPreview) URL.revokeObjectURL(bookingFormBgPreview);
+      if (bookingFormImagePreview) URL.revokeObjectURL(bookingFormImagePreview);
       layoutImagesPreviews.forEach(url => URL.revokeObjectURL(url));
       galleryImagesPreviews.forEach(url => URL.revokeObjectURL(url));
+      featuredImagesPreviews.forEach(url => URL.revokeObjectURL(url));
     };
-  }, [mainImagePreview, demoVideoThumbnailPreview, bookingFormBgPreview, layoutImagesPreviews, galleryImagesPreviews]);
+  }, [mainImagePreview, demoVideoThumbnailPreview, bookingFormBgPreview, bookingFormImagePreview, layoutImagesPreviews, galleryImagesPreviews, featuredImagesPreviews]);
 
   const addTransport = () => {
     if (transportName.trim() && transportIcon.trim() && transportDistance.trim()) {
@@ -341,6 +398,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
         ...(property && {
           existing_layout_images: existingLayoutImagePaths,
           existing_gallery_images: existingGalleryImagePaths,
+          existing_featured_images: existingFeaturedImagePaths,
         }),
       };
       await onSubmit(submitData);
@@ -375,6 +433,20 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
               error={!!errors.title}
               helperText={errors.title}
               required
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Description"
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              error={!!errors.description}
+              helperText={errors.description}
+              multiline
+              rows={4}
+              placeholder="Enter property description..."
             />
           </Grid>
 
@@ -440,12 +512,21 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
           </Grid>
 
           <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Company Name"
-              value={formData.company_name}
-              onChange={(e) => handleInputChange('company_name', e.target.value)}
-            />
+            <FormControl fullWidth>
+              <InputLabel>Company</InputLabel>
+              <Select
+                value={formData.company_id}
+                onChange={(e) => handleInputChange('company_id', e.target.value)}
+                label="Company"
+              >
+                <MenuItem value="">None</MenuItem>
+                {companies.map((company) => (
+                  <MenuItem key={company.id} value={company.id}>
+                    {company.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
 
           {/* Property Details */}
@@ -955,6 +1036,56 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
               fullWidth
               sx={{ height: 56 }}
             >
+              Upload Booking Form Image (Left Column)
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={(e) => handleFileChange('booking_form_image', e.target.files?.[0] || null)}
+              />
+            </Button>
+            {(bookingFormImagePreview || existingBookingFormImage) && (
+              <Box sx={{ mt: 2, position: 'relative' }}>
+                <Card sx={{ position: 'relative' }}>
+                  <CardMedia
+                    component="img"
+                    image={bookingFormImagePreview || existingBookingFormImage || ''}
+                    alt="Booking Form Image Preview"
+                    sx={{ height: 200, objectFit: 'cover' }}
+                  />
+                  <IconButton
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      bgcolor: 'rgba(0, 0, 0, 0.5)',
+                      color: 'white',
+                      '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+                    }}
+                    onClick={() => {
+                      handleFileChange('booking_form_image', null);
+                      setExistingBookingFormImage(null);
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Card>
+                {formData.booking_form_image && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                    Selected: {formData.booking_form_image.name}
+                  </Typography>
+                )}
+              </Box>
+            )}
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{ height: 56 }}
+            >
               Upload Layout Images
               <input
                 type="file"
@@ -1103,6 +1234,89 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                             '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
                           }}
                           onClick={() => removeGalleryImage(index)}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{ height: 56 }}
+            >
+              Upload Featured Images (Slider)
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                multiple
+                onChange={(e) => handleMultipleFileChange('featured_images', e.target.files)}
+              />
+            </Button>
+            {(formData.featured_images.length > 0 || existingFeaturedImages.length > 0) && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="caption" display="block" sx={{ mb: 1 }}>
+                  {formData.featured_images.length + existingFeaturedImages.length} image(s) selected
+                </Typography>
+                <Grid container spacing={2}>
+                  {/* Existing featured images */}
+                  {existingFeaturedImages.map((url, index) => (
+                    <Grid item xs={6} sm={4} md={3} key={`existing-featured-${index}`}>
+                      <Card sx={{ position: 'relative' }}>
+                        <CardMedia
+                          component="img"
+                          image={url}
+                          alt={`Featured ${index + 1}`}
+                          sx={{ height: 120, objectFit: 'cover' }}
+                        />
+                        <IconButton
+                          sx={{
+                            position: 'absolute',
+                            top: 4,
+                            right: 4,
+                            bgcolor: 'rgba(0, 0, 0, 0.5)',
+                            color: 'white',
+                            width: 24,
+                            height: 24,
+                            '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+                          }}
+                          onClick={() => removeExistingFeaturedImage(index)}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </Card>
+                    </Grid>
+                  ))}
+                  {/* New featured images */}
+                  {featuredImagesPreviews.map((url, index) => (
+                    <Grid item xs={6} sm={4} md={3} key={`new-featured-${index}`}>
+                      <Card sx={{ position: 'relative' }}>
+                        <CardMedia
+                          component="img"
+                          image={url}
+                          alt={`New Featured ${index + 1}`}
+                          sx={{ height: 120, objectFit: 'cover' }}
+                        />
+                        <IconButton
+                          sx={{
+                            position: 'absolute',
+                            top: 4,
+                            right: 4,
+                            bgcolor: 'rgba(0, 0, 0, 0.5)',
+                            color: 'white',
+                            width: 24,
+                            height: 24,
+                            '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+                          }}
+                          onClick={() => removeFeaturedImage(index)}
                         >
                           <CloseIcon fontSize="small" />
                         </IconButton>
