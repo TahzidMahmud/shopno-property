@@ -18,7 +18,7 @@ export interface Property {
   total_flat?: number;
   flat_size?: number;
   total_parking?: number;
-  price_range?: string;
+  price?: number;
   main_image?: string;
   layout_images?: string[];
   gallery_images?: string[];
@@ -59,7 +59,7 @@ export interface PropertyFormData {
   total_flat: number | '';
   flat_size: number | '';
   total_parking: number | '';
-  price_range: string;
+  price: number | '';
   main_image: File | null;
   layout_images: File[];
   gallery_images: File[];

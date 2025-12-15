@@ -24,6 +24,7 @@ import AboutPageManagement from './pages/admin/AboutPageManagement';
 import PartnerSubmissionsManagement from './pages/admin/PartnerSubmissionsManagement';
 import PropertyQueriesManagement from './pages/admin/PropertyQueriesManagement';
 import CompaniesManagement from './pages/admin/CompaniesManagement';
+import PropertyTypesManagement from './pages/admin/PropertyTypesManagement';
 
 export default function App() {
   return (
@@ -53,6 +54,7 @@ export default function App() {
                   <Route path='/admin/dashboard/property-queries' element={<ProtectedRoute><PropertyQueriesManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/users' element={<ProtectedRoute><div>Users Management - Coming Soon</div></ProtectedRoute>} />
                   <Route path='/admin/dashboard/companies' element={<ProtectedRoute><CompaniesManagement /></ProtectedRoute>} />
+                  <Route path='/admin/dashboard/property-types' element={<ProtectedRoute><PropertyTypesManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/settings' element={<ProtectedRoute><div>Settings - Coming Soon</div></ProtectedRoute>} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />

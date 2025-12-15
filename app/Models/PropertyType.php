@@ -13,6 +13,7 @@ class PropertyType extends Model
         'name',
         'type_value',
         'icon_name',
+        'icon_image',
         'order',
         'is_active',
     ];

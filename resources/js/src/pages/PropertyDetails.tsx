@@ -76,7 +76,7 @@ const PropertyDetails: React.FC = () => {
       { label: 'Total Flat', value: propertyData.total_flat?.toString() || 'N/A' },
       { label: 'Flat Size', value: propertyData.flat_size ? `${propertyData.flat_size} Sq Ft` : 'N/A' },
       { label: 'Total Parking', value: propertyData.total_parking?.toString() || 'N/A' },
-      { label: 'Price Range', value: propertyData.price_range || 'N/A' },
+      { label: 'Price', value: propertyData.price ? `৳ ${propertyData.price.toLocaleString()}` : 'N/A' },
     ],
     galleryImages: propertyData.gallery_images && propertyData.gallery_images.length > 0
       ? propertyData.gallery_images.map(img => getImageUrl(img))

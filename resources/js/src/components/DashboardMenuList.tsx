@@ -14,6 +14,7 @@ import {
   Dashboard as DashboardIcon,
   Home as HomeIcon,
   Business as BusinessIcon,
+  Category as CategoryIcon,
   People as PeopleIcon,
   Settings as SettingsIcon,
   Pool as PoolIcon,
@@ -89,6 +90,7 @@ const menuItems = [
   { text: 'Property Queries', icon: <AssignmentIcon />, path: '/admin/dashboard/property-queries' },
   { text: 'Users', icon: <PeopleIcon />, path: '/admin/dashboard/users' },
   { text: 'Companies', icon: <BusinessIcon />, path: '/admin/dashboard/companies' },
+  { text: 'Property Types', icon: <CategoryIcon />, path: '/admin/dashboard/property-types' },
   { text: 'Settings', icon: <SettingsIcon />, path: '/admin/dashboard/settings' },
 ];
 

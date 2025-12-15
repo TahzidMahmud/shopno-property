@@ -179,7 +179,8 @@ Route::prefix('property-types')->group(function () {
     Route::get('/{id}', [PropertyTypeController::class, 'show']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [PropertyTypeController::class, 'store']);
-        Route::put('/{id}', [PropertyTypeController::class, 'update']);
+        Route::post('/{id}', [PropertyTypeController::class, 'update']); // Accept POST for method spoofing
+        Route::put('/{id}', [PropertyTypeController::class, 'update']); // Also accept PUT for direct calls
         Route::delete('/{id}', [PropertyTypeController::class, 'destroy']);
     });
 });

@@ -106,10 +106,6 @@ const PropertyList: React.FC<PropertyListProps> = ({
     }
   };
 
-  const formatPrice = (price?: string) => {
-    return price || 'N/A';
-  };
-
   return (
     <Box>
       {/* Header */}
@@ -194,7 +190,7 @@ const PropertyList: React.FC<PropertyListProps> = ({
                       {property.location || 'N/A'}
                     </Typography>
                   </TableCell>
-                  <TableCell>{formatPrice(property.price_range)}</TableCell>
+                  <TableCell>{property.price ? `৳ ${property.price.toLocaleString()}` : 'N/A'}</TableCell>
                   <TableCell>{property.bedrooms || 'N/A'}</TableCell>
                   <TableCell>{property.bathrooms || 'N/A'}</TableCell>
                   <TableCell>

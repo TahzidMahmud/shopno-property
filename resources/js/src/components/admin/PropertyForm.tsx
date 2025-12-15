@@ -21,12 +21,14 @@ import {
   CardMedia,
   IconButton,
   Card,
+  InputAdornment,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Property, PropertyFormData } from '../../types/Property';
 import { Facility } from '../../types/Facility';
 import { facilityService } from '../../services/facilityService';
 import { companyService, Company } from '../../services/companyService';
+import { propertyTypeService, PropertyType } from '../../services/propertyTypeService';
 import { getYouTubeEmbedUrl, extractYouTubeVideoId } from '../../utils/youtube';
 
 interface PropertyFormProps {
@@ -47,7 +49,7 @@ const initialFormData: PropertyFormData = {
   total_flat: '',
   flat_size: '',
   total_parking: '',
-  price_range: '',
+  price: '',
         main_image: null,
         layout_images: [],
         gallery_images: [],
@@ -83,6 +85,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
   const [availableFacilities, setAvailableFacilities] = useState<Facility[]>([]);
   const [loadingFacilities, setLoadingFacilities] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>([]);
 
   // Preview URLs for new files
   const [mainImagePreview, setMainImagePreview] = useState<string | null>(null);
@@ -129,6 +132,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
     };
     loadFacilities();
     loadCompanies();
+    loadPropertyTypes();
   }, []);
 
   const loadCompanies = async () => {
@@ -137,6 +141,15 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
       setCompanies(data);
     } catch (error) {
       console.error('Error loading companies:', error);
+    }
+  };
+
+  const loadPropertyTypes = async () => {
+    try {
+      const data = await propertyTypeService.getActive();
+      setPropertyTypes(data);
+    } catch (error) {
+      console.error('Error loading property types:', error);
     }
   };
 
@@ -153,7 +166,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
         total_flat: property.total_flat || '',
         flat_size: property.flat_size || '',
         total_parking: property.total_parking || '',
-        price_range: property.price_range || '',
+        price: property.price || '',
         main_image: null,
         layout_images: [],
         gallery_images: [],
@@ -474,10 +487,12 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                 onChange={(e) => handleInputChange('type', e.target.value)}
                 label="Type"
               >
-                <MenuItem value="apartment">Apartment</MenuItem>
-                <MenuItem value="house">House</MenuItem>
-                <MenuItem value="commercial">Commercial</MenuItem>
-                <MenuItem value="land">Land</MenuItem>
+                <MenuItem value="">None</MenuItem>
+                {propertyTypes.map((propertyType) => (
+                  <MenuItem key={propertyType.id} value={propertyType.type_value}>
+                    {propertyType.name}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
@@ -599,9 +614,18 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Price Range"
-              value={formData.price_range}
-              onChange={(e) => handleInputChange('price_range', e.target.value)}
+              label="Price"
+              type="number"
+              value={formData.price}
+              onChange={(e) => handleInputChange('price', e.target.value ? parseFloat(e.target.value) : '')}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Typography>৳</Typography>
+                  </InputAdornment>
+                ),
+              }}
+              helperText="Enter the property price"
             />
           </Grid>
 

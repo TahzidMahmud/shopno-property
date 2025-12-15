@@ -44,7 +44,9 @@ export const propertyService = {
     formData.append('total_flat', data.total_flat.toString());
     formData.append('flat_size', data.flat_size.toString());
     formData.append('total_parking', data.total_parking.toString());
-    formData.append('price_range', data.price_range);
+    if (data.price !== '') {
+      formData.append('price', data.price.toString());
+    }
     formData.append('full_address', data.full_address);
     if (data.latitude !== '') formData.append('latitude', data.latitude.toString());
     if (data.longitude !== '') formData.append('longitude', data.longitude.toString());
@@ -141,7 +143,9 @@ export const propertyService = {
     formData.append('total_flat', data.total_flat.toString());
     formData.append('flat_size', data.flat_size.toString());
     formData.append('total_parking', data.total_parking.toString());
-    formData.append('price_range', data.price_range);
+    if (data.price !== '') {
+      formData.append('price', data.price.toString());
+    }
     formData.append('full_address', data.full_address);
     if (data.latitude !== '') formData.append('latitude', data.latitude.toString());
     if (data.longitude !== '') formData.append('longitude', data.longitude.toString());

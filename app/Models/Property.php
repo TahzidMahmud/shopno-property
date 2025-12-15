@@ -20,7 +20,7 @@ class Property extends Model
         'total_flat',
         'flat_size',
         'total_parking',
-        'price_range',
+        'price',
         'main_image',
         'layout_images',
         'gallery_images',

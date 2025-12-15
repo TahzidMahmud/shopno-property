@@ -18,10 +18,19 @@ class PropertyTypeController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type_value' => 'required|string|max:255',
-            'icon_name' => 'required|string|max:255',
+            'icon_name' => 'nullable|string|max:255',
+            'icon_image' => 'nullable|image|max:2048',
             'order' => 'nullable|integer',
             'is_active' => 'nullable|in:0,1,true,false',
         ]);
+
+        // Handle icon image upload
+        if ($request->hasFile('icon_image')) {
+            $validated['icon_image'] = $this->fileUploadService->uploadFile(
+                $request->file('icon_image'),
+                'uploads/property-types'
+            );
+        }
 
         $validated['order'] = $validated['order'] ?? PropertyType::max('order') + 1;
         // Convert string boolean to actual boolean
@@ -44,10 +53,24 @@ class PropertyTypeController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type_value' => 'required|string|max:255',
-            'icon_name' => 'required|string|max:255',
+            'icon_name' => 'nullable|string|max:255',
+            'icon_image' => 'nullable|image|max:2048',
             'order' => 'nullable|integer',
             'is_active' => 'nullable|in:0,1,true,false',
         ]);
+
+        // Handle icon image upload
+        if ($request->hasFile('icon_image')) {
+            // Delete old icon image if exists
+            if ($type->icon_image) {
+                $this->fileUploadService->deleteFile($type->icon_image);
+            }
+            // Upload new icon image
+            $validated['icon_image'] = $this->fileUploadService->uploadFile(
+                $request->file('icon_image'),
+                'uploads/property-types'
+            );
+        }
 
         // Convert string boolean to actual boolean
         if ($request->has('is_active')) {
@@ -61,6 +84,12 @@ class PropertyTypeController extends Controller
     public function destroy(string $id)
     {
         $type = PropertyType::findOrFail($id);
+        
+        // Delete icon image if exists
+        if ($type->icon_image) {
+            $this->fileUploadService->deleteFile($type->icon_image);
+        }
+        
         $type->delete();
         return response()->json(['message' => 'Property type deleted successfully'], 200);
     }

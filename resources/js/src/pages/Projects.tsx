@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import PropertyCard from '../components/PropertyCard';
 import { Property } from '../types/Property';
 import { propertyService } from '../services/propertyService';
+import { propertyTypeService } from '../services/propertyTypeService';
 
 const ITEMS_PER_PAGE = 9; // 3 columns x 3 rows
 
@@ -17,6 +18,7 @@ const Projects: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [propertyTypes, setPropertyTypes] = useState<any[]>([]);
 
   // Filter states - initialize from URL params
   const [statusFilter, setStatusFilter] = useState<string>(searchParams.get('status') || '');
@@ -25,25 +27,122 @@ const Projects: React.FC = () => {
   const [budgetFilter, setBudgetFilter] = useState<string>(searchParams.get('budget') || '');
 
   useEffect(() => {
-    const fetchProperties = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await propertyService.getAll();
-        setAllProperties(data);
-        setFilteredProperties(data);
+        const [propertiesData, typesData] = await Promise.all([
+          propertyService.getAll(),
+          propertyTypeService.getActive()
+        ]);
+        setAllProperties(propertiesData);
+        setFilteredProperties(propertiesData);
+        setPropertyTypes(typesData);
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Failed to load properties');
-        console.error('Error fetching properties:', err);
+        setError(err.response?.data?.message || 'Failed to load data');
+        console.error('Error fetching data:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProperties();
+    fetchData();
   }, []);
 
+  // Get unique filter options from properties
+  const availableStatuses = useMemo(() => {
+    const statuses = Array.from(new Set(allProperties.map(p => p.status).filter(Boolean)));
+    return statuses as string[];
+  }, [allProperties]);
+
+  // Use property types from database (active ones)
+  const availableTypes = useMemo(() => {
+    return propertyTypes.map(pt => ({
+      label: pt.name,
+      value: pt.type_value
+    }));
+  }, [propertyTypes]);
+
+  const availableLocations = useMemo(() => {
+    const locations = Array.from(new Set(allProperties.map(p => p.location).filter(Boolean)));
+    return locations as string[];
+  }, [allProperties]);
+
+  // Generate budget ranges from property prices
+  const availableBudgets = useMemo(() => {
+    // Extract and convert prices, handling both number and string types
+    const prices = allProperties
+      .map(p => {
+        const price = p.price;
+        if (typeof price === 'number' && !isNaN(price)) {
+          return price;
+        }
+        if (price !== null && price !== undefined) {
+          const priceStr = String(price);
+          const cleaned = priceStr.replace(/[^0-9.-]/g, ''); // Remove currency symbols
+          const parsed = parseFloat(cleaned);
+          return isNaN(parsed) ? null : parsed;
+        }
+        return null;
+      })
+      .filter((price): price is number => price !== null && price > 0)
+      .sort((a, b) => a - b);
+
+    if (prices.length === 0) {
+      return [];
+    }
+
+    const minPrice = prices[0];
+    const maxPrice = prices[prices.length - 1];
+    const priceRange = maxPrice - minPrice;
+
+    // Determine the step size based on price range
+    let stepSize: number;
+    if (priceRange <= 50000) {
+      stepSize = 10000; // 10K steps for small ranges
+    } else if (priceRange <= 200000) {
+      stepSize = 50000; // 50K steps for medium ranges
+    } else if (priceRange <= 500000) {
+      stepSize = 100000; // 100K steps for larger ranges
+    } else {
+      stepSize = 250000; // 250K steps for very large ranges
+    }
+
+    // Round down minPrice to nearest step
+    const startPrice = Math.floor(minPrice / stepSize) * stepSize;
+    // Round up maxPrice to nearest step
+    const endPrice = Math.ceil(maxPrice / stepSize) * stepSize;
+
+    const budgets: Array<{ label: string; value: string; min: number; max: number }> = [];
+
+    // Create ranges in steps
+    for (let current = startPrice; current < endPrice; current += stepSize) {
+      const rangeMin = current;
+      const rangeMax = current + stepSize;
+      
+      budgets.push({
+        label: `৳${(rangeMin / 1000).toFixed(0)}K - ৳${(rangeMax / 1000).toFixed(0)}K`,
+        value: `${rangeMin}_${rangeMax}`,
+        min: rangeMin,
+        max: rangeMax
+      });
+    }
+
+    // Ensure all properties are covered by at least one range
+    // Add an "Above" option if maxPrice is at the edge
+    if (maxPrice >= endPrice - stepSize) {
+      budgets.push({
+        label: `Above ৳${((endPrice - stepSize) / 1000).toFixed(0)}K`,
+        value: `above_${endPrice - stepSize}`,
+        min: endPrice - stepSize,
+        max: Infinity
+      });
+    }
+
+    return budgets;
+  }, [allProperties]);
+
   // Helper function to apply filters with specific parameters
-  const applyFiltersWithParams = React.useCallback((status: string, type: string, location: string, budget: string) => {
+  const applyFiltersWithParams = React.useCallback((status: string, type: string, location: string, budget: string, budgets: Array<{ label: string; value: string; min?: number; max?: number }>) => {
     let filtered = [...allProperties];
 
     if (status) {
@@ -66,20 +165,25 @@ const Projects: React.FC = () => {
       );
     }
 
-    if (budget) {
+    if (budget && budgets.length > 0) {
       filtered = filtered.filter(p => {
-        if (!p.price_range) return false;
-        const priceStr = p.price_range.replace(/[^0-9]/g, '');
-        const price = parseInt(priceStr);
+        if (!p.price) return false;
+        const price = typeof p.price === 'number' ? p.price : parseFloat(String(p.price));
+        
+        const budgetOption = budgets.find(b => b.value === budget);
+        if (!budgetOption) return false;
 
-        if (budget === 'lessThan100k') {
-          return price < 100000;
-        } else if (budget === 'greaterThan500k') {
-          return price > 500000;
-        } else if (budget === '$195000 - $390000') {
-          return price >= 195000 && price <= 390000;
+        // Handle "Above" ranges with Infinity max
+        if (budgetOption.max === Infinity) {
+          return price >= budgetOption.min;
         }
-        return true;
+        
+        // Handle regular ranges (inclusive on both ends)
+        if (budgetOption.min !== undefined && budgetOption.max !== undefined) {
+          return price >= budgetOption.min && price <= budgetOption.max;
+        }
+        
+        return false;
       });
     }
 
@@ -103,33 +207,23 @@ const Projects: React.FC = () => {
 
       // Apply filters if any are set
       if (statusParam || typeParam || locationParam || budgetParam) {
-        applyFiltersWithParams(statusParam, typeParam, locationParam, budgetParam);
+        // Only apply budget filter if availableBudgets is ready and budget param exists
+        if (budgetParam && availableBudgets.length === 0) {
+          // If budget is in URL but budgets aren't ready yet, just show all for now
+          setFilteredProperties(allProperties);
+        } else {
+          applyFiltersWithParams(statusParam, typeParam, locationParam, budgetParam, availableBudgets);
+        }
       } else {
         // If no params, show all properties
         setFilteredProperties(allProperties);
       }
     }
-  }, [searchParams, allProperties, applyFiltersWithParams]);
-
-  // Get unique filter options from properties
-  const availableStatuses = useMemo(() => {
-    const statuses = Array.from(new Set(allProperties.map(p => p.status).filter(Boolean)));
-    return statuses as string[];
-  }, [allProperties]);
-
-  const availableTypes = useMemo(() => {
-    const types = Array.from(new Set(allProperties.map(p => p.type).filter(Boolean)));
-    return types as string[];
-  }, [allProperties]);
-
-  const availableLocations = useMemo(() => {
-    const locations = Array.from(new Set(allProperties.map(p => p.location).filter(Boolean)));
-    return locations as string[];
-  }, [allProperties]);
+  }, [searchParams, allProperties, availableBudgets, applyFiltersWithParams]);
 
   // Filter properties based on selected filters
   const applyFilters = () => {
-    applyFiltersWithParams(statusFilter, typeFilter, locationFilter, budgetFilter);
+    applyFiltersWithParams(statusFilter, typeFilter, locationFilter, budgetFilter, availableBudgets);
   };
 
   const handleSearch = () => {
@@ -254,11 +348,8 @@ const Projects: React.FC = () => {
               label="Project Type"
             >
               <MenuItem value="">All</MenuItem>
-              <MenuItem value="Villa">Villa</MenuItem>
-              <MenuItem value="Apartment">Apartment</MenuItem>
-              <MenuItem value="Penthouse">Penthouse</MenuItem>
               {availableTypes.map(type => (
-                <MenuItem key={type} value={type}>{type}</MenuItem>
+                <MenuItem key={type.value} value={type.value}>{type.label}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -271,11 +362,8 @@ const Projects: React.FC = () => {
               label="Location"
             >
               <MenuItem value="">All</MenuItem>
-              <MenuItem value="Gulshan">Gulshan</MenuItem>
-              <MenuItem value="Dhanmondi">Dhanmondi</MenuItem>
-              <MenuItem value="Bashundhara">Bashundhara</MenuItem>
-              {availableLocations.map(location => (
-                <MenuItem key={location} value={location}>{location}</MenuItem>
+              {availableLocations.map(loc => (
+                <MenuItem key={loc} value={loc}>{loc}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -288,9 +376,11 @@ const Projects: React.FC = () => {
               label="Budget"
             >
               <MenuItem value="">All</MenuItem>
-              <MenuItem value="$195000 - $390000">$195000 - $390000</MenuItem>
-              <MenuItem value="lessThan100k">Less than $100000</MenuItem>
-              <MenuItem value="greaterThan500k">Greater than $500000</MenuItem>
+              {availableBudgets.map(budgetOption => (
+                <MenuItem key={budgetOption.value} value={budgetOption.value}>
+                  {budgetOption.label}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 

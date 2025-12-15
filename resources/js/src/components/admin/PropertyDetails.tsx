@@ -239,10 +239,10 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({
             <Divider sx={{ mb: 2 }} />
 
             <Typography variant="body2" color="text.secondary">
-              Price Range
+              Price
             </Typography>
             <Typography variant="h5" color="primary" sx={{ mb: 2 }}>
-              {property.price_range || 'Contact for Price'}
+              {property.price ? `৳ ${property.price.toLocaleString()}` : 'Contact for Price'}
             </Typography>
 
             <Typography variant="body2" color="text.secondary">
