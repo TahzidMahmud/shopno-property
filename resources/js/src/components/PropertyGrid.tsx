@@ -44,7 +44,7 @@ export default function PropertyGrid() {
   }
 
   return (
-    <Box sx={{ py: { xs: '3rem', md: '4rem' }, px: { xs: 2, md: '120px' }, maxWidth: 'lg', mx: 'auto' }}>
+    <Box sx={{ pt: { xs: '3rem', md: '3rem' },pb:'4rem', px: { xs: 2, md: '120px' }, maxWidth: 'lg', mx: 'auto' }}>
       {/* Header Section */}
       <Box sx={{
         display: 'flex',

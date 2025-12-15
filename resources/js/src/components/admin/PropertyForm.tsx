@@ -217,6 +217,11 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
       const galleryPaths = property.gallery_images?.filter((path): path is string => path !== null && path !== undefined) || [];
       setExistingGalleryImages(galleryUrls);
       setExistingGalleryImagePaths(galleryPaths);
+
+      const featuredUrls = property.featured_images?.map(img => getImageUrl(img)).filter((url): url is string => url !== null) || [];
+      const featuredPaths = property.featured_images?.filter((path): path is string => path !== null && path !== undefined) || [];
+      setExistingFeaturedImages(featuredUrls);
+      setExistingFeaturedImagePaths(featuredPaths);
     } else {
       // Reset existing images when creating new property
       setExistingMainImage(null);

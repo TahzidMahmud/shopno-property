@@ -418,7 +418,7 @@ export default function WhyChooseUs() {
       </Box>
 
       {/* Learn More Button - Centered */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: '4rem' }}>
         <Button
           variant="outlined"
           sx={{

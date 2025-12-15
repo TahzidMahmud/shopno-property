@@ -75,28 +75,28 @@ const PropertyDetails: React.FC = () => {
   };
 
   // Build details array conditionally - only include fields with values
-  const buildDetailsArray = () => {
+  const buildDetailsArray = (data: Property) => {
     const details: Array<{ label: string; value: string }> = [];
-    
-    if (propertyData.status) details.push({ label: 'Status', value: propertyData.status });
-    if (propertyData.property_category) details.push({ label: 'Property Category', value: propertyData.property_category });
-    if (propertyData.type) details.push({ label: 'Type', value: propertyData.type });
-    if (propertyData.area) details.push({ label: 'Area', value: propertyData.area });
-    if (propertyData.location) details.push({ label: 'Location', value: propertyData.location });
-    if (propertyData.total_floor) details.push({ label: 'Total Floor', value: propertyData.total_floor.toString() });
-    if (propertyData.total_flat) details.push({ label: 'Total Flat', value: propertyData.total_flat.toString() });
-    if (propertyData.flat_size) details.push({ label: 'Flat Size', value: `${propertyData.flat_size} Sq Ft` });
-    if (propertyData.total_parking) details.push({ label: 'Total Parking', value: propertyData.total_parking.toString() });
-    if (propertyData.land) details.push({ label: 'Land', value: propertyData.land });
-    if (propertyData.building_height) details.push({ label: 'Building Height', value: propertyData.building_height });
-    if (propertyData.hand_over_date) details.push({ label: 'Hand Over Date', value: formatDate(propertyData.hand_over_date) });
-    if (propertyData.face) details.push({ label: 'Face', value: propertyData.face });
-    if (propertyData.road) details.push({ label: 'Road', value: propertyData.road });
-    if (propertyData.bedrooms) details.push({ label: 'Bedrooms', value: propertyData.bedrooms.toString() });
-    if (propertyData.bathrooms) details.push({ label: 'Bathrooms', value: propertyData.bathrooms.toString() });
-    if (propertyData.price) details.push({ label: 'Price', value: `৳ ${propertyData.price.toLocaleString()}` });
-    if (propertyData.company?.name) details.push({ label: 'Company', value: propertyData.company.name });
-    
+
+    if (data.status) details.push({ label: 'Status', value: data.status });
+    if (data.property_category) details.push({ label: 'Property Category', value: data.property_category });
+    if (data.type) details.push({ label: 'Type', value: data.type });
+    if (data.area) details.push({ label: 'Area', value: data.area });
+    if (data.location) details.push({ label: 'Location', value: data.location });
+    if (data.total_floor) details.push({ label: 'Total Floor', value: data.total_floor.toString() });
+    if (data.total_flat) details.push({ label: 'Total Flat', value: data.total_flat.toString() });
+    if (data.flat_size) details.push({ label: 'Flat Size', value: `${data.flat_size} Sq Ft` });
+    if (data.total_parking) details.push({ label: 'Total Parking', value: data.total_parking.toString() });
+    if (data.land) details.push({ label: 'Land', value: data.land });
+    if (data.building_height) details.push({ label: 'Building Height', value: data.building_height });
+    if (data.hand_over_date) details.push({ label: 'Hand Over Date', value: formatDate(data.hand_over_date) });
+    if (data.face) details.push({ label: 'Face', value: data.face });
+    if (data.road) details.push({ label: 'Road', value: data.road });
+    if (data.bedrooms) details.push({ label: 'Bedrooms', value: data.bedrooms.toString() });
+    if (data.bathrooms) details.push({ label: 'Bathrooms', value: data.bathrooms.toString() });
+    if (data.price) details.push({ label: 'Price', value: `৳ ${data.price.toLocaleString()}` });
+    if (data.company?.name) details.push({ label: 'Company', value: data.company.name });
+
     return details;
   };
 
@@ -104,7 +104,7 @@ const PropertyDetails: React.FC = () => {
     title: propertyData.title || 'Property',
     mainImage: getImageUrl(propertyData.main_image),
     description: propertyData.description || propertyData.full_address || 'Get into the most profitable investment industry and turn your sale money into profits.',
-    details: buildDetailsArray(),
+    details: buildDetailsArray(propertyData),
     galleryImages: propertyData.gallery_images && propertyData.gallery_images.length > 0
       ? propertyData.gallery_images.map(img => getImageUrl(img))
       : [getImageUrl(propertyData.main_image)],
@@ -394,11 +394,13 @@ const PropertyDetails: React.FC = () => {
             <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>Property details</Typography>
           </Box>
           <Grid container spacing={{ xs: 2, md: 4 }}>
-            <Grid item xs={12} md={7}>
-              <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', mb: 2, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}>
-                Why Should You Invest In This <Box component="span" sx={{ bgcolor: '#00bcd4', color: 'white', px: 1.5, py: 0.5, borderRadius: '4px', transform: 'rotate(5deg)', display: 'inline-block', ml: 1 }}>Property</Box>
-              </Typography>
-              <Box sx={{ position: 'relative', width: '100%', height: { xs: '250px', sm: '300px', md: '350px' }, borderRadius: 2 }}> {/* New wrapper Box for image and arrows */}
+            <Grid item xs={12} md={7.5}>
+              <Box sx={{width: '50%', marginBottom: '3rem'}}>
+                <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', mb: 2, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }, lineHeight: 1.3 }}>
+                    Why Should You Invest In This <Box component="span" sx={{ bgcolor: '#00bcd4', color: 'white', px: 1.5, py: 0.5, borderRadius: '4px', transform: 'rotate(5deg)', display: 'inline-block', ml: 1 }}>Property</Box>
+                </Typography>
+              </Box>
+              <Box sx={{ position: 'relative', width: '100%', height: { xs: '250px', sm: '300px', md: '40rem' }, borderRadius: 2, marginTop: '4rem' }}> {/* New wrapper Box for image and arrows */}
                 <CardMedia
                   component="img"
                   image={(property.featuredImages && property.featuredImages.length > 0)
@@ -458,17 +460,73 @@ const PropertyDetails: React.FC = () => {
                 </IconButton>
               </Box>
             </Grid>
-            <Grid item xs={12} md={5}>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: { xs: 2, md: 3 }, fontSize: { xs: '0.875rem', md: '0.9375rem' } }}>
+            <Grid item xs={12} md={4.5}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: { xs: 2, md: 4 }, fontSize: { xs: '0.95rem', md: '0.95rem',lineHeight: 1.8 } }}>
                 {property.description}
               </Typography>
-              <Grid container spacing={2}>
-                {property.details.map((detail, index) => (
-                  <Grid item xs={12} key={index}>
-                    <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: { xs: '0.8rem', md: '0.875rem' } }}>{detail.label}: <Box component="span" sx={{ fontWeight: 'normal', color: 'text.secondary' }}>{detail.value}</Box></Typography>
-                  </Grid>
-                ))}
-              </Grid>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '20px',
+                  alignItems: 'flex-start',
+                  marginTop: '4rem',
+                }}
+              >
+                {property.details.map((detail, index) => {
+                  // Calculate gap based on label length (matching Figma design)
+                  const getGap = (label: string) => {
+                    const labelLength = label.length;
+                    if (label === 'Status:') return '70px';
+                    if (label === 'Area:') return '88px';
+                    if (label === 'Location:') return '49px';
+                    if (label === 'Type:') return '86px';
+                    if (label === 'Total Floor:') return '31px';
+                    if (label === 'Total Flat:') return '45px';
+                    if (label === 'Flat Size:') return '53px';
+                    if (label === 'Total Parking:') return '45px';
+                    if (label === 'Price Range:' || label === 'Price:') return '20px';
+                    // Default gap for other fields
+                    return '50px';
+                  };
+
+                  return (
+                    <Box
+                      key={index}
+                      sx={{
+                        display: 'flex',
+                        gap: getGap(detail.label),
+                        alignItems: 'center',
+                        lineHeight: 1.2,
+                        width: '100%',
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontFamily: "'DM Sans', sans-serif",
+                          fontWeight: 550,
+                          fontSize: '18px',
+                          color: '#343333',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {detail.label}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontFamily: "'DM Sans', sans-serif",
+                          fontWeight: 400,
+                          fontSize: '16px',
+                          color: 'rgba(94,93,93,0.9)',
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {detail.value}
+                      </Typography>
+                    </Box>
+                  );
+                })}
+              </Box>
             </Grid>
           </Grid>
         </Box>
@@ -729,7 +787,7 @@ const PropertyDetails: React.FC = () => {
         )}
 
         {/* Installment Calculation Section */}
-        <Box sx={{ mt: { xs: 4, md: 6 }, mb: { xs: 4, md: 6 }, textAlign: 'center' }}>
+        <Box sx={{ py:'2rem',mt: { xs: 4, md: 6 }, mb: { xs: 4, md: 6 }, textAlign: 'center' }}>
           <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', mb: { xs: 2, md: 4 }, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}>
             Installment Calculation
           </Typography>
@@ -750,7 +808,7 @@ const PropertyDetails: React.FC = () => {
                 <TextField
                   label="Property Price"
                   type="number"
-                  value={propertyPrice}
+                  value={propertyData?.price}
                   onChange={(e) => setPropertyPrice(Number(e.target.value))}
                   fullWidth
                   sx={{ bgcolor: '#f0f0f0', borderRadius: 1 }}

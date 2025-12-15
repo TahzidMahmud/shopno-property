@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Table,
@@ -46,6 +47,7 @@ const PropertyList: React.FC<PropertyListProps> = ({
   onView,
   onAdd,
 }) => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
@@ -202,7 +204,7 @@ const PropertyList: React.FC<PropertyListProps> = ({
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                       <IconButton
                         size="small"
-                        onClick={() => onView(property)}
+                        onClick={() => navigate(`/property-details/${property.id}`)}
                         title="View Details"
                       >
                         <ViewIcon />
