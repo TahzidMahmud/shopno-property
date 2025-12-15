@@ -255,3 +255,4 @@ const PropertyTypeForm: React.FC<PropertyTypeFormProps> = ({
 
 export default PropertyTypeForm;
 
+

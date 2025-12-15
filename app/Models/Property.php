@@ -16,10 +16,16 @@ class Property extends Model
         'area',
         'location',
         'type',
+        'property_category',
         'total_floor',
         'total_flat',
         'flat_size',
         'total_parking',
+        'land',
+        'building_height',
+        'hand_over_date',
+        'face',
+        'road',
         'price',
         'main_image',
         'layout_images',
@@ -46,6 +52,7 @@ class Property extends Model
         'gallery_images' => 'array',
         'featured_images' => 'array',
         'key_transports' => 'array',
+        'hand_over_date' => 'date',
     ];
 
     /**

@@ -4,9 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\PropertyType;
 use Illuminate\Http\Request;
+use App\Services\FileUploadService;
 
 class PropertyTypeController extends Controller
 {
+    protected $fileUploadService;
+
+    public function __construct(FileUploadService $fileUploadService)
+    {
+        $this->fileUploadService = $fileUploadService;
+    }
     public function index()
     {
         $types = PropertyType::orderBy('order')->get();
@@ -84,12 +91,12 @@ class PropertyTypeController extends Controller
     public function destroy(string $id)
     {
         $type = PropertyType::findOrFail($id);
-        
+
         // Delete icon image if exists
         if ($type->icon_image) {
             $this->fileUploadService->deleteFile($type->icon_image);
         }
-        
+
         $type->delete();
         return response()->json(['message' => 'Property type deleted successfully'], 200);
     }

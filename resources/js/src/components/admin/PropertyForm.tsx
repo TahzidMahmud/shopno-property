@@ -45,10 +45,16 @@ const initialFormData: PropertyFormData = {
   area: '',
   location: '',
   type: '',
+  property_category: '',
   total_floor: '',
   total_flat: '',
   flat_size: '',
   total_parking: '',
+  land: '',
+  building_height: '',
+  hand_over_date: '',
+  face: '',
+  road: '',
   price: '',
         main_image: null,
         layout_images: [],
@@ -162,10 +168,16 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
         area: property.area || '',
         location: property.location || '',
         type: property.type || '',
+        property_category: property.property_category || '',
         total_floor: property.total_floor || '',
         total_flat: property.total_flat || '',
         flat_size: property.flat_size || '',
         total_parking: property.total_parking || '',
+        land: property.land || '',
+        building_height: property.building_height || '',
+        hand_over_date: property.hand_over_date ? (property.hand_over_date.split('T')[0] || property.hand_over_date.split(' ')[0] || property.hand_over_date) : '',
+        face: property.face || '',
+        road: property.road || '',
         price: property.price || '',
         main_image: null,
         layout_images: [],
@@ -500,6 +512,16 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
+              label="Property Category"
+              value={formData.property_category}
+              onChange={(e) => handleInputChange('property_category', e.target.value)}
+              placeholder="e.g., Residential, Commercial Plot"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
               label="Area"
               value={formData.area}
               onChange={(e) => handleInputChange('area', e.target.value)}
@@ -608,6 +630,59 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
               type="number"
               value={formData.total_parking}
               onChange={(e) => handleInputChange('total_parking', e.target.value ? parseInt(e.target.value) : '')}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Land"
+              value={formData.land}
+              onChange={(e) => handleInputChange('land', e.target.value)}
+              placeholder="e.g., 5 Katha, 20000 sqf"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Building Height"
+              value={formData.building_height}
+              onChange={(e) => handleInputChange('building_height', e.target.value)}
+              placeholder="e.g., G+10"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Hand Over Date"
+              type="date"
+              value={formData.hand_over_date}
+              onChange={(e) => handleInputChange('hand_over_date', e.target.value)}
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Face"
+              value={formData.face}
+              onChange={(e) => handleInputChange('face', e.target.value)}
+              placeholder="e.g., North, South, East, West"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Road"
+              value={formData.road}
+              onChange={(e) => handleInputChange('road', e.target.value)}
+              placeholder="e.g., 6"
             />
           </Grid>
 

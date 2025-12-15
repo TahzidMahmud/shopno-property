@@ -100,15 +100,15 @@ export default function Header() {
       }}>
         {/* Logo Section - Positioned at left=120px, vertically centered */}
           {/* Logo Section */}
-          <Box 
+          <Box
             component={Link}
             to="/"
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'start', 
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'start',
               position: 'absolute',
-              left: '10%', 
+              left: '10%',
               transform: 'translateX(-50%)',
               textDecoration: 'none',
               cursor: 'pointer',
@@ -118,7 +118,7 @@ export default function Header() {
           </Box>
 
         {/* Mobile Logo */}
-        <Box 
+        <Box
           component={Link}
           to="/"
           sx={{
@@ -429,7 +429,7 @@ export default function Header() {
                 </Box>
                 <Box
                   component={Link}
-                  to="/properties"
+                  to="/projects"
                   sx={{
                     display: 'flex',
                     gap: '10px',

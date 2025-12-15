@@ -63,21 +63,48 @@ const PropertyDetails: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  // Helper function to format date
+  const formatDate = (dateString: string | undefined | null): string => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Build details array conditionally - only include fields with values
+  const buildDetailsArray = () => {
+    const details: Array<{ label: string; value: string }> = [];
+    
+    if (propertyData.status) details.push({ label: 'Status', value: propertyData.status });
+    if (propertyData.property_category) details.push({ label: 'Property Category', value: propertyData.property_category });
+    if (propertyData.type) details.push({ label: 'Type', value: propertyData.type });
+    if (propertyData.area) details.push({ label: 'Area', value: propertyData.area });
+    if (propertyData.location) details.push({ label: 'Location', value: propertyData.location });
+    if (propertyData.total_floor) details.push({ label: 'Total Floor', value: propertyData.total_floor.toString() });
+    if (propertyData.total_flat) details.push({ label: 'Total Flat', value: propertyData.total_flat.toString() });
+    if (propertyData.flat_size) details.push({ label: 'Flat Size', value: `${propertyData.flat_size} Sq Ft` });
+    if (propertyData.total_parking) details.push({ label: 'Total Parking', value: propertyData.total_parking.toString() });
+    if (propertyData.land) details.push({ label: 'Land', value: propertyData.land });
+    if (propertyData.building_height) details.push({ label: 'Building Height', value: propertyData.building_height });
+    if (propertyData.hand_over_date) details.push({ label: 'Hand Over Date', value: formatDate(propertyData.hand_over_date) });
+    if (propertyData.face) details.push({ label: 'Face', value: propertyData.face });
+    if (propertyData.road) details.push({ label: 'Road', value: propertyData.road });
+    if (propertyData.bedrooms) details.push({ label: 'Bedrooms', value: propertyData.bedrooms.toString() });
+    if (propertyData.bathrooms) details.push({ label: 'Bathrooms', value: propertyData.bathrooms.toString() });
+    if (propertyData.price) details.push({ label: 'Price', value: `৳ ${propertyData.price.toLocaleString()}` });
+    if (propertyData.company?.name) details.push({ label: 'Company', value: propertyData.company.name });
+    
+    return details;
+  };
+
   const property = propertyData ? {
     title: propertyData.title || 'Property',
     mainImage: getImageUrl(propertyData.main_image),
     description: propertyData.description || propertyData.full_address || 'Get into the most profitable investment industry and turn your sale money into profits.',
-    details: [
-      { label: 'Status', value: propertyData.status || 'N/A' },
-      { label: 'Area', value: propertyData.area || 'N/A' },
-      { label: 'Location', value: propertyData.location || 'N/A' },
-      { label: 'Type', value: propertyData.type || 'N/A' },
-      { label: 'Total Floor', value: propertyData.total_floor?.toString() || 'N/A' },
-      { label: 'Total Flat', value: propertyData.total_flat?.toString() || 'N/A' },
-      { label: 'Flat Size', value: propertyData.flat_size ? `${propertyData.flat_size} Sq Ft` : 'N/A' },
-      { label: 'Total Parking', value: propertyData.total_parking?.toString() || 'N/A' },
-      { label: 'Price', value: propertyData.price ? `৳ ${propertyData.price.toLocaleString()}` : 'N/A' },
-    ],
+    details: buildDetailsArray(),
     galleryImages: propertyData.gallery_images && propertyData.gallery_images.length > 0
       ? propertyData.gallery_images.map(img => getImageUrl(img))
       : [getImageUrl(propertyData.main_image)],

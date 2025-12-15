@@ -40,10 +40,18 @@ export const propertyService = {
     formData.append('area', data.area);
     formData.append('location', data.location);
     formData.append('type', data.type);
+    formData.append('property_category', data.property_category);
     formData.append('total_floor', data.total_floor.toString());
     formData.append('total_flat', data.total_flat.toString());
     formData.append('flat_size', data.flat_size.toString());
     formData.append('total_parking', data.total_parking.toString());
+    formData.append('land', data.land);
+    formData.append('building_height', data.building_height);
+    if (data.hand_over_date) {
+      formData.append('hand_over_date', data.hand_over_date);
+    }
+    formData.append('face', data.face);
+    formData.append('road', data.road);
     if (data.price !== '') {
       formData.append('price', data.price.toString());
     }
@@ -139,10 +147,18 @@ export const propertyService = {
     formData.append('area', data.area);
     formData.append('location', data.location);
     formData.append('type', data.type);
+    formData.append('property_category', data.property_category);
     formData.append('total_floor', data.total_floor.toString());
     formData.append('total_flat', data.total_flat.toString());
     formData.append('flat_size', data.flat_size.toString());
     formData.append('total_parking', data.total_parking.toString());
+    formData.append('land', data.land);
+    formData.append('building_height', data.building_height);
+    if (data.hand_over_date) {
+      formData.append('hand_over_date', data.hand_over_date);
+    }
+    formData.append('face', data.face);
+    formData.append('road', data.road);
     if (data.price !== '') {
       formData.append('price', data.price.toString());
     }

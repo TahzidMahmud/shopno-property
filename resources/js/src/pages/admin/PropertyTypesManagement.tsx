@@ -167,3 +167,4 @@ const PropertyTypesManagement: React.FC = () => {
 
 export default PropertyTypesManagement;
 
+
