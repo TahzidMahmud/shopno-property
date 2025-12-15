@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Typography, CircularProgress } from '@mui/material';
 import { propertyTypeService } from '../services/homePageService';
 import { propertyService } from '../services/propertyService';
@@ -7,6 +8,7 @@ import { PropertyType } from '../types/HomePage';
 interface PropertyTypeDisplay {
   id: number;
   name: string;
+  typeValue: string;
   iconPath: string;
   count: number;
 }
@@ -24,6 +26,7 @@ const iconMap: Record<string, string> = {
 };
 
 export default function ExploreByProperty() {
+  const navigate = useNavigate();
   const [propertyTypes, setPropertyTypes] = useState<PropertyTypeDisplay[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -54,6 +57,7 @@ export default function ExploreByProperty() {
         .map(type => ({
           id: type.id!,
           name: type.name,
+          typeValue: type.type_value,
           iconPath: iconMap[type.name] || iconMap['Apartment'] || '/assets/icons/property-apartment.svg',
           count: typeCounts[type.type_value.toLowerCase()] || 0,
         }))
@@ -63,12 +67,12 @@ export default function ExploreByProperty() {
       // If no configured types, show default fallback
       if (displayTypes.length === 0) {
         setPropertyTypes([
-          { id: 1, name: 'Resort', iconPath: iconMap['Resort'] || '/assets/icons/property-resort.svg', count: typeCounts['resort'] || 0 },
-          { id: 2, name: 'Modern Villa', iconPath: iconMap['Modern Villa'] || '/assets/icons/property-villa.svg', count: typeCounts['villa'] || 0 },
-          { id: 3, name: 'Apartment', iconPath: iconMap['Apartment'] || '/assets/icons/property-apartment.svg', count: typeCounts['apartment'] || 0 },
-          { id: 4, name: 'Commercial', iconPath: iconMap['Commercial'] || '/assets/icons/property-commercial.svg', count: typeCounts['commercial'] || 0 },
-          { id: 5, name: 'Land Share', iconPath: iconMap['Land Share'] || '/assets/icons/property-land-share.svg', count: typeCounts['land'] || typeCounts['land share'] || 0 },
-          { id: 6, name: 'Hotel', iconPath: iconMap['Hotel'] || '/assets/icons/property-hotel.svg', count: typeCounts['hotel'] || 0 },
+          { id: 1, name: 'Resort', typeValue: 'resort', iconPath: iconMap['Resort'] || '/assets/icons/property-resort.svg', count: typeCounts['resort'] || 0 },
+          { id: 2, name: 'Modern Villa', typeValue: 'villa', iconPath: iconMap['Modern Villa'] || '/assets/icons/property-villa.svg', count: typeCounts['villa'] || 0 },
+          { id: 3, name: 'Apartment', typeValue: 'apartment', iconPath: iconMap['Apartment'] || '/assets/icons/property-apartment.svg', count: typeCounts['apartment'] || 0 },
+          { id: 4, name: 'Commercial', typeValue: 'commercial', iconPath: iconMap['Commercial'] || '/assets/icons/property-commercial.svg', count: typeCounts['commercial'] || 0 },
+          { id: 5, name: 'Land Share', typeValue: 'land', iconPath: iconMap['Land Share'] || '/assets/icons/property-land-share.svg', count: typeCounts['land'] || typeCounts['land share'] || 0 },
+          { id: 6, name: 'Hotel', typeValue: 'hotel', iconPath: iconMap['Hotel'] || '/assets/icons/property-hotel.svg', count: typeCounts['hotel'] || 0 },
         ]);
       } else {
         setPropertyTypes(displayTypes);
@@ -77,12 +81,12 @@ export default function ExploreByProperty() {
       console.error('Error loading property types:', error);
       // Set default types on error
       setPropertyTypes([
-        { id: 1, name: 'Resort', iconPath: '/assets/icons/property-resort.svg', count: 0 },
-        { id: 2, name: 'Modern Villa', iconPath: '/assets/icons/property-villa.svg', count: 0 },
-        { id: 3, name: 'Apartment', iconPath: '/assets/icons/property-apartment.svg', count: 0 },
-        { id: 4, name: 'Commercial', iconPath: '/assets/icons/property-commercial.svg', count: 0 },
-        { id: 5, name: 'Land Share', iconPath: '/assets/icons/property-land-share.svg', count: 0 },
-        { id: 6, name: 'Hotel', iconPath: '/assets/icons/property-hotel.svg', count: 0 },
+        { id: 1, name: 'Resort', typeValue: 'resort', iconPath: '/assets/icons/property-resort.svg', count: 0 },
+        { id: 2, name: 'Modern Villa', typeValue: 'villa', iconPath: '/assets/icons/property-villa.svg', count: 0 },
+        { id: 3, name: 'Apartment', typeValue: 'apartment', iconPath: '/assets/icons/property-apartment.svg', count: 0 },
+        { id: 4, name: 'Commercial', typeValue: 'commercial', iconPath: '/assets/icons/property-commercial.svg', count: 0 },
+        { id: 5, name: 'Land Share', typeValue: 'land', iconPath: '/assets/icons/property-land-share.svg', count: 0 },
+        { id: 6, name: 'Hotel', typeValue: 'hotel', iconPath: '/assets/icons/property-hotel.svg', count: 0 },
       ]);
     } finally {
       setLoading(false);
@@ -213,6 +217,7 @@ export default function ExploreByProperty() {
           {propertyTypes.map(type => (
             <Box
               key={type.id}
+              onClick={() => navigate(`/projects?type=${encodeURIComponent(type.typeValue)}`)}
               sx={{
                 bgcolor: 'white',
                 borderRadius: '8px',
