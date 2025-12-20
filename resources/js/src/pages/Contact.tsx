@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Typography, Grid, TextField, Button, Select, MenuItem, FormControl, InputLabel, Paper, CircularProgress } from '@mui/material';
+import { Box, Container, Typography, Grid, TextField, Button, Select, MenuItem, FormControl, InputLabel, Paper, CircularProgress, Alert } from '@mui/material';
 import { Phone, Email, Store, AccountBalance, Flight, School, LocalHospital, Train } from '@mui/icons-material';
 import { contactPageService } from '../services/contactPageService';
 import { ContactPageData, ContactPageKeyTransport } from '../types/ContactPage';
+import { contactEnquiryService } from '../services/contactEnquiryService';
 import PartnersSection from '../components/PartnersSection';
 
 const Contact: React.FC = () => {
@@ -14,6 +15,9 @@ const Contact: React.FC = () => {
     email: '',
     project: '',
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   useEffect(() => {
     loadPageData();
@@ -40,7 +44,7 @@ const Contact: React.FC = () => {
     const address = pageData?.settings?.map_address || pageData?.settings?.address || 'Dhaka, Bangladesh';
     const lat = pageData?.settings?.map_latitude;
     const lng = pageData?.settings?.map_longitude;
-    
+
     if (lat && lng) {
       return `https://www.google.com/maps?q=${lat},${lng}&output=embed`;
     } else if (address) {
@@ -61,17 +65,36 @@ const Contact: React.FC = () => {
     return iconMap[iconName.toLowerCase()] || <Store sx={{ fontSize: 24, color: '#00bcd4' }} />;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission
-    console.log('Form submitted:', formData);
-    alert('Thank you for your enquiry! We will contact you soon.');
-    setFormData({
-      fullName: '',
-      phoneNumber: '',
-      email: '',
-      project: '',
-    });
+
+    setSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+
+    try {
+      await contactEnquiryService.submit({
+        full_name: formData.fullName,
+        phone_number: formData.phoneNumber,
+        email: formData.email,
+        project: formData.project || undefined,
+      });
+
+      setSubmitSuccess(true);
+      setFormData({
+        fullName: '',
+        phoneNumber: '',
+        email: '',
+        project: '',
+      });
+
+      // Hide success message after 3 seconds
+      setTimeout(() => setSubmitSuccess(false), 3000);
+    } catch (error: any) {
+      setSubmitError(error.response?.data?.message || 'Failed to submit enquiry. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -123,11 +146,11 @@ const Contact: React.FC = () => {
           },
         }}
       >
-        <Typography 
-          variant="h1" 
-          component="h1" 
-          sx={{ 
-            fontWeight: 'bold', 
+        <Typography
+          variant="h1"
+          component="h1"
+          sx={{
+            fontWeight: 'bold',
             zIndex: 1,
             fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
             fontFamily: 'serif'
@@ -139,11 +162,11 @@ const Contact: React.FC = () => {
 
       {/* Get In Touch Section */}
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 }, px: { xs: 2, md: 3 } }}>
-        <Typography 
-          variant="h3" 
-          component="h2" 
-          sx={{ 
-            textAlign: 'center', 
+        <Typography
+          variant="h3"
+          component="h2"
+          sx={{
+            textAlign: 'center',
             mb: { xs: 4, md: 6 },
             color: '#00bcd4',
             fontWeight: 'bold',
@@ -168,6 +191,16 @@ const Contact: React.FC = () => {
                 onSubmit={handleSubmit}
                 sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
               >
+                {submitSuccess && (
+                  <Alert severity="success" onClose={() => setSubmitSuccess(false)}>
+                    Thank you for your enquiry! We will contact you soon.
+                  </Alert>
+                )}
+                {submitError && (
+                  <Alert severity="error" onClose={() => setSubmitError(null)}>
+                    {submitError}
+                  </Alert>
+                )}
                 <TextField
                   fullWidth
                   label="Enter your Full Name"
@@ -213,6 +246,7 @@ const Contact: React.FC = () => {
                 <Button
                   type="submit"
                   variant="contained"
+                  disabled={submitting}
                   sx={{
                     backgroundColor: '#00bcd4',
                     color: 'white',
@@ -223,7 +257,7 @@ const Contact: React.FC = () => {
                     },
                   }}
                 >
-                  Submit
+                  {submitting ? <CircularProgress size={24} color="inherit" /> : 'Submit'}
                 </Button>
               </Box>
             </Box>

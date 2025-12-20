@@ -20,7 +20,7 @@ class PropertyController extends Controller
     // 🟢 List all properties
     public function index()
     {
-        return response()->json(Property::with(['facilities', 'company'])->get(), 200);
+        return response()->json(Property::with(['facilities', 'company'])->orderBy('created_at', 'desc')->get(), 200);
     }
 
     // 🟢 Create a new property

@@ -44,7 +44,7 @@ export default function PropertyGrid() {
   }
 
   return (
-    <Box sx={{ pt: { xs: '3rem', md: '3rem' },pb:'4rem', px: { xs: 2, md: '120px' }, maxWidth: 'lg', mx: 'auto' }}>
+    <Box sx={{ pt: { xs: '3rem', md: '3rem' },pb:'4rem', px: { xs: '16px', md: '120px' }, maxWidth: 'lg', mx: 'auto' }}>
       {/* Header Section */}
       <Box sx={{
         display: 'flex',
@@ -52,40 +52,40 @@ export default function PropertyGrid() {
         justifyContent: 'space-between',
         alignItems: { xs: 'flex-start', md: 'flex-end' },
         mb: { xs: 3, md: 4 },
-        gap: { xs: 2, md: 0 }
+        gap: { xs: '12px', md: 0 }
       }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: { xs: '1 1 100%', md: '0 0 auto' }, maxWidth: { xs: '100%', md: '356px' } }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: '8px', md: '10px' }, flex: { xs: '1 1 100%', md: '0 0 auto' }, maxWidth: { xs: '161px', md: '356px' } }}>
           {/* Property Size Label */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
             <Box sx={{
-              width: '12px',
-              height: '12px',
+              width: { xs: '8px', md: '12px' },
+              height: { xs: '8px', md: '12px' },
               clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
               bgcolor: '#411f57',
             }} />
             <Typography sx={{
               fontFamily: "'Inter', sans-serif",
               fontWeight: 500,
-              fontSize: '14px',
+              fontSize: { xs: '10px', md: '14px' },
               lineHeight: 1.2,
               color: '#411f57'
             }}>
               Property Size
             </Typography>
             <Box sx={{
-              width: '12px',
-              height: '12px',
+              width: { xs: '8px', md: '12px' },
+              height: { xs: '8px', md: '12px' },
               clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
               bgcolor: '#411f57',
             }} />
           </Box>
 
           {/* Title with Comfort Badge */}
-          <Box sx={{ position: 'relative', display: 'inline-block', width: { xs: '100%', md: '356px' } }}>
+          <Box sx={{ position: 'relative', display: 'inline-block', width: { xs: '161px', md: '356px' } }}>
             <Typography sx={{
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 600,
-              fontSize: { xs: '32px', md: '40px' },
+              fontSize: { xs: '20px', md: '40px' },
               lineHeight: 1.3,
               color: '#272222',
               textTransform: 'capitalize',
@@ -95,24 +95,24 @@ export default function PropertyGrid() {
             </Typography>
             <Box sx={{
               position: 'absolute',
-              left: { xs: '0px', md: '156px' },
-              top: { xs: '40px', md: '50.8px' },
+              left: { xs: '78.97px', md: '156px' },
+              top: { xs: '25.84px', md: '50.8px' },
               bgcolor: '#17badf',
               color: '#fafafa',
-              px: '14px',
-              py: '10px',
-              borderRadius: '4px',
-              transform: 'rotate(4.4deg)',
+              px: { xs: '9.594px', md: '14px' },
+              py: { xs: '6.853px', md: '10px' },
+              borderRadius: { xs: '1.802px', md: '4px' },
+              transform: 'rotate(3.063deg)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              height: '42px',
-              minWidth: { xs: '140px', md: '159.759px' }
+              height: { xs: '21.93px', md: '42px' },
+              minWidth: { xs: '73.329px', md: '159.759px' }
             }}>
               <Typography sx={{
                 fontFamily: "'DM Sans', sans-serif",
                 fontWeight: 600,
-                fontSize: '32px',
+                fontSize: { xs: '13.706px', md: '32px' },
                 lineHeight: 1.2,
                 color: '#fafafa',
                 whiteSpace: 'nowrap'
@@ -128,21 +128,21 @@ export default function PropertyGrid() {
           variant="outlined"
           onClick={handleViewAll}
           sx={{
-            border: '1px solid #17badf',
+            border: '0.549px solid #17badf',
             color: '#17badf',
             textTransform: 'none',
-            px: '24px',
-            py: '12px',
-            borderRadius: '4px',
-            height: '50px',
-            minWidth: { xs: '100%', md: '155px' },
-            fontSize: '20px',
+            px: { xs: '12px', md: '24px' },
+            py: { xs: '6px', md: '12px' },
+            borderRadius: '2px',
+            height: { xs: '27px', md: '50px' },
+            minWidth: { xs: '79px', md: '155px' },
+            fontSize: { xs: '12px', md: '20px' },
             fontFamily: "'Inter', sans-serif",
             fontWeight: 500,
             lineHeight: 1.2,
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
+            gap: { xs: '4px', md: '10px' },
             position: 'relative',
             '&:hover': {
               borderColor: '#17badf',
@@ -151,15 +151,15 @@ export default function PropertyGrid() {
             '&::after': {
               content: '""',
               position: 'absolute',
-              bottom: '-1px',
-              left: '-1px',
-              width: '2px',
+              bottom: '-0.98px',
+              left: '-0.55px',
+              width: '1.097px',
               height: '0',
             }
           }}
         >
           View All
-          <ArrowOutwardIcon sx={{ fontSize: '20.714px', transform: 'rotate(2.085deg)' }} />
+          <ArrowOutwardIcon sx={{ fontSize: { xs: '10.974px', md: '20.714px' }, transform: 'rotate(2.085deg)' }} />
         </Button>
       </Box>
 
@@ -167,7 +167,7 @@ export default function PropertyGrid() {
       <Box sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-        gap: { xs: '20px', md: '14.004px' },
+        gap: { xs: '14px', md: '14.004px' },
         mt: { xs: 3, md: 4 }
       }}>
         {properties.map(p => (

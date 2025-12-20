@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Grid, Button, CircularProgress, CardMedia } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
-import { whyChooseUsFeatureService } from '../services/homePageService';
+import { whyChooseUsFeatureService, homePageSettingService } from '../services/homePageService';
 import { WhyChooseUsFeature } from '../types/HomePage';
 import { getYouTubeEmbedUrl, extractYouTubeVideoId, getYouTubeThumbnailUrl } from '../utils/youtube';
 
@@ -47,6 +47,7 @@ export default function WhyChooseUs() {
   const [loading, setLoading] = useState(true);
   const [activeFeature, setActiveFeature] = useState<number | null>(null);
   const [videoPlaying, setVideoPlaying] = useState(false);
+  const [description, setDescription] = useState<string>('Explore the premier UK property hub to discover a range of houses and flats for sale or rent.');
 
   useEffect(() => {
     loadData();
@@ -54,10 +55,18 @@ export default function WhyChooseUs() {
 
   const loadData = async () => {
     try {
-      const featuresData = await whyChooseUsFeatureService.getAll();
+      const [featuresData, settings] = await Promise.all([
+        whyChooseUsFeatureService.getAll(),
+        homePageSettingService.getAll()
+      ]);
 
       const sortedFeatures = featuresData.sort((a, b) => a.order - b.order);
       setFeatures(sortedFeatures);
+      
+      // Load description from settings, fallback to default
+      if (settings['home_description']) {
+        setDescription(settings['home_description']);
+      }
 
       // Set first active feature or first feature if none are active
       const firstActive = sortedFeatures.find(f => f.is_active);
@@ -88,96 +97,122 @@ export default function WhyChooseUs() {
   }
 
   return (
-    <Box sx={{ py: '4rem', px: { xs: 2, md: 5 }, maxWidth: 'lg', mx: 'auto' }}>
+    <Box sx={{ py: { xs: '3rem', md: '4rem' }, px: { xs: '16px', md: 5 }, maxWidth: 'lg', mx: 'auto' }}>
       {/* Header Section */}
       <Box sx={{
         display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'space-between',
+        alignItems: { xs: 'flex-start', md: 'flex-end' },
+        justifyContent: { xs: 'flex-start', md: 'space-between' },
         mb: { xs: 3, md: 4 },
         flexDirection: { xs: 'column', md: 'row' },
-        gap: { xs: 2, md: 0 }
+        gap: { xs: '12px', md: 0 },
+        width: '100%'
       }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', width: { xs: '100%', md: '356px' } }}>
-          {/* Our Approach Label */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
-            <Box sx={{
-              width: '12px',
-              height: '12px',
-              clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-              bgcolor: '#411f57',
-            }} />
-            <Typography sx={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 500,
-              fontSize: '14px',
-              lineHeight: 1.2,
-              color: '#411f57'
-            }}>
-              Our Approach
-            </Typography>
-            <Box sx={{
-              width: '12px',
-              height: '12px',
-              clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-              bgcolor: '#411f57',
-            }} />
-          </Box>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: { xs: '12px', md: '10px' }, 
+          width: { xs: '100%', md: '356px' },
+          alignItems: { xs: 'flex-start', md: 'flex-start' }
+        }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: '8px', md: '10px' }, width: { xs: '161px', md: '356px' } }}>
+            {/* Our Approach Label */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
+              <Box sx={{
+                width: { xs: '8px', md: '12px' },
+                height: { xs: '8px', md: '12px' },
+                clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+                bgcolor: '#411f57',
+              }} />
+              <Typography sx={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 500,
+                fontSize: { xs: '10px', md: '14px' },
+                lineHeight: 1.2,
+                color: '#411f57'
+              }}>
+                Our Approach
+              </Typography>
+              <Box sx={{
+                width: { xs: '8px', md: '12px' },
+                height: { xs: '8px', md: '12px' },
+                clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+                bgcolor: '#411f57',
+              }} />
+            </Box>
 
-          {/* Title with Property Badge */}
-          <Box sx={{ position: 'relative', display: 'inline-block', width: { xs: '100%', md: '356px' } }}>
-            <Typography sx={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontWeight: 600,
-              fontSize: { xs: '32px', md: '40px' },
-              lineHeight: 1.3,
-              color: '#272222',
-              textTransform: 'capitalize',
-              display: 'inline-block',
-            }}>
-              Why Choose Us Shopno
-            </Typography>
-            <Box sx={{
-              position: 'absolute',
-              left: { xs: '0px', md: '157.16px' },
-              top: { xs: '40px', md: '48.8px' },
-              bgcolor: '#17badf',
-              color: '#fafafa',
-              px: '14px',
-              py: '10px',
-              borderRadius: '4px',
-              transform: 'rotate(4.4deg)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '42px',
-              minWidth: '166.739px'
-            }}>
+            {/* Title with Property Badge */}
+            <Box sx={{ position: 'relative', display: 'inline-block', width: { xs: '161px', md: '356px' } }}>
               <Typography sx={{
                 fontFamily: "'DM Sans', sans-serif",
                 fontWeight: 600,
-                fontSize: '32px',
-                lineHeight: 1.2,
-                color: '#fafafa',
-                whiteSpace: 'nowrap'
+                fontSize: { xs: '20px', md: '40px' },
+                lineHeight: 1.3,
+                color: '#272222',
+                textTransform: 'capitalize',
+                display: 'inline-block',
               }}>
-                Property
+                Why Choose Us Shopno
               </Typography>
+              <Box sx={{
+                position: 'absolute',
+                left: { xs: '78.97px', md: '157.16px' },
+                top: { xs: '25.84px', md: '48.8px' },
+                bgcolor: '#17badf',
+                color: '#fafafa',
+                px: { xs: '9.594px', md: '14px' },
+                py: { xs: '6.853px', md: '10px' },
+                borderRadius: { xs: '1.802px', md: '4px' },
+                transform: 'rotate(3.063deg)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: { xs: '21.93px', md: '42px' },
+                minWidth: { xs: '73.329px', md: '166.739px' }
+              }}>
+                <Typography sx={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontWeight: 600,
+                  fontSize: { xs: '13.706px', md: '32px' },
+                  lineHeight: 1.2,
+                  color: '#fafafa',
+                  whiteSpace: 'nowrap'
+                }}>
+                  Property
+                </Typography>
+              </Box>
             </Box>
           </Box>
+
+          {/* Description Text - Below title on mobile */}
+          <Typography sx={{
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 400,
+            fontSize: { xs: '12px', md: '18px' },
+            lineHeight: 1.5,
+            color: '#737373',
+            width: { xs: '277px', md: '419px' },
+            textAlign: { xs: 'left', md: 'left' },
+            display: { xs: 'block', md: 'none' },
+            whiteSpace: 'pre-wrap'
+          }}>
+            {description}
+          </Typography>
         </Box>
 
-        {/* Description Text */}
+        {/* Description Text - Right side on desktop */}
         <Typography sx={{
           fontFamily: "'Inter', sans-serif",
           fontWeight: 400,
-          fontSize: '18px',
+          fontSize: { xs: '12px', md: '18px' },
           lineHeight: 1.5,
           color: '#737373',
-          width: { xs: '100%', md: '419px' },
-          textAlign: { xs: 'left', md: 'right' }
+          width: { xs: '277px', md: '419px' },
+          textAlign: { xs: 'left', md: 'right' },
+          display: { xs: 'none', md: 'block' },
+          whiteSpace: 'pre-wrap'
         }}>
-          Explore the premier UK property hub to discover a range of houses and flats for sale or rent.
+          {description}
         </Typography>
       </Box>
 

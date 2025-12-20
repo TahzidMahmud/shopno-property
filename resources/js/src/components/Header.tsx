@@ -91,47 +91,60 @@ export default function Header() {
       {/* Main Navigation Bar */}
       <Box sx={{
         width: '100%',
+        maxWidth: '100vw',
         bgcolor: 'white',
         borderBottom: '1px solid #e8e7e7',
         position: 'relative',
-        height: '80px',
-        maxWidth: '1440px',
-        mx: 'auto'
+        height: { xs: '56px', md: '80px' },
+        display: { xs: 'flex', md: 'block' },
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        px: { xs: '16px', md: 0 },
+        py: 0,
+        overflow: 'hidden',
+        boxSizing: 'border-box'
       }}>
-        {/* Logo Section - Positioned at left=120px, vertically centered */}
-          {/* Logo Section */}
-          <Box
-            component={Link}
-            to="/"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'start',
-              position: 'absolute',
-              left: '10%',
-              transform: 'translateX(-50%)',
-              textDecoration: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            <img src={logoUrl} alt="Shopno Property Logo" style={{ height: '4.5rem' }} />
-          </Box>
+        <Box sx={{
+          width: '100%',
+          maxWidth: '1440px',
+          mx: 'auto',
+          height: '100%',
+          display: { xs: 'flex', md: 'block' },
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          position: 'relative'
+        }}>
+        {/* Desktop Logo Section */}
+        <Box
+          component={Link}
+          to="/"
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            alignItems: 'center',
+            justifyContent: 'start',
+            position: 'absolute',
+            left: '10%',
+            transform: 'translateX(-50%)',
+            textDecoration: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          <img src={logoUrl} alt="Shopno Property Logo" style={{ height: '4.5rem' }} />
+        </Box>
 
         {/* Mobile Logo */}
         <Box
           component={Link}
           to="/"
           sx={{
-            position: 'absolute',
-            left: '16px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            height: '47.833px',
-            width: '140px',
+            height: '34px',
+            width: '100px',
             overflow: 'hidden',
             display: { xs: 'block', md: 'none' },
             textDecoration: 'none',
             cursor: 'pointer',
+            position: 'relative',
+            flexShrink: 0
           }}
         >
           <Box
@@ -144,7 +157,8 @@ export default function Header() {
               position: 'absolute',
               left: '-24.62%',
               top: '-161.43%',
-              maxWidth: 'none'
+              maxWidth: 'none',
+              pointerEvents: 'none'
             }}
           />
         </Box>
@@ -666,21 +680,59 @@ export default function Header() {
           </Box>
 
           {/* Mobile Menu Button */}
-          <IconButton
-            aria-label="open drawer"
-            edge="end"
+          <Box
             onClick={handleMobileMenuOpen}
             sx={{
-              display: { xs: 'block', md: 'none' },
-              position: 'absolute',
-              right: '16px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: '#666666'
+              display: { xs: 'flex', md: 'none' },
+              bgcolor: '#f5faff',
+              border: '0.8px solid #bec1c3',
+              borderRadius: '4px',
+              width: '40px',
+              height: '40px',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              overflow: 'hidden',
+              flexShrink: 0,
+              position: 'relative'
             }}
           >
-            <MenuIcon />
-          </IconButton>
+            <Box
+              sx={{
+                width: '22.4px',
+                height: '22.4px',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '3px'
+              }}
+            >
+              <Box
+                sx={{
+                  width: '14px',
+                  height: '1.2px',
+                  bgcolor: '#666b6f',
+                }}
+              />
+              <Box
+                sx={{
+                  width: '14px',
+                  height: '1.2px',
+                  bgcolor: '#666b6f',
+                }}
+              />
+              <Box
+                sx={{
+                  width: '14px',
+                  height: '1.2px',
+                  bgcolor: '#666b6f',
+                }}
+              />
+            </Box>
+          </Box>
+        </Box>
       </Box>
 
       {/* Mobile Drawer */}
@@ -691,37 +743,77 @@ export default function Header() {
       >
         <Box sx={{ width: 280, pt: 2 }}>
           <List>
-            {regularLinks.map((link) => (
-              <ListItem
-                key={link.id}
-                component={Link}
-                to={link.url}
-                onClick={handleMobileMenuClose}
-                sx={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <ListItemText primary={link.label} />
-              </ListItem>
-            ))}
-            {dropdownLink && dropdownLink.dropdown_items && dropdownLink.dropdown_items.length > 0 && (
+            {regularLinks.length > 0 ? (
               <>
-                <Divider sx={{ my: 1 }} />
-                <ListItem>
-                  <ListItemText primary={dropdownLink.label} sx={{ fontWeight: 'bold' }} />
-                </ListItem>
-                {dropdownLink.dropdown_items
-                  .filter(item => item.is_active)
-                  .sort((a, b) => a.order - b.order)
-                  .map((item) => (
-                    <ListItem
-                      key={item.id}
-                      component={Link}
-                      to={item.url}
-                      onClick={handleMobileMenuClose}
-                      sx={{ textDecoration: 'none', color: 'inherit', pl: 4 }}
-                    >
-                      <ListItemText primary={item.label} />
+                {regularLinks.map((link) => (
+                  <ListItem
+                    key={link.id}
+                    component={Link}
+                    to={link.url}
+                    onClick={handleMobileMenuClose}
+                    sx={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    <ListItemText primary={link.label} />
+                  </ListItem>
+                ))}
+                {dropdownLink && dropdownLink.dropdown_items && dropdownLink.dropdown_items.length > 0 && (
+                  <>
+                    <Divider sx={{ my: 1 }} />
+                    <ListItem>
+                      <ListItemText primary={dropdownLink.label} sx={{ fontWeight: 'bold' }} />
                     </ListItem>
-                  ))}
+                    {dropdownLink.dropdown_items
+                      .filter(item => item.is_active)
+                      .sort((a, b) => a.order - b.order)
+                      .map((item) => (
+                        <ListItem
+                          key={item.id}
+                          component={Link}
+                          to={item.url}
+                          onClick={handleMobileMenuClose}
+                          sx={{ textDecoration: 'none', color: 'inherit', pl: 4 }}
+                        >
+                          <ListItemText primary={item.label} />
+                        </ListItem>
+                      ))}
+                  </>
+                )}
+              </>
+            ) : (
+              // Fallback navigation links if none are configured
+              <>
+                <ListItem
+                  component={Link}
+                  to="/"
+                  onClick={handleMobileMenuClose}
+                  sx={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <ListItemText primary="Home" />
+                </ListItem>
+                <ListItem
+                  component={Link}
+                  to="/about"
+                  onClick={handleMobileMenuClose}
+                  sx={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <ListItemText primary="About Us" />
+                </ListItem>
+                <ListItem
+                  component={Link}
+                  to="/projects"
+                  onClick={handleMobileMenuClose}
+                  sx={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <ListItemText primary="Properties" />
+                </ListItem>
+                <ListItem
+                  component={Link}
+                  to="/contact"
+                  onClick={handleMobileMenuClose}
+                  sx={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <ListItemText primary="Contact Us" />
+                </ListItem>
               </>
             )}
             <Divider sx={{ my: 2 }} />

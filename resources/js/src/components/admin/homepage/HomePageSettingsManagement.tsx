@@ -26,6 +26,7 @@ import { HomePageSetting, HomePageSettingFormData } from '../../../types/HomePag
 import { homePageSettingService } from '../../../services/homePageService';
 
 const defaultSettings = [
+  { key: 'home_description', label: 'Home Page Description Text' },
   { key: 'why_choose_us_video', label: 'Why Choose Us Video URL' },
   { key: 'call_to_action_image', label: 'Call to Action Background Image' },
   { key: 'call_to_action_background', label: 'Call to Action Background Image (Sky)' },

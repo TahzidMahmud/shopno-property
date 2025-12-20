@@ -64,10 +64,11 @@ export default function WhyInvest() {
   return (
     <Box sx={{
       py: { xs: '3rem', md: '4rem' },
-      px: { xs: 2, md: '120px' },
+      px: { xs: '16px', md: '120px' },
       maxWidth: 'lg',
       mx: 'auto',
-      bgcolor: '#f8fdff'
+      bgcolor: '#f8fdff',
+      overflow: 'hidden'
     }}>
       {/* Header Section */}
       <Box sx={{
@@ -76,45 +77,54 @@ export default function WhyInvest() {
         justifyContent: 'space-between',
         alignItems: { xs: 'flex-start', md: 'flex-end' },
         mb: { xs: 3, md: 4 },
-        gap: { xs: 2, md: 0 }
+        gap: { xs: '12px', md: 0 }
       }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '14px', flex: { xs: '1', md: '0 0 auto' }, maxWidth: { xs: '100%', md: '428px' } }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: '8px', md: '14px' }, flex: { xs: '1', md: '0 0 auto' }, maxWidth: { xs: '161px', md: '428px' }, width: { xs: '100%', md: 'auto' } }}>
           {/* Reson For you Label */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
             <Box sx={{
-              width: '12px',
-              height: '12px',
+              width: { xs: '8px', md: '12px' },
+              height: { xs: '8px', md: '12px' },
               clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
               bgcolor: '#411f57',
             }} />
             <Typography sx={{
               fontFamily: "'Inter', sans-serif",
               fontWeight: 500,
-              fontSize: '14px',
+              fontSize: { xs: '10px', md: '14px' },
               lineHeight: 1.2,
               color: '#411f57'
             }}>
               Reson For you
             </Typography>
             <Box sx={{
-              width: '12px',
-              height: '12px',
+              width: { xs: '8px', md: '12px' },
+              height: { xs: '8px', md: '12px' },
               clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
               bgcolor: '#411f57',
             }} />
           </Box>
 
           {/* Title with Estate? Badge */}
-          <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+          <Box sx={{ 
+            position: 'relative', 
+            display: 'flex', 
+            alignItems: { xs: 'flex-start', md: 'center' },
+            flexDirection: { xs: 'column', md: 'row' },
+            flexWrap: { xs: 'wrap', md: 'nowrap' },
+            gap: { xs: '4px', md: 0 },
+            width: '100%',
+            maxWidth: { xs: '161px', md: '100%' }
+          }}>
             <Typography sx={{
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 600,
-              fontSize: { xs: '30px', md: '35px' },
+              fontSize: { xs: '20px', md: '35px' },
               lineHeight: 1.3,
               color: '#272222',
               textTransform: 'capitalize',
-              display: 'inline',
-              whiteSpace: 'nowrap',
+              display: 'inline-block',
+              width: { xs: '100%', md: 'auto' },
             }}>
               Why should you invest in real{' '}
             </Typography>
@@ -122,17 +132,18 @@ export default function WhyInvest() {
               display: 'inline-block',
               bgcolor: '#17badf',
               color: '#fafafa',
-              px: '14px',
-              py: '10px',
-              borderRadius: '4px',
-              transform: 'rotate(4.4deg)',
-              ml: '4px',
+              px: { xs: '9.594px', md: '14px' },
+              py: { xs: '6.853px', md: '10px' },
+              borderRadius: { xs: '1.802px', md: '4px' },
+              transform: { xs: 'rotate(3.063deg)', md: 'rotate(4.4deg)' },
+              ml: { xs: 0, md: '4px' },
               flexShrink: 0,
+              alignSelf: { xs: 'flex-start', md: 'center' },
             }}>
               <Typography sx={{
                 fontFamily: "'DM Sans', sans-serif",
                 fontWeight: 600,
-                fontSize: { xs: '28px', md: '32px' },
+                fontSize: { xs: '13.706px', md: '32px' },
                 lineHeight: 1.2,
                 color: '#fafafa',
                 whiteSpace: 'nowrap',
@@ -147,10 +158,10 @@ export default function WhyInvest() {
         <Typography sx={{
           fontFamily: "'Inter', sans-serif",
           fontWeight: 400,
-          fontSize: { xs: '16px', md: '18px' },
+          fontSize: { xs: '12px', md: '18px' },
           lineHeight: 1.5,
           color: '#737373',
-          maxWidth: { xs: '100%', md: '300px' },
+          maxWidth: { xs: '277px', md: '300px' },
           textAlign: { xs: 'left', md: 'right' },
           flex: { xs: '1', md: '0 0 auto' }
         }}>
@@ -162,7 +173,8 @@ export default function WhyInvest() {
       <Box sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-        gap: { xs: 2, md: '20px' },
+        gap: { xs: '12px', md: '20px' },
+        overflow: 'hidden'
       }}>
         {benefits.map((benefit) => (
           <Box

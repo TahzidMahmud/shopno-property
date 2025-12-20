@@ -27,9 +27,9 @@ class HeroSlideController extends Controller
     {
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'subtitle' => 'required|string|max:255',
-            'description' => 'required|string',
+            'title' => 'nullable|string|max:255',
+            'subtitle' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
             'button_text' => 'required|string|max:255',
             'button_link' => 'nullable|string|max:255',
             'background_image' => 'required|image|max:2048',
@@ -74,9 +74,9 @@ class HeroSlideController extends Controller
 
         // Exclude _method from validation if present (method spoofing)
         $validationRules = [
-            'title' => 'required|string|max:255',
-            'subtitle' => 'required|string|max:255',
-            'description' => 'required|string',
+            'title' => 'nullable|string|max:255',
+            'subtitle' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
             'button_text' => 'required|string|max:255',
             'button_link' => 'nullable|string|max:255',
             'background_image' => 'nullable|image|max:2048',

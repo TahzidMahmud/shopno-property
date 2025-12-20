@@ -64,7 +64,7 @@ const Hero: React.FC = () => {
   return (
     <Box sx={{
       position: 'relative',
-      height: { xs: '500px', sm: '600px', md: '700px' },
+      height: { xs: '280px', sm: '600px', md: '700px' },
       backgroundImage: `url(${getImageUrl(activeSlide.background_image)})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
@@ -72,10 +72,11 @@ const Hero: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
-      alignItems: { xs: 'center', md: 'flex-start' },
-      textAlign: { xs: 'center', md: 'left' },
-      paddingLeft: { xs: 2, md: '10%' },
-      paddingRight: { xs: 2, md: 0 },
+      alignItems: { xs: 'flex-start', md: 'flex-start' },
+      textAlign: { xs: 'left', md: 'left' },
+      paddingLeft: { xs: '16px', md: '10%' },
+      paddingRight: { xs: '16px', md: 0 },
+      paddingTop: { xs: '56px', md: 0 },
       transition: 'background-image 1s ease-in-out',
       overflow: 'hidden',
       '&::before': {
@@ -88,41 +89,59 @@ const Hero: React.FC = () => {
         backgroundColor: 'rgba(0, 0, 0, 0.3)',
       }
     }}>
-      <Box sx={{ position: 'relative', zIndex: 1, maxWidth: { xs: '100%', md: '800px' }, px: { xs: 2, md: 0 } }}>
-        <Typography variant="h1" component="h1" gutterBottom sx={{ 
-          color: '#ffffff', 
-          fontSize: { xs: '2rem', sm: '3rem', md: '4.5rem' }, 
+      <Box sx={{ position: 'relative', zIndex: 1, maxWidth: { xs: '219px', md: '800px' }, px: { xs: 0, md: 0 } }}>
+        <Typography variant="h1" component="h1" gutterBottom sx={{
+          color: '#ffffff',
+          fontSize: { xs: '12px', sm: '3rem', md: '4.5rem' },
           lineHeight: 1.2,
-          fontWeight: 'bold',
-          mb: { xs: 1.5, md: 2 }
+          fontFamily: "'Inter', sans-serif",
+          fontWeight: 500,
+          mb: { xs: '6px', md: 2 }
         }}>
-          {activeSlide.title}
+          {activeSlide.subtitle || ''}
         </Typography>
-        <Typography variant="body1" sx={{ 
-          color: '#ffffff', 
-          maxWidth: { xs: '100%', md: '600px' }, 
-          mb: { xs: 3, md: 4 },
-          fontSize: { xs: '0.9rem', md: '1.1rem' },
-          lineHeight: 1.6
+        <Typography variant="h2" component="h2" sx={{
+          color: '#ffffff',
+          fontSize: { xs: '24px', sm: '3rem', md: '4.5rem' },
+          lineHeight: 1.2,
+          fontFamily: "'DM Serif Display', serif",
+          fontWeight: 400,
+          mb: { xs: '14px', md: 4 },
+          maxWidth: { xs: '223px', md: '600px' }
+        }}>
+          {activeSlide.title || ''}
+        </Typography>
+        <Typography variant="body1" sx={{
+          color: '#ffffff',
+          maxWidth: { xs: '252px', md: '600px' },
+          mb: { xs: '14px', md: 4 },
+          fontSize: { xs: '12px', md: '1.1rem' },
+          lineHeight: 1.5,
+          fontFamily: "'Inter', sans-serif",
+          fontWeight: 400
         }}>
           {activeSlide.description}
         </Typography>
-        <Button 
-          variant="contained" 
-          sx={{ 
-            padding: { xs: '12px 24px', md: '14px 32px' }, 
-            fontSize: { xs: '0.9rem', md: '1rem' },
-            backgroundColor: '#00bcd4',
+        <Button
+          variant="contained"
+          sx={{
+            padding: { xs: '8px 16px', md: '14px 32px' },
+            fontSize: { xs: '12px', md: '1rem' },
+            backgroundColor: '#17badf',
             color: 'white',
             textTransform: 'none',
-            borderRadius: '4px',
-            width: { xs: '100%', sm: 'auto' },
+            borderRadius: '2px',
+            height: { xs: '32px', md: 'auto' },
+            minWidth: { xs: '107px', md: 'auto' },
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 500,
+            gap: '6px',
             '&:hover': {
-              backgroundColor: '#00acc1',
+              backgroundColor: '#0d90ad',
             }
           }}
           href={activeSlide.button_link || '#'}
-          endIcon={<ArrowForwardIcon />}
+          endIcon={<ArrowForwardIcon sx={{ fontSize: { xs: '12px', md: '20px' } }} />}
         >
           {activeSlide.button_text}
         </Button>
@@ -132,24 +151,24 @@ const Hero: React.FC = () => {
       {slides.length > 1 && (
         <Box sx={{
           position: 'absolute',
-          bottom: '2rem',
-          left: '50%',
-          transform: 'translateX(-50%)',
+          bottom: { xs: '8px', md: '2rem' },
+          left: { xs: '16px', md: '50%' },
+          transform: { xs: 'none', md: 'translateX(-50%)' },
           zIndex: 1,
           display: 'flex',
-          gap: '8px',
+          gap: { xs: '3.813px', md: '8px' },
         }}>
           {slides.map((_, index) => (
             <Box
               key={index}
               sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
+                width: { xs: currentSlide === index ? '27.958px' : '12.073px', md: 8 },
+                height: { xs: '5.083px', md: 8 },
+                borderRadius: { xs: '3.813px', md: '50%' },
                 backgroundColor: 'white',
                 opacity: currentSlide === index ? 1 : 0.5,
                 cursor: 'pointer',
-                transition: 'opacity 0.3s ease-in-out',
+                transition: 'all 0.3s ease-in-out',
               }}
               onClick={() => handleDotClick(index)}
             />

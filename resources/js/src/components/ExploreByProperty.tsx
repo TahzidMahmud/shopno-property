@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, CircularProgress } from '@mui/material';
+import { Box, Typography, CircularProgress, IconButton } from '@mui/material';
+import { ArrowBackIos, ArrowForwardIos } from '@mui/icons-material';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 import { propertyTypeService } from '../services/homePageService';
 import { propertyService } from '../services/propertyService';
 import { PropertyType } from '../types/HomePage';
@@ -29,6 +33,7 @@ export default function ExploreByProperty() {
   const navigate = useNavigate();
   const [propertyTypes, setPropertyTypes] = useState<PropertyTypeDisplay[]>([]);
   const [loading, setLoading] = useState(true);
+  const sliderRef = useRef<Slider>(null);
 
   useEffect(() => {
     loadPropertyTypes();
@@ -104,7 +109,7 @@ export default function ExploreByProperty() {
   return (
     <Box sx={{
       py: { xs: '3rem', md: '4rem' },
-      px: { xs: 2, md: '120px' },
+      px: { xs: '16px', md: '120px' },
       maxWidth: 'lg',
       mx: 'auto',
       bgcolor: 'white'
@@ -116,29 +121,29 @@ export default function ExploreByProperty() {
         justifyContent: 'space-between',
         alignItems: { xs: 'flex-start', md: 'flex-end' },
         mb: { xs: 3, md: '60px' },
-        gap: { xs: 2, md: 0 }
+        gap: { xs: '12px', md: 0 }
       }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: { xs: '1', md: '0 0 auto' }, maxWidth: { xs: '100%', md: '356px' } }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: '8px', md: '10px' }, flex: { xs: '1', md: '0 0 auto' }, maxWidth: { xs: '161px', md: '356px' } }}>
           {/* Property Type Label */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
             <Box sx={{
-              width: '12px',
-              height: '12px',
+              width: { xs: '8px', md: '12px' },
+              height: { xs: '8px', md: '12px' },
               clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
               bgcolor: '#411f57',
             }} />
             <Typography sx={{
               fontFamily: "'Inter', sans-serif",
               fontWeight: 500,
-              fontSize: '14px',
+              fontSize: { xs: '10px', md: '14px' },
               lineHeight: 1.2,
               color: '#411f57'
             }}>
               Property Type
             </Typography>
             <Box sx={{
-              width: '12px',
-              height: '12px',
+              width: { xs: '8px', md: '12px' },
+              height: { xs: '8px', md: '12px' },
               clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
               bgcolor: '#411f57',
             }} />
@@ -149,7 +154,7 @@ export default function ExploreByProperty() {
             <Typography sx={{
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 600,
-              fontSize: { xs: '30px', md: '40px' },
+              fontSize: { xs: '20px', md: '40px' },
               lineHeight: 1.3,
               color: '#272222',
               textTransform: 'capitalize',
@@ -162,17 +167,17 @@ export default function ExploreByProperty() {
               display: 'inline-block',
               bgcolor: '#17badf',
               color: '#fafafa',
-              px: '14px',
-              py: '10px',
-              borderRadius: '4px',
-              transform: 'rotate(4.4deg)',
+              px: { xs: '9.594px', md: '14px' },
+              py: { xs: '6.853px', md: '10px' },
+              borderRadius: { xs: '1.802px', md: '4px' },
+              transform: 'rotate(3.063deg)',
               ml: '4px',
               flexShrink: 0,
             }}>
               <Typography sx={{
                 fontFamily: "'DM Sans', sans-serif",
                 fontWeight: 600,
-                fontSize: { xs: '28px', md: '32px' },
+                fontSize: { xs: '13.706px', md: '32px' },
                 lineHeight: 1.2,
                 color: '#fafafa',
                 whiteSpace: 'nowrap',
@@ -187,10 +192,10 @@ export default function ExploreByProperty() {
         <Typography sx={{
           fontFamily: "'Inter', sans-serif",
           fontWeight: 400,
-          fontSize: { xs: '16px', md: '18px' },
+          fontSize: { xs: '12px', md: '18px' },
           lineHeight: 1.5,
           color: '#737373',
-          maxWidth: { xs: '100%', md: '279px' },
+          maxWidth: { xs: '218px', md: '279px' },
           textAlign: { xs: 'left', md: 'right' },
           flex: { xs: '1', md: '0 0 auto' }
         }}>
@@ -202,87 +207,186 @@ export default function ExploreByProperty() {
       <Box sx={{
         bgcolor: '#411f57',
         borderRadius: '8px',
-        p: { xs: 2, md: '40px' },
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+        p: { xs: '20px 0', md: '40px' },
+        position: 'relative',
       }}>
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(6, 1fr)' },
-          gap: { xs: 2, md: '24px' },
-          width: '100%',
-          maxWidth: '1176px',
-        }}>
-          {propertyTypes.map(type => (
-            <Box
-              key={type.id}
-              onClick={() => navigate(`/projects?type=${encodeURIComponent(type.typeValue)}`)}
+        {propertyTypes.length > 1 && (
+          <>
+            <IconButton
+              onClick={() => sliderRef.current?.slickPrev()}
               sx={{
+                position: 'absolute',
+                left: { xs: '15px', md: '25px' },
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 2,
                 bgcolor: 'white',
-                borderRadius: '8px',
-                width: { xs: '100%', md: '176px' },
-                height: { xs: 'auto', md: '190px' },
-                minHeight: { xs: '160px', md: '190px' },
-                p: { xs: '20px', md: '30px' },
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: { xs: '16px', md: '23px' },
-                textAlign: 'center',
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
+                border: '1px solid #411f57',
+                color: '#411f57',
                 '&:hover': {
-                  transform: 'translateY(-4px)',
+                  bgcolor: '#f0f0f0',
                 },
+                width: { xs: '32px', md: '40px' },
+                height: { xs: '32px', md: '40px' },
               }}
             >
-              {/* Icon Box */}
-              <Box sx={{
-                width: { xs: '50px', md: '60px' },
-                height: { xs: '50px', md: '60px' },
-                bgcolor: '#effbfe',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                <Box
-                  component="img"
-                  src={type.iconPath}
-                  alt={type.name}
-                  sx={{
-                    width: { xs: '35px', md: '40px' },
-                    height: { xs: '35px', md: '40px' },
-                    transform: 'scaleY(-1)', // Flip vertically as per Figma
-                  }}
-                />
-              </Box>
+              <ArrowBackIos sx={{ fontSize: { xs: '16px', md: '20px' } }} />
+            </IconButton>
+            <IconButton
+              onClick={() => sliderRef.current?.slickNext()}
+              sx={{
+                position: 'absolute',
+                right: { xs: '10px', md: '20px' },
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 2,
+                bgcolor: 'white',
+                border: '1px solid #411f57',
+                color: '#411f57',
+                '&:hover': {
+                  bgcolor: '#f0f0f0',
+                },
+                width: { xs: '32px', md: '40px' },
+                height: { xs: '32px', md: '40px' },
 
-              {/* Content */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
-                <Typography sx={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontWeight: 600,
-                  fontSize: { xs: '18px', md: '20px' },
-                  lineHeight: 1.2,
-                  color: '#1c1c1c',
+              }}
+            >
+              <ArrowForwardIos sx={{ fontSize: { xs: '16px', md: '20px' } }} />
+            </IconButton>
+          </>
+        )}
+
+        <Box sx={{
+          width: '100%',
+          maxWidth: '1176px',
+          mx: 'auto',
+          overflow: 'hidden',
+          '& .slick-slide': {
+            '& > div': {
+              display: 'flex',
+              justifyContent: 'center',
+            },
+          },
+          '& .slick-list': {
+            margin: { xs: '0 -8px', md: '0 -12px' },
+            overflow: 'visible',
+          },
+          '& .slick-slide > div': {
+            padding: { xs: '0 8px', md: '0 12px' },
+          },
+          '@media (max-width: 600px)': {
+            '& .slick-slide': {
+              width: '100% !important',
+            },
+            '& .slick-track': {
+              display: 'flex !important',
+            },
+          },
+        }}>
+          <Slider
+            ref={sliderRef}
+            dots={false}
+            infinite={false}
+            speed={500}
+            slidesToShow={propertyTypes.length <= 4 ? propertyTypes.length : 4}
+            slidesToScroll={1}
+            arrows={false}
+            variableWidth={false}
+            centerMode={false}
+            swipeToSlide={true}
+            responsive={[
+              {
+                breakpoint: 960,
+                settings: {
+                  slidesToShow: propertyTypes.length <= 3 ? propertyTypes.length : 3,
+                  slidesToScroll: 1,
+                },
+              },
+              {
+                breakpoint: 600,
+                settings: {
+                  slidesToShow: 1,
+                  slidesToScroll: 1,
+                  variableWidth: false,
+                },
+              },
+            ]}
+          >
+            {propertyTypes.map(type => (
+              <div key={type.id}>
+                <Box
+                  onClick={() => navigate(`/projects?type=${encodeURIComponent(type.typeValue)}`)}
+                  sx={{
+                    bgcolor: 'white',
+                    borderRadius: { xs: '4px', md: '8px' },
+                    width: { xs: '164.043px', md: '270px' },
+                    maxWidth: { xs: '164.043px', md: '270px' },
+                    height: { xs: '177.092px', md: '190px' },
+                    minHeight: { xs: '177.092px', md: '190px' },
+                    p: { xs: '27.96px', md: '30px' },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: { xs: '21.438px', md: '23px' },
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s',
+                    flexShrink: 0,
+                    boxSizing: 'border-box',
+                    mx: { xs: 'auto', md: 0 },
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                    },
+                  }}
+                >
+                {/* Icon Box */}
+                <Box sx={{
+                  width: { xs: '55.924px', md: '60px' },
+                  height: { xs: '55.924px', md: '60px' },
+                  bgcolor: '#effbfe',
+                  borderRadius: { xs: '7.457px', md: '8px' },
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}>
-                  {type.name}
-                </Typography>
-                <Typography sx={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontWeight: 400,
-                  fontSize: { xs: '14px', md: '16px' },
-                  lineHeight: 1.2,
-                  color: '#737373',
-                }}>
-                  {type.count} {type.count === 1 ? 'Property' : 'Properties'}
-                </Typography>
+                  <Box
+                    component="img"
+                    src={type.iconPath}
+                    alt={type.name}
+                    sx={{
+                      width: { xs: '37.301px', md: '40px' },
+                      height: { xs: '37.283px', md: '40px' },
+                      transform: 'scaleY(-1)', // Flip vertically as per Figma
+                    }}
+                  />
+                </Box>
+
+                {/* Content */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: '3.728px', md: '4px' }, alignItems: 'center' }}>
+                  <Typography sx={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 600,
+                    fontSize: { xs: '18.641px', md: '20px' },
+                    lineHeight: 1.2,
+                    color: '#1c1c1c',
+                  }}>
+                    {type.name}
+                  </Typography>
+                  <Typography sx={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 400,
+                    fontSize: { xs: '14.913px', md: '16px' },
+                    lineHeight: 1.2,
+                    color: '#737373',
+                  }}>
+                    {type.count} {type.count === 1 ? 'Property' : 'Properties'}
+                  </Typography>
+                </Box>
               </Box>
-            </Box>
-          ))}
+              </div>
+            ))}
+          </Slider>
         </Box>
       </Box>
     </Box>

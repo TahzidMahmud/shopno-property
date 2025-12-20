@@ -22,6 +22,7 @@ use App\Http\Controllers\FooterDiscoverLinkController;
 use App\Http\Controllers\FooterSocialLinkController;
 use App\Http\Controllers\ContactPageSettingController;
 use App\Http\Controllers\ContactPageKeyTransportController;
+use App\Http\Controllers\ProjectsPageSettingController;
 use App\Http\Controllers\AboutPageSettingController;
 use App\Http\Controllers\AboutPageProjectController;
 use App\Http\Controllers\AboutPageTeamMemberController;
@@ -29,6 +30,7 @@ use App\Http\Controllers\AboutPageTestimonialController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PartnerSubmissionController;
 use App\Http\Controllers\PropertyQueryController;
+use App\Http\Controllers\ContactEnquiryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -153,6 +155,15 @@ Route::prefix('property-queries')->group(function () {
     });
 });
 
+Route::prefix('contact-enquiries')->group(function () {
+    Route::post('/', [ContactEnquiryController::class, 'store']); // Public route for form submission
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/', [ContactEnquiryController::class, 'index']);
+        Route::get('/{id}', [ContactEnquiryController::class, 'show']);
+        Route::delete('/{id}', [ContactEnquiryController::class, 'destroy']);
+    });
+});
+
 Route::prefix('search-options')->group(function () {
     Route::get('/', [SearchOptionController::class, 'index']);
     Route::get('/{id}', [SearchOptionController::class, 'show']);
@@ -266,6 +277,14 @@ Route::prefix('contact-page-key-transports')->group(function () {
         Route::post('/', [ContactPageKeyTransportController::class, 'store']);
         Route::put('/{id}', [ContactPageKeyTransportController::class, 'update']);
         Route::delete('/{id}', [ContactPageKeyTransportController::class, 'destroy']);
+    });
+});
+
+// Projects Page Management Routes
+Route::prefix('projects-page')->group(function () {
+    Route::get('/', [ProjectsPageSettingController::class, 'index']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/settings', [ProjectsPageSettingController::class, 'updateSetting']);
     });
 });
 

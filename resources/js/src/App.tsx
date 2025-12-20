@@ -21,8 +21,10 @@ import HomePageManagement from './pages/admin/HomePageManagement';
 import HeaderFooterManagement from './pages/admin/HeaderFooterManagement';
 import ContactPageManagement from './pages/admin/ContactPageManagement';
 import AboutPageManagement from './pages/admin/AboutPageManagement';
+import ProjectsPageManagement from './pages/admin/ProjectsPageManagement';
 import PartnerSubmissionsManagement from './pages/admin/PartnerSubmissionsManagement';
 import PropertyQueriesManagement from './pages/admin/PropertyQueriesManagement';
+import ContactEnquiriesManagement from './pages/admin/ContactEnquiriesManagement';
 import CompaniesManagement from './pages/admin/CompaniesManagement';
 import PropertyTypesManagement from './pages/admin/PropertyTypesManagement';
 
@@ -50,8 +52,10 @@ export default function App() {
                   <Route path='/admin/dashboard/header-footer' element={<ProtectedRoute><HeaderFooterManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/contact-page' element={<ProtectedRoute><ContactPageManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/about-page' element={<ProtectedRoute><AboutPageManagement /></ProtectedRoute>} />
+                  <Route path='/admin/dashboard/projects-page' element={<ProtectedRoute><ProjectsPageManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/partner-submissions' element={<ProtectedRoute><PartnerSubmissionsManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/property-queries' element={<ProtectedRoute><PropertyQueriesManagement /></ProtectedRoute>} />
+                  <Route path='/admin/dashboard/contact-enquiries' element={<ProtectedRoute><ContactEnquiriesManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/users' element={<ProtectedRoute><div>Users Management - Coming Soon</div></ProtectedRoute>} />
                   <Route path='/admin/dashboard/companies' element={<ProtectedRoute><CompaniesManagement /></ProtectedRoute>} />
                   <Route path='/admin/dashboard/property-types' element={<ProtectedRoute><PropertyTypesManagement /></ProtectedRoute>} />

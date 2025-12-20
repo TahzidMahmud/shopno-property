@@ -7,6 +7,7 @@ import PropertyCard from '../components/PropertyCard';
 import { Property } from '../types/Property';
 import { propertyService } from '../services/propertyService';
 import { propertyTypeService } from '../services/propertyTypeService';
+import { projectsPageService } from '../services/projectsPageService';
 
 const ITEMS_PER_PAGE = 9; // 3 columns x 3 rows
 
@@ -19,6 +20,7 @@ const Projects: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [propertyTypes, setPropertyTypes] = useState<any[]>([]);
+  const [pageSettings, setPageSettings] = useState<Record<string, string>>({});
 
   // Filter states - initialize from URL params
   const [statusFilter, setStatusFilter] = useState<string>(searchParams.get('status') || '');
@@ -30,13 +32,15 @@ const Projects: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [propertiesData, typesData] = await Promise.all([
+        const [propertiesData, typesData, settingsData] = await Promise.all([
           propertyService.getAll(),
-          propertyTypeService.getActive()
+          propertyTypeService.getActive(),
+          projectsPageService.getAll()
         ]);
         setAllProperties(propertiesData);
         setFilteredProperties(propertiesData);
         setPropertyTypes(typesData);
+        setPageSettings(settingsData);
       } catch (err: any) {
         setError(err.response?.data?.message || 'Failed to load data');
         console.error('Error fetching data:', err);
@@ -98,14 +102,14 @@ const Projects: React.FC = () => {
     // Determine the step size based on price range
     let stepSize: number;
     if (priceRange <= 50000) {
-      stepSize = 10000; // 10K steps for small ranges
-    } else if (priceRange <= 200000) {
-      stepSize = 50000; // 50K steps for medium ranges
-    } else if (priceRange <= 500000) {
-      stepSize = 100000; // 100K steps for larger ranges
-    } else {
-      stepSize = 250000; // 250K steps for very large ranges
-    }
+        stepSize = 10000; // 10K steps for small ranges
+      } else if (priceRange <= 200000) {
+        stepSize = 50000; // 50K steps for medium ranges
+      } else if (priceRange <= 500000) {
+        stepSize = 100000; // 100K steps for larger ranges
+      } else {
+        stepSize = 5000000; // 250K steps for very large ranges
+      }
 
     // Round down minPrice to nearest step
     const startPrice = Math.floor(minPrice / stepSize) * stepSize;
@@ -118,7 +122,7 @@ const Projects: React.FC = () => {
     for (let current = startPrice; current < endPrice; current += stepSize) {
       const rangeMin = current;
       const rangeMax = current + stepSize;
-      
+
       budgets.push({
         label: `৳${(rangeMin / 1000).toFixed(0)}K - ৳${(rangeMax / 1000).toFixed(0)}K`,
         value: `${rangeMin}_${rangeMax}`,
@@ -169,20 +173,20 @@ const Projects: React.FC = () => {
       filtered = filtered.filter(p => {
         if (!p.price) return false;
         const price = typeof p.price === 'number' ? p.price : parseFloat(String(p.price));
-        
+
         const budgetOption = budgets.find(b => b.value === budget);
         if (!budgetOption) return false;
 
         // Handle "Above" ranges with Infinity max
-        if (budgetOption.max === Infinity) {
+        if (budgetOption.max === Infinity && budgetOption.min !== undefined) {
           return price >= budgetOption.min;
         }
-        
+
         // Handle regular ranges (inclusive on both ends)
         if (budgetOption.min !== undefined && budgetOption.max !== undefined) {
           return price >= budgetOption.min && price <= budgetOption.max;
         }
-        
+
         return false;
       });
     }
@@ -287,24 +291,53 @@ const Projects: React.FC = () => {
     return pages;
   }, [currentPage, totalPages]);
 
+  const getImageUrl = (path: string | undefined) => {
+    if (!path) return '/assets/house1.jpg';
+    if (path.startsWith('http')) return path;
+    return `/storage/${path}`;
+  };
+
+  const heroBackground = getImageUrl(pageSettings.hero_background_image);
+
   return (
     <Box>
       {/* Hero Section */}
       <Box
         sx={{
-          backgroundImage: 'url(/assets/house1.jpg)', // Placeholder image
+          position: 'relative',
+          backgroundImage: `url(${heroBackground})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          height: { xs: '200px', sm: '250px', md: '300px' },
+          height: { xs: '300px', sm: '400px', md: '500px' },
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
           textAlign: 'center',
-          px: { xs: 2, md: 0 },
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            zIndex: 0,
+          },
         }}
       >
-        <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}>
+        <Typography
+          variant="h2"
+          component="h1"
+          sx={{
+            fontWeight: 'bold',
+            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+            position: 'relative',
+            zIndex: 1,
+            color: 'white',
+          }}
+        >
           Projects
         </Typography>
       </Box>

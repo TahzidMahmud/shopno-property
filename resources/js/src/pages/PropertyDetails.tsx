@@ -189,10 +189,13 @@ const PropertyDetails: React.FC = () => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Update property name when property data loads
+  // Update property name and price when property data loads
   useEffect(() => {
     if (propertyData?.title) {
       setPropertyName(propertyData.title);
+    }
+    if (propertyData?.price) {
+      setPropertyPrice(typeof propertyData.price === 'number' ? propertyData.price : parseFloat(String(propertyData.price)) || 5000000);
     }
   }, [propertyData]);
 
@@ -787,76 +790,305 @@ const PropertyDetails: React.FC = () => {
         )}
 
         {/* Installment Calculation Section */}
-        <Box sx={{ py:'2rem',mt: { xs: 4, md: 6 }, mb: { xs: 4, md: 6 }, textAlign: 'center' }}>
-          <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', mb: { xs: 2, md: 4 }, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}>
+        <Box sx={{ py: { xs: '2rem', md: '3rem' }, mt: { xs: 4, md: 6 }, mb: { xs: 4, md: 6 }, position: 'relative' }}>
+          <Typography 
+            variant="h2" 
+            component="h2" 
+            sx={{ 
+              textAlign: 'center',
+              textTransform: 'capitalize',
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 600,
+              fontSize: { xs: '28px', md: '40px' },
+              lineHeight: 1.3,
+              color: '#272222',
+              mb: { xs: 3, md: 4 }
+            }}
+          >
             Installment Calculation
           </Typography>
-          <Grid container spacing={{ xs: 2, md: 4 }} justifyContent="center">
-            <Grid item xs={12} md={5}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 3 }, p: { xs: 1, md: 2 } }}>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Property Name</InputLabel>
-                  <Select
-                    value={propertyName}
-                    onChange={(e) => setPropertyName(e.target.value as string)}
-                    label="Property Name"
-                    sx={{ bgcolor: '#f0f0f0', borderRadius: 1 }}
+          <Container maxWidth="lg">
+            <Grid container spacing={{ xs: 3, md: 4 }} justifyContent="center" alignItems="flex-start">
+              {/* Left Column - Form */}
+              <Grid item xs={12} md={5}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  {/* Property Name */}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <Typography 
+                      sx={{ 
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontWeight: 600,
+                        fontSize: '20px',
+                        lineHeight: '22px',
+                        color: '#252424'
+                      }}
+                    >
+                      Property Name
+                    </Typography>
+                    <FormControl fullWidth>
+                      <Select
+                        value={propertyName}
+                        onChange={(e) => setPropertyName(e.target.value as string)}
+                        sx={{ 
+                          bgcolor: '#f7f7f7',
+                          borderRadius: '4px',
+                          '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                          '& .MuiSelect-select': {
+                            fontFamily: "'DM Sans', sans-serif",
+                            fontWeight: 400,
+                            fontSize: '16px',
+                            lineHeight: '22px',
+                            color: '#909090',
+                            py: '12px',
+                            px: '16px'
+                          },
+                          '& .MuiSvgIcon-root': {
+                            color: '#909090',
+                            right: '14px'
+                          }
+                        }}
+                      >
+                        <MenuItem value={propertyName} sx={{ fontFamily: "'DM Sans', sans-serif", color: '#909090' }}>
+                          {propertyName}
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  {/* Property Price */}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <Typography 
+                      sx={{ 
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontWeight: 600,
+                        fontSize: '20px',
+                        lineHeight: '22px',
+                        color: '#252424'
+                      }}
+                    >
+                      Property Price
+                    </Typography>
+                    <TextField
+                      type="number"
+                      value={propertyPrice}
+                      onChange={(e) => setPropertyPrice(Number(e.target.value))}
+                      fullWidth
+                      sx={{ 
+                        bgcolor: '#f7f7f7',
+                        borderRadius: '4px',
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': { border: 'none' },
+                          '& input': {
+                            fontFamily: "'DM Sans', sans-serif",
+                            fontWeight: 400,
+                            fontSize: '16px',
+                            lineHeight: '22px',
+                            color: '#909090',
+                            py: '12px',
+                            px: '16px'
+                          }
+                        }
+                      }}
+                    />
+                  </Box>
+
+                  {/* Loan Period */}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <Typography 
+                      sx={{ 
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontWeight: 600,
+                        fontSize: '20px',
+                        lineHeight: '22px',
+                        color: '#252424'
+                      }}
+                    >
+                      Loan Period
+                    </Typography>
+                    <FormControl fullWidth>
+                      <Select
+                        value={loanPeriod}
+                        onChange={(e) => setLoanPeriod(Number(e.target.value))}
+                        sx={{ 
+                          bgcolor: '#f7f7f7',
+                          borderRadius: '4px',
+                          '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                          '& .MuiSelect-select': {
+                            fontFamily: "'DM Sans', sans-serif",
+                            fontWeight: 400,
+                            fontSize: '16px',
+                            lineHeight: '22px',
+                            color: '#909090',
+                            py: '12px',
+                            px: '16px'
+                          },
+                          '& .MuiSvgIcon-root': {
+                            color: '#909090',
+                            right: '14px'
+                          }
+                        }}
+                      >
+                        <MenuItem value={1} sx={{ fontFamily: "'DM Sans', sans-serif", color: '#909090' }}>1 Year</MenuItem>
+                        <MenuItem value={5} sx={{ fontFamily: "'DM Sans', sans-serif", color: '#909090' }}>5 Years</MenuItem>
+                        <MenuItem value={10} sx={{ fontFamily: "'DM Sans', sans-serif", color: '#909090' }}>10 Years</MenuItem>
+                        <MenuItem value={15} sx={{ fontFamily: "'DM Sans', sans-serif", color: '#909090' }}>15 Years</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  {/* Down Payment */}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <Typography 
+                      sx={{ 
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontWeight: 600,
+                        fontSize: '20px',
+                        lineHeight: '22px',
+                        color: '#252424'
+                      }}
+                    >
+                      Down Payment
+                    </Typography>
+                    <FormControl fullWidth>
+                      <Select
+                        value={downPaymentPercentage}
+                        onChange={(e) => setDownPaymentPercentage(Number(e.target.value))}
+                        sx={{ 
+                          bgcolor: '#f7f7f7',
+                          borderRadius: '4px',
+                          '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                          '& .MuiSelect-select': {
+                            fontFamily: "'DM Sans', sans-serif",
+                            fontWeight: 400,
+                            fontSize: '16px',
+                            lineHeight: '22px',
+                            color: '#909090',
+                            py: '12px',
+                            px: '16px'
+                          },
+                          '& .MuiSvgIcon-root': {
+                            color: '#909090',
+                            right: '14px'
+                          }
+                        }}
+                      >
+                        <MenuItem value={10} sx={{ fontFamily: "'DM Sans', sans-serif", color: '#909090' }}>10%</MenuItem>
+                        <MenuItem value={15} sx={{ fontFamily: "'DM Sans', sans-serif", color: '#909090' }}>15%</MenuItem>
+                        <MenuItem value={20} sx={{ fontFamily: "'DM Sans', sans-serif", color: '#909090' }}>20%</MenuItem>
+                        <MenuItem value={25} sx={{ fontFamily: "'DM Sans', sans-serif", color: '#909090' }}>25%</MenuItem>
+                        <MenuItem value={30} sx={{ fontFamily: "'DM Sans', sans-serif", color: '#909090' }}>30%</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  {/* Calculate Button */}
+                  <Button 
+                    onClick={handleCalculate} 
+                    sx={{ 
+                      bgcolor: '#17badf',
+                      color: 'white',
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontWeight: 600,
+                      fontSize: '20px',
+                      lineHeight: '22px',
+                      textAlign: 'center',
+                      borderRadius: '4px',
+                      px: '24px',
+                      py: '12px',
+                      textTransform: 'none',
+                      '&:hover': {
+                        bgcolor: '#15a8c9'
+                      }
+                    }}
                   >
-                    <MenuItem value={propertyName}>{propertyName}</MenuItem>
-                  </Select>
-                </FormControl>
-                <TextField
-                  label="Property Price"
-                  type="number"
-                  value={propertyData?.price}
-                  onChange={(e) => setPropertyPrice(Number(e.target.value))}
-                  fullWidth
-                  sx={{ bgcolor: '#f0f0f0', borderRadius: 1 }}
-                  InputProps={{ style: { borderRadius: '8px' } }}
-                />
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Loan Period</InputLabel>
-                  <Select
-                    value={loanPeriod}
-                    onChange={(e) => setLoanPeriod(Number(e.target.value))}
-                    label="Loan Period"
-                    sx={{ bgcolor: '#f0f0f0', borderRadius: 1 }}
-                  >
-                    <MenuItem value={1}>1 Year</MenuItem>
-                    <MenuItem value={5}>5 Years</MenuItem>
-                    <MenuItem value={10}>10 Years</MenuItem>
-                    <MenuItem value={15}>15 Years</MenuItem>
-                  </Select>
-                </FormControl>
-                <TextField
-                  label="Down Payment"
-                  type="number"
-                  value={downPaymentPercentage}
-                  onChange={(e) => setDownPaymentPercentage(Number(e.target.value))}
-                  fullWidth
-                  sx={{ bgcolor: '#f0f0f0', borderRadius: 1 }}
-                  InputProps={{
-                    style: { borderRadius: '8px' },
-                    endAdornment: <Typography variant="body2" sx={{ mr: 1 }}>%</Typography>
+                    Calculate
+                  </Button>
+                </Box>
+              </Grid>
+
+              {/* Right Column - Results Card */}
+              <Grid item xs={12} md={5}>
+                <Card 
+                  sx={{ 
+                    bgcolor: 'white',
+                    borderRadius: '4px',
+                    boxShadow: '16px 16px 48px rgba(0, 0, 0, 0.08)',
+                    p: { xs: 3, md: 4 },
+                    position: 'relative',
+                    minHeight: { xs: 'auto', md: '340px' }
                   }}
-                />
-                <Button variant="contained" color="primary" onClick={handleCalculate} sx={{ py: 1.5, borderRadius: 1 }}>
-                  Calculate Loan
-                </Button>
-              </Box>
+                >
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px', pl: { xs: 0, md: '24px' } }}>
+                    {/* Monthly Installment */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <Typography 
+                        sx={{ 
+                          fontFamily: "'Playfair Display', serif",
+                          fontWeight: 700,
+                          fontSize: { xs: '24px', md: '30px' },
+                          lineHeight: '32px',
+                          color: '#00162b'
+                        }}
+                      >
+                        Monthly Installment
+                      </Typography>
+                      <Typography 
+                        sx={{ 
+                          fontFamily: "'DM Sans', sans-serif",
+                          fontWeight: 600,
+                          fontSize: { xs: '24px', md: '28px' },
+                          lineHeight: 1.5,
+                          color: '#17badf'
+                        }}
+                      >
+                        BDT {monthlyInstallment.toLocaleString()}
+                      </Typography>
+                      <Box 
+                        sx={{ 
+                          borderBottom: '1px solid #e0e0e0',
+                          width: '100%',
+                          mt: '8px'
+                        }} 
+                      />
+                    </Box>
+
+                    {/* Due Amount */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px', mt: '16px' }}>
+                      <Typography 
+                        sx={{ 
+                          fontFamily: "'Playfair Display', serif",
+                          fontWeight: 700,
+                          fontSize: { xs: '24px', md: '30px' },
+                          lineHeight: '32px',
+                          color: '#00162b'
+                        }}
+                      >
+                        Due Amount
+                      </Typography>
+                      <Typography 
+                        sx={{ 
+                          fontFamily: "'DM Sans', sans-serif",
+                          fontWeight: 600,
+                          fontSize: { xs: '24px', md: '28px' },
+                          lineHeight: 1.5,
+                          color: '#17badf'
+                        }}
+                      >
+                        BDT {dueAmount.toLocaleString()}
+                      </Typography>
+                      <Box 
+                        sx={{ 
+                          borderBottom: '1px solid #e0e0e0',
+                          width: '100%',
+                          mt: '8px'
+                        }} 
+                      />
+                    </Box>
+                  </Box>
+                </Card>
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={5}>
-              <Card sx={{ p: { xs: 2, md: 3 }, boxShadow: 3, borderRadius: 2, bgcolor: 'white', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1rem', md: '1.25rem' } }}>Monthly Installment</Typography>
-                  <Typography variant="h4" color="primary.main" sx={{ fontWeight: 'bold', mb: { xs: 2, md: 3 }, fontSize: { xs: '1.5rem', md: '2rem' } }}>BDT {monthlyInstallment.toLocaleString()}</Typography>
-                  <Box sx={{ borderBottom: '1px solid #e0e0e0', mb: { xs: 2, md: 3 } }} />
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1rem', md: '1.25rem' } }}>Due Amount</Typography>
-                  <Typography variant="h4" color="primary.main" sx={{ fontWeight: 'bold', fontSize: { xs: '1.5rem', md: '2rem' } }}>BDT {dueAmount.toLocaleString()}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+          </Container>
         </Box>
 
 

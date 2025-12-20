@@ -91,7 +91,7 @@ export default function SearchForm() {
     } else if (priceRange <= 500000) {
       stepSize = 100000; // 100K steps for larger ranges
     } else {
-      stepSize = 250000; // 250K steps for very large ranges
+      stepSize = 5000000; // 250K steps for very large ranges
     }
 
     // Round down minPrice to nearest step
