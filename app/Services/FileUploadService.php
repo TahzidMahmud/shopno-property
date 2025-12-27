@@ -22,12 +22,26 @@ class FileUploadService
 
         // Save directly to public/storage/ instead of storage/app/public/
         $publicStoragePath = public_path('storage');
+        
+        // Ensure the base public/storage directory exists
+        // Check if it's a broken symlink or doesn't exist
+        if (is_link($publicStoragePath) && !is_dir($publicStoragePath)) {
+            // Remove broken symlink
+            @unlink($publicStoragePath);
+        }
+        
+        if (!is_dir($publicStoragePath)) {
+            if (!mkdir($publicStoragePath, 0755, true)) {
+                throw new \Exception("Failed to create base storage directory: {$publicStoragePath}. Please check directory permissions.");
+            }
+        }
+        
         $destinationPath = $publicStoragePath . '/' . $path;
 
         // 1. Ensure destination directory exists
         if (!is_dir($destinationPath)) {
             if (!mkdir($destinationPath, 0755, true)) {
-                throw new \Exception("Failed to create directory: {$destinationPath}");
+                throw new \Exception("Failed to create directory: {$destinationPath}. Please check directory permissions.");
             }
         }
 
